@@ -11,7 +11,7 @@ body{padding:15px 20px 20px 20px}
 #main-wrapper{padding:20px 20px 0 260px;background:none}
 #main{width:100%;padding:0}
 #content{padding-bottom:21px}
-#header,#emptyHeader{border-top:none;background:#fff;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-right:220px}
+#header,#emptyHeader{border-top:none;background:#fff;padding-right:220px}
 #nodeDecoration{padding:0;margin:0;background:none;border:none}
 #nodeTitle{padding:.5em 0;border-top:1px solid #fff;border-bottom:1px solid #fff}
 #siteFooter{margin-top:10px;padding-left:260px}
@@ -76,6 +76,4 @@ html[xmlns] #content{display:block}
 	#bottomPagination,.no-nav #bottomPagination{margin:0 15px;padding:0;position:relative}
 	#bottomPagination .prev{position:absolute;left:0}
 	#nav-toggler a,#nav-toggler a:focus{display:inline-block;padding:4px;width:80%;color:#fff;letter-spacing:1px;outline:none;text-decoration:none}
-	iframe,object,embed{max-width:100%}
-	img,video{max-width:100%;height:auto}
 }

@@ -90,6 +90,9 @@ Ext.define('eXe.controller.Toolbar', {
             '#file_export_website': {
                 click: { fn: this.processExportEvent, exportType: "webSite" }
             },
+            '#file_export_googledrive': {
+                click: { fn: this.startExportGoogleDrive}
+            },
             '#file_export_zip': {
                 click: { fn: this.processExportEvent, exportType: "zipFile" }
             },
@@ -135,6 +138,19 @@ Ext.define('eXe.controller.Toolbar', {
             '#tools_stylemanager': {
                 click: this.toolsStyleManager
             },
+            // Style designer
+            // To do:
+            /* 
+                nav.css:
+                overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-right:200px should be applied to #headerContent
+            */
+            '#style_designer_new_style': {
+                click: this.styleDesigner.createStyle
+            },
+            '#style_designer_edit_style': {
+                click: this.styleDesigner.editStyle
+            },
+            // / Style designer            
             '#tools_preferences': {
                 click: this.toolsPreferences
             },
@@ -155,19 +171,26 @@ Ext.define('eXe.controller.Toolbar', {
             //    click: { fn: this.processBrowseEvent, url: 'file://%s/docs/manual/Online_manual.html' }
             // },
             '#help_tutorial': {
-                click: { fn: this.processBrowseEvent, url: 'http://exelearning.net/html_manual/exe20_en/' }
+                click: { fn: this.processBrowseEvent, url: _('http://exelearning.net/html_manual/exe20_en/') }
             },
             '#help_notes': {
                 click: { fn: this.releaseNotesPage }
             },
+	    // jrf - legal notes
+            '#help_legal': {
+                click: this.legalPage
+            },
             '#help_website': {
-                click: { fn: this.processBrowseEvent, url: 'http://exelearning.net/' }
+                click: { fn: this.processBrowseEvent, url: _('http://exelearning.net/?lang=en') }
             },
             '#help_issue': {
-                click: { fn: this.processBrowseEvent, url: 'https://forja.cenatic.es/tracker/?group_id=197' }
+                click: { fn: this.processBrowseEvent, url: _('https://forja.cenatic.es/tracker/?group_id=197') }
             },
             '#help_forums': {
-                click: { fn: this.processBrowseEvent, url: 'http://exelearning.net/forums/' }
+                click: { fn: this.processBrowseEvent, url: _('http://exelearning.net/forums/') }
+            },
+            '#help_last': {
+                click: { fn: this.processBrowseEvent, url: _('http://exelearning.net/downloads/') }
             },
             '#help_about': {
                 click: this.aboutPage
@@ -292,7 +315,7 @@ Ext.define('eXe.controller.Toolbar', {
         window.open(location.href);
     },
 
-	aboutPage: function() {
+    aboutPage: function() {
         var about = new Ext.Window ({
           height: eXe.app.getMaxHeight(700),
           width: 420,
@@ -307,7 +330,7 @@ Ext.define('eXe.controller.Toolbar', {
           }
         });
         about.show();
-	},
+    },
 
     releaseNotesPage: function() {
         var about = new Ext.Window ({
@@ -325,6 +348,25 @@ Ext.define('eXe.controller.Toolbar', {
         });
         about.show();
     },
+
+    // jrf - legal notes
+    legalPage: function() {
+        var legalnotes = new Ext.Window ({
+          height: eXe.app.getMaxHeight(700),
+          width: 420,
+          modal: true,
+          resizable: false,
+          id: 'legal',
+          title: _("Legal Notes"),
+          items: {
+              xtype: 'uxiframe',
+              src: '/legal',
+              height: '100%'
+          }
+        });
+        legalnotes.show();
+    },
+
     browseURL: function(url) {
         nevow_clientToServerEvent('browseURL', this, '', url);
     },
@@ -414,6 +456,112 @@ Ext.define('eXe.controller.Toolbar', {
         });
         stylemanager.show();        
 	},
+    
+	// Style designer
+	styleDesigner : {
+		open : function(btn,text){
+			Ext.Msg.alert(_('New Style'), _("Your Style has been created. Time to make it pretty."),function(){
+				alert("Creo el directorio, etc.: "+text+"\n\nMira cómo se le pasa el estilo por GET en editStyle.");
+				var lang = "en"; // Default language
+				var l = document.documentElement.lang;
+				if (l && l!="") lang = l;				
+				styleDesignerWindow = window.open("/tools/style-designer/previews/website/?lang="+lang);
+			});
+		},
+		createStyle : function(){
+			Ext.MessageBox.prompt(_("New Style"), 'Please enter the new Style name:', this.styleDesigner.open);
+		},
+		notCompatitle : function(){
+			Ext.Msg.alert("", _("The current Style is not compatible with the Style Designer"));
+		},
+		error : function(){
+			Ext.Msg.alert(_('Error'), _("An unknown error occurred."));
+		},	
+		createNewStyleInstead : function(){
+			Ext.Msg.alert(_('Information'), _("That's one of eXe's default Styles, and it cannot be edited.\n\nPlease choose a different Style or create a new one."));
+		},
+		errorSaving : function(){
+			Ext.Msg.alert(_('Error'), _("Your Style could not be saved because an unknown error occurred."));
+		},
+		saveStyle : function(content,nav) {
+			alert('Hay que guardar los cambios (esta función está en Toolbar.js).\n\nRecibo dos parámetros: el contenido de content.css y el de nav.css.\n\nEso es lo que hay que guardar');
+			Ext.Ajax.request({
+				url: window.location.href, // Replace this URL with the one that saves
+				scope: this,
+				success: function(response) {
+					alert("Recibo la respuesta (response.responseText) con un mensaje de éxito o error y lo muestro con Ext.Msg.alert.");
+					try {
+						styleDesignerWindow.styleDesignerPopup.close();
+						styleDesignerWindow.close();
+					} catch(e) {
+						
+					}
+				},
+				error: function(){
+					this.styleDesigner.errorSaving();
+				}
+			});
+			
+		},
+		editStyle : function(){
+			
+			var stylePath = this.styleDesigner.getCurrentStyleFilePath();
+			
+			// We check if the Style is in the list exelearning-default-styles.txt
+			// In that case, you cannot edit it
+			var styleName = stylePath.replace("/style/","").split("/")[0];
+			if (styleName=="base") {
+				this.styleDesigner.createNewStyleInstead();
+				return false;
+			}
+			Ext.Ajax.request({
+				url: "/tools/style-designer/exelearning-default-styles.txt",
+				scope: this,
+				success: function(response) {
+					var res = response.responseText;
+					if (res.indexOf(","+styleName)!=-1) {
+						this.styleDesigner.createNewStyleInstead();
+					} else {
+						// We check if the Style is compatible with the tool
+						Ext.Ajax.request({
+							url: stylePath,
+							scope: this,
+							success: function(response) {
+								var res = response.responseText;
+								if (res.indexOf("/* eXeLearning Style Designer Compatible Style */")!=0) {
+									this.styleDesigner.notCompatitle();
+								} else {
+									// If it's compatible, we open the Style designer
+									var lang = "en"; // Default language
+									var l = document.documentElement.lang;
+									if (l && l!="") lang = l;
+									styleDesignerWindow = window.open("/tools/style-designer/previews/website/?style="+this.styleDesigner.getCurrentStyleId()+"&lang="+lang);		
+								}
+							},
+							error: function(){
+								this.styleDesigner.error();
+							}
+						});
+					}
+				},
+				error: function(){
+					this.styleDesigner.error();
+				}
+			});
+			
+		},
+		getCurrentStyleId : function(){
+			var id = this.getCurrentStyleFilePath();
+			id = id.replace("/","");
+			id = id.split("/")[1];
+			return id;
+		},
+		getCurrentStyleFilePath : function(){ // It returns "/style/INTEF/content.css", being X your style
+			return document.getElementsByTagName("IFRAME")[0].contentWindow.exe_style;
+		}
+	},
+	// / Style designer    
+    
     fileQuit: function() {
 	    this.saveWorkInProgress();
 	    this.askDirty("eXe.app.getController('Toolbar').doQuit()", "quit");
@@ -704,6 +852,87 @@ Ext.define('eXe.controller.Toolbar', {
     processExportEvent: function(menu, item, e, eOpts) {
         this.saveWorkInProgress();
         this.exportPackage(e.exportType, "");
+    },
+
+    startExportGoogleDrive: function(menu, item, e, eOpts) {
+        this.saveWorkInProgress();
+        
+        var preconditions = this.checkExportGoogleDrivePreconditions()
+        
+        if (preconditions) {
+            var gapi_auth_state = gapi.auth.authorize(
+                {'client_id': GOOGLE_API_CLIENT_ID, 'scope': GOOGLE_API_SCOPES.join(' '), 'immediate': true},
+                this.processExportGoogleDrive
+            );
+            console.log(gapi_auth_state);
+        }
+    },
+    
+    checkExportGoogleDrivePreconditions: function() {
+        if (typeof(gapi) === 'undefined') {
+            console.error(_('Google API Javascript library not available. '));
+            Ext.Msg.alert(_('Missing Google\'s client library. '),
+                          _('Google\'s API client library is not available, please check your Internet connection. '));
+            return false;
+        }
+        if (typeof(gapi.auth) == 'undefined') {
+            console.error(_('Google API Javascript library not available. '));
+            Ext.Msg.alert(_('Missing Google\'s client library. '),
+                          _('Google\'s API client library is not available, please check your Internet connection. '));
+            return false;
+        }
+        if (typeof(gapi.auth.authorize) !== 'function') {
+            console.error(_('Google API Javascript library not available. '));
+            Ext.Msg.alert(_('Missing Google\'s client library. '),
+                          _('Google\'s API client library is not available, please check your Internet connection. '));
+            return false;
+        }
+        
+        
+        if (!GOOGLE_API_CLIENT_ID) {
+            console.error(_('App Client ID not set. '));
+            Ext.Msg.alert(_('Missing App Client ID. '),
+                          _('Please check the App Client ID set in <strong>Tools > Preferences > Publish to Google Drive</strong>. '));
+            return false;
+        }
+        
+        return true;
+    },
+    
+    processExportGoogleDrive : function (authResult) {
+        if (!authResult || authResult.error == 'immediate_failed') {
+            // No access token could be retrieved, force the authorization flow.
+            // This will open a pop-up window, on wich it the Google auth pages
+            // will be loaded. After authorization the user will be redirected
+            // to eXe's callback URI. The script on that URI must take access_token
+            // from URL and call the appropiate function in this page.
+            // If the authorization process is started without user interaction,
+            // the pop-up window might be blocked, attaching the gapi.auth.authorize()
+            // call to a button click event will prevent that.
+            Ext.Msg.show({
+                title: _('You must authorize eXe Learning to export contents into your Google Drive account'),
+                msg: _('Are you sure you want to start authorization process?'),
+                scope: this,
+                modal: true,
+                buttons: Ext.Msg.YESNO,
+                fn: function(button) {
+                    if (button == "yes") {  
+                        gapi.auth.authorize(
+                            {'client_id': GOOGLE_API_CLIENT_ID, 'scope': GOOGLE_API_SCOPES.join(' '), 'redirect_uri' : GOOGLE_API_REDIRECT_URI, 'immediate': false},
+                            this.processExportGoogleDrive
+                        );
+                    }
+                }
+            });
+        }
+        else {
+            eXe.controller.eXeViewport.prototype.gDriveNotificationStatus('Starting publication of this document in Google Drive');
+
+            // Access token has been successfully retrieved, requests can be sent to the API
+            nevow_clientToServerEvent('exportGoogleDrive', this, '', authResult.access_token, navigator.userAgent);
+            
+            eXe.controller.eXeViewport.prototype.gDriveNotificationStatus('Publication of this document in your Google Drive account started. ');
+        }
     },
     
 	exportPackage: function(exportType, exportDir) {

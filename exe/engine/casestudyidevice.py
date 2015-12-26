@@ -347,7 +347,6 @@ situation.""")
                 self.questions[question_num].feedbackTextArea.content = \
                         self.questions[question_num].feedbackTextArea.content_w_resourcePaths
                 _btfeedBack= inner.find(name='input', attrs={'name' : re.compile('^toggle-feedback-') })
-                #self.questions[question_num].buttonCaption=_btfeedBack
             else:
                 self.questions[question_num].feedbackTextArea.content = ""
                 self.questions[question_num].feedbackTextArea.content_w_resourcePaths \
@@ -355,7 +354,6 @@ situation.""")
                 self.questions[question_num].feedbackTextArea.content_wo_resourcePaths \
                         = ""
                 _btfeedBack= inner.find(name='input', attrs={'name' : re.compile('^toggle-feedback-') })
-                #self.questions[question_num].buttonCaption=_btfeedBack
 
 
     def upgradeToVersion1(self):

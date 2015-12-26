@@ -126,7 +126,7 @@ html[xmlns] #content{display:block}
 }
 
 @media all and (max-width: 780px) {
-	#header,#emptyHeader{background-position:-294px 0;padding:69px 10px 0 10px}
+	#header,#emptyHeader{background-position:-294px 0;padding:69px 10px 0 10px;font-size:1.3em}
 	#siteNav{width:100%;float:none;padding:0;background-image:none}
 	#siteNav .main-node{font-weight:normal;font-variant:normal;letter-spacing:0;font-size:1em}
 	#main-wrapper,.no-nav #main-wrapper{padding:10px 10px 0 10px}
@@ -140,6 +140,4 @@ html[xmlns] #content{display:block}
 	#bottomPagination a{padding:3px 10px;display:inline-block}
 	#bottomPagination .prev{position:absolute;left:10px;margin-left:0}
 	#nav-toggler a,#nav-toggler a:focus{display:inline-block;padding:4px;width:80%;color:#fff;font-variant:small-caps;letter-spacing:1px;outline:none;text-decoration:none}
-	iframe,object,embed{max-width:100%}
-	img,video{max-width:100%;height:auto}
 }

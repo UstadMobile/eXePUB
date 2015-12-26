@@ -11,7 +11,7 @@ body{background:#DBDAD2}
 #main-wrapper{padding:10px 20px 0 250px}
 #main{width:100%}
 #content{padding-bottom:21px}
-#header,#emptyHeader{border-top:none;background:#D9D9CE;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-right:220px}
+#header,#emptyHeader{border-top:none;background:#D9D9CE;padding-right:220px}
 #nodeDecoration{padding:0;margin:0;background:none;border:none}
 #nodeTitle{padding:.1em 0 .6em 0;border-bottom:2px solid #E5E4E0}
 /* Navigation */
@@ -78,6 +78,4 @@ html[xmlns] #content{display:block}
 	#bottomPagination .prev{left:10px}
 	#bottomPagination .next{right:10px}
 	#nav-toggler a,#nav-toggler a:hover,#nav-toggler a:focus{box-shadow:none;background:#706F61;display:inline-block;padding:4px;width:80%;color:#fff;font-variant:small-caps;letter-spacing:1px;outline:none;text-decoration:none}
-	iframe,object,embed{max-width:100%}
-	img,video{max-width:100%;height:auto}
 }

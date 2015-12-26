@@ -8,6 +8,17 @@ var tinyMCE_language = getTinyMCELang(document.getElementsByTagName("HTML")[0].l
 /*****************************************/
 /****************************************/
 var $exeTinyMCE = {
+    
+    plugins : "exeeffects,addcontent,blockquoteandcite,definitionlist,tooltip,clearfloat,advalign,autolink,lists,pagebreak,style,layer,table,advhr,advimage,advlink,emotions,iespell,insertdatetime,preview,media,exemath,searchreplace,print,contextmenu,paste,directionality,fullscreen,noneditable,visualchars,nonbreaking,xhtmlxtras,template,wordcount,advlist,visualblocks,pastecode,inlinepopups,spellchecker,template,codemagic",
+    buttons1 : "newdocument,spellchecker,|,bold,italic,underline,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,clearfloat,addcontent,|,bullist,numlist,definitionlist,|,outdent,indent,blockquote,blockquoteandcite,|,formatselect,fontsizeselect,fontselect,|,forecolor,backcolor,|,sub,sup,|,fullscreen",
+    buttons2 : "undo,redo,|,cut,copy,paste,pastetext,pasteword,|,pastehtml,pastecode,|,search,replace,|,link,unlink,anchor,tooltip,|,image,media,exeeffects,|,removeformat,cleanup,|,insertdate,inserttime,advhr,cite,abbr,acronym,del,ins,attribs,nonbreaking,|,charmap,exemath,|,styleprops",
+    buttons3 : "template,|,tablecontrols,|,codemagic,help",
+    templates : "/scripts/tinymce_templates/lang/"+tinyMCE_language+".js",
+    content_css : "/css/extra.css," + exe_style,
+    theme : "advanced",
+    skin : "default",
+    skin_variant : "",
+    
 	init : function(mode,criteria,hide){
 		
 		var h = 300;
@@ -20,21 +31,23 @@ var $exeTinyMCE = {
 			mode : mode,
 			elements : criteria,
 			editor_selector : criteria,	
-			theme : "advanced",
+			theme : this.theme,
+			skin : this.skin,
+			skin_variant : this.skin_variant,
 			convert_urls : false,
 			schema : this.getSchema(),
-			content_css : "/css/extra.css," + exe_style,
+			content_css : this.content_css,
 			height : h,
 			width : w,
-			plugins : "blockquoteandcite,definitionlist,tooltip,clearfloat,advalign,autolink,lists,pagebreak,style,layer,table,advhr,advimage,advlink,emotions,iespell,insertdatetime,preview,media,exemath,searchreplace,print,contextmenu,paste,directionality,fullscreen,noneditable,visualchars,nonbreaking,xhtmlxtras,template,wordcount,advlist,visualblocks,pastecode,inlinepopups,spellchecker,template",
+			plugins : this.plugins,
 			valid_children : this.getValidChildren(),
 			valid_elements : this.getValidElements(),
 			extended_valid_elements : this.getExtendedValidElements(),
 			entity_encoding : "raw",
 			// Theme options
-			theme_advanced_buttons1 : "newdocument,spellchecker,|,bold,italic,underline,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,clearfloat,|,bullist,numlist,definitionlist,|,outdent,indent,blockquote,blockquoteandcite,|,formatselect,fontsizeselect,fontselect,|,forecolor,backcolor,|,sub,sup,|,fullscreen",
-			theme_advanced_buttons2 : "undo,redo,|,cut,copy,paste,pastetext,pasteword,|,pastehtml,pastecode,|,search,replace,|,link,unlink,anchor,tooltip,|,image,media,|,removeformat,cleanup,|,insertdate,inserttime,advhr,cite,abbr,acronym,del,ins,attribs,nonbreaking,|,charmap,exemath,|,styleprops",
-			theme_advanced_buttons3 : "template,|,tablecontrols,|,code,help",
+			theme_advanced_buttons1 : this.buttons1,
+			theme_advanced_buttons2 : this.buttons2,
+			theme_advanced_buttons3 : this.buttons3,
 			theme_advanced_toolbar_location : "top",
 			theme_advanced_toolbar_align : "left",
 			theme_advanced_statusbar_location : "bottom",
@@ -51,7 +64,7 @@ var $exeTinyMCE = {
 				{title : _("Automatic Numbering"), styles : { listStyleType : 'decimal' }, cssClass : 'auto-numbered' }
 			],
 
-			template_external_list_url : "/scripts/tinymce_templates/lang/"+tinyMCE_language+".js",
+			template_external_list_url : this.templates,
 			// No new base64 images
 			setup : function(ed) {
 				ed.onInit.add(function(ed, e) {
@@ -77,7 +90,7 @@ var $exeTinyMCE = {
 		});
 		
 	},
-	
+    
 	getSchema : function(){
 		var s = "html4";
 		if (exe_export_format=="html5") s = "html5";

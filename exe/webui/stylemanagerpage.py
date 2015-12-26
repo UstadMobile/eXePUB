@@ -28,6 +28,7 @@ import os
 import shutil
 from zipfile                   import ZipFile, ZIP_DEFLATED
 import json
+from tempfile                  import gettempdir
 from urllib                    import urlretrieve
 from urlparse                  import urlsplit
 import locale
@@ -340,9 +341,12 @@ class StyleManagerPage(RenderableResource):
               + _(u'Are you sure you want to install remote style?. ')
             )
 
-            # 3. Prepare nevow_clientToServerEvent call, with local and remote styles info
+            # 3. Prepare nevow_clientToServerEvent call, with local and remote styles info,
+            #    escaping windows paths blackslashes if needed
+            style_dir_js = style_dir.replace('\\', '\\\\')
+            downloaded_file_js = downloaded_file.replace('\\', '\\\\')
             trigger_overwrite = ("nevow_clientToServerEvent('overwriteLocalStyle', this, '', '%s', '%s')"
-                        % (style_dir, downloaded_file))
+                        % (style_dir_js, downloaded_file_js))
 
             # 2. Ext.Msg.confirm callback function. Checks the button clicked before sending event to server
             callback = ("function(btn) {console.log(btn);if (btn == 'yes') {%s;}}" % (trigger_overwrite))
@@ -386,9 +390,11 @@ class StyleManagerPage(RenderableResource):
             # Downloaded ZIP file must have the same name than the remote file,
             # otherwise file would be saved to a random temporary name, that
             # 'doImportStyle' would use as style target directory
-            log.debug("Downloading style %s from %s" % (style_name, url))
+            temp_path = gettempdir()
+            filename_path = os.path.join(temp_path, filename)
+            log.debug("Downloading style %s from %s into %s" % (style_name, url, filename_path))
             d = threads.deferToThread(
-                                      urlretrieve, url, filename,
+                                      urlretrieve, url, filename_path,
                                       lambda n, b, f: self.progressDownload(n, b, f, self.client))
             d.addCallbacks(successDownload, errorDownload)
 

@@ -133,6 +133,12 @@ Ext.define('eXe.view.forms.PackagePanel', {
                          ]
                      ]},
 
+    onChange: function(me, newValue) {
+        if (newValue === null) {
+            me.setValue('');
+        }
+    },
+
     initComponent: function() {
         var me = this;
 
@@ -170,7 +176,11 @@ Ext.define('eXe.view.forms.PackagePanel', {
                                 fieldLabel: _('Language'),
                                 store: langsStore,
                                 tooltip: _('Select a language.'),
-                                anchor: '100%'
+                                anchor: '100%',
+                                forceSelection: true,
+                                listeners: {
+                                    'change': me.onChange
+                                }
                             },
                             help: _('Select a language.')
                         },
@@ -245,9 +255,13 @@ Ext.define('eXe.view.forms.PackagePanel', {
                                 fieldLabel: _('License'),
                                 store: eXe.view.forms.PackagePanel.eXeLicenses,
                                 tooltip: _('Select a license.'),
-                                anchor: '100%'
+                                anchor: '100%',
+                                forceSelection: true,
+                                listeners: {
+                                    'change': me.onChange
+                                }
                             },
-                            help: _('Select a license.')
+                            help: _('Select a license or write your own one.')
                         },
                         {
                             xtype: 'helpcontainer',
@@ -259,7 +273,11 @@ Ext.define('eXe.view.forms.PackagePanel', {
                                 fieldLabel: _('Learning Resource Type'),
                                 store: lomesVocab.learningResourceTypeValues.slice(39),
                                 tooltip: _('Learning Resource Type'),
-                                anchor: '100%'
+                                anchor: '100%',
+                                forceSelection: true,
+                                listeners: {
+                                    'change': me.onChange
+                                }
                             },
                             help: _('Learning Resource Type')
                         },
@@ -510,6 +528,7 @@ Ext.define('eXe.view.forms.PackagePanel', {
                                 dirtyCls: 'property-form-dirty',
 	                            tooltip: _('Doctype'),
 	                            anchor: '100%',
+                                forceSelection: true,
 								listeners : {
 									select : function(){
 										var is= document.getElementsByTagName("IFRAME");

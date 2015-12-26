@@ -240,6 +240,24 @@ Ext.define('eXe.view.ui.eXeToolbar', {
                             },
                             {
                                 xtype: 'accesskey_menuitem',
+                                text: _('Publish'),
+                                itemId: 'publish',
+                                accesskey: 'l',
+                                menu: {
+                                    xtype: 'menu',
+                                    items: 
+                                    [
+                                        {
+                                        	xtype: 'accesskey_menuitem',
+                                        	text: _('Google Drive'),
+                                        	accesskey: 'G',
+                                        	itemId: 'file_export_googledrive'
+                                         },
+                                    ]
+                                },
+                            },
+                            {
+                                xtype: 'accesskey_menuitem',
                                 text: _('Export'),
                                 accesskey: 'e',
                                 menu: {
@@ -299,11 +317,11 @@ Ext.define('eXe.view.ui.eXeToolbar', {
                                                         itemId: 'file_export_zip'
                                                     },
                                                     {
-                                            		xtype: 'accesskey_menuitem',
-                                            		text: _('Single Page'),
-                                            		accesskey: 'p',
-                                            		itemId: 'file_export_singlepage'
-                                        	    },
+                                                		xtype: 'accesskey_menuitem',
+                                                		text: _('Single Page'),
+                                                		accesskey: 'p',
+                                                		itemId: 'file_export_singlepage'
+                                            	    },
                                                 ]
                                             }
                                         },
@@ -391,6 +409,28 @@ Ext.define('eXe.view.ui.eXeToolbar', {
                                 accesskey: 's',
                                 text: _('Style Manager')
                             },
+                            // Style designer
+                            {
+                                xtype: 'accesskey_menuitem',
+                                text: _('Style Designer'),
+                                menu: {
+                                    xtype: 'menu',
+                                    items: [
+                                        {
+                                            xtype: 'accesskey_menuitem',
+                                            itemId: 'style_designer_new_style',
+                                            accesskey: 'i',
+                                            text: _('Create new Style')
+                                        },
+                                        {
+                                            xtype: 'accesskey_menuitem',
+                                            itemId: 'style_designer_edit_style',
+                                            text: _('Edit current Style')
+                                        }
+                                    ]
+                                }
+                            },
+                            // / Style designer							
                             {
                                 xtype: 'accesskey_menuitem',
                                 itemId: 'tools_preferences',
@@ -458,6 +498,13 @@ Ext.define('eXe.view.ui.eXeToolbar', {
                                 itemId: 'help_notes',
                                 accesskey: 'n',
                                 text: _('Release Notes')
+                            },
+                            // jrf - legal notes
+                            {
+                                xtype: 'accesskey_menuitem',
+                                itemId: 'help_legal',
+                                accesskey: 'l',
+                                text: _('Legal Notes')
                             },
                             {
                                 xtype: 'menuseparator'

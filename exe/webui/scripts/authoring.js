@@ -27,7 +27,8 @@
 var Ext = parent.Ext;
 var eXe = parent.eXe;
 var onLoadHandlers = [clearHidden, setWmodeToFlash, loadAuthoringPluginObjects, 
-	enableAnchors, gotoAnchor, preventEscKey, preventHistoryBack, loadKeymap, hideObjectTags];
+	enableAnchors, httpsInNewWindow, gotoAnchor, preventEscKey, preventHistoryBack,
+    loadKeymap, hideObjectTags];
 var beforeSubmitHandlers = new Array();
 
 // Called on document load
@@ -534,6 +535,16 @@ function enableAnchors() {
         };
 }
 
+function httpsInNewWindow() {
+	var links = parent.Ext.DomQuery.select('a[href^=https]', document);
+
+	for (var i=0; i < links.length; i++) {
+        if (!links[i].getAttribute('target')) {
+            links[i].setAttribute('target', '_blank');
+        }
+    }
+}
+
 function gotoAnchor() {
     if (typeof(parent.eXe)!='undefined' && typeof(parent.eXe.app)!='undefined') {
         var outline = parent.eXe.app.getController('Outline');
@@ -566,8 +577,8 @@ function loadKeymap() {
 
 // Common settings
 var eXeLearning_settings = {
-    wysiwyg_path : "/scripts/tinymce_3.5.7/jscripts/tiny_mce/tiny_mce.js",
-    wysiwyg_settings_path : "/scripts/tinymce_3.5.7_settings.js"
+    wysiwyg_path : "/scripts/tinymce_3.5.11/jscripts/tiny_mce/tiny_mce.js",
+    wysiwyg_settings_path : "/scripts/tinymce_3.5.11_settings.js"
 }
 
 // browse the specified URL in system browser

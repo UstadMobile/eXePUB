@@ -18,11 +18,13 @@
 //===========================================================================
 
 Ext.define('eXe.view.ui.eXeViewport', {
+    id: 'exe-viewport',
     extend: 'Ext.container.Viewport',
     requires: [
         'eXe.view.ui.eXeToolbar',
         'eXe.view.ui.MainTabPanel',
-        'eXe.view.ui.LeftPanel'
+        'eXe.view.ui.LeftPanel',
+        'Ext.ux.window.Notification'
     ],
 
     layout: {
@@ -52,7 +54,19 @@ Ext.define('eXe.view.ui.eXeViewport', {
                     xtype: 'leftpanel',
                     region: 'west',
                     split: true,
-                    width: this.leftWidthByTheme[eXe.app.config.theme] || 250
+                    width: this.leftWidthByTheme[eXe.app.config.theme] || 250,
+                },
+                {
+                    xtype: 'uxNotification',
+                    region: 'south',
+                    itemId: 'gDriveNotification',
+                    title: 'Publishing document to Google Drive',
+                    closeAction: 'hide',
+                    autoClose: false,
+                    position: 'b',
+                    useXAxis: false,
+                    cls: 'ux-notification-light',
+                    iconCls: 'ux-notification-icon-information'
                 }
             ],
             itemId: 'eXeViewport',
@@ -60,5 +74,5 @@ Ext.define('eXe.view.ui.eXeViewport', {
         });
 
         me.callParent(arguments);
-    }
+    },
 });
