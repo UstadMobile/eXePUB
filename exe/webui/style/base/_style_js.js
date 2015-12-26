@@ -9,7 +9,7 @@ var myTheme = {
 		},1000);
 		var l = $('<p id="nav-toggler"><a href="#" onclick="myTheme.toggleMenu(this);return false" class="hide-nav" id="toggle-nav" title="'+$exe_i18n.hide+'"><span>'+$exe_i18n.menu+'</span></a></p>');
 		$("#siteNav").before(l);
-		$("#topPagination a").eq(0).before('<a href="#" onclick="myTheme.print();return false" title="'+$exe_i18n.print+'" class="print-page"><span>'+$exe_i18n.print+'</span></a> ');
+		$("#topPagination a").eq(0).before('<a href="#" onclick="window.print();return false" title="'+$exe_i18n.print+'" class="print-page"><span>'+$exe_i18n.print+'</span></a> ');
 		this.addNavArrows();
 		this.bigInputs();		
 		var url = window.location.href;
@@ -29,18 +29,14 @@ var myTheme = {
 			myTheme.setNavHeight();
 		});
 	},
-	print : function(){
-		if (typeof(this.hasPrinted)=='undefined') {
-			$("IFRAME").each(function(){
-				var s = this.src;
-				var d = window.location.protocol+"://"
-				if (s.indexOf(d)!=0) {
-					$(this).addClass("external-iframe").before("<span class='external-iframe-src' style='display:none'>"+this.src+"</span>");
-					myTheme.hasPrinted = true;
-				}
-			});
-		}
-		window.print();
+	getIframesURL : function(){
+		$("IFRAME").each(function(){
+			var s = this.src;
+			var d = window.location.protocol+"://"
+			if (s.indexOf(d)!=0) {
+				$(this).addClass("external-iframe").before("<span class='external-iframe-src' style='display:none'><a href='"+this.src+"'>"+this.src+"</a></span>");
+			}
+		});
 	},
 	isMobile : function(){
 		try {
@@ -85,14 +81,18 @@ var myTheme = {
 		var c = $("#main-wrapper");
 		var nH = n.height();
 		var cH = c.height();
+		var isMobile = $("#siteNav").css("float")=="none";
+		if (cH<nH) {
+			cH = nH;
+			if (!isMobile) c.height(cH);
+		}
 		var h = (cH-nH+40)+"px";
-		var m = "40px";
-		if ($("#siteNav").css("float")=="none") {
+		var m = 0;
+		if (isMobile) {
 			h = 0;
 			m = "15px";
 		} else if (n.css("display")=="table") {
 			h = 0;
-			m = "40px";
 		}
 		n.css({
 			"padding-bottom":h,
@@ -159,9 +159,10 @@ var myTheme = {
 }
 
 $(function(){
-    if (document.body.className=='exe-web-site js') {
-        myTheme.init();
-    }
+	if (document.body.className=='exe-web-site js') {
+		myTheme.init();
+	}
+	myTheme.getIframesURL();
 });
 
 /*!

@@ -53,6 +53,7 @@ li{list-style-position:outside}
 .exe-dl .icon,.exe-dl-toggler a{width:24px;height:24px;border-radius:12px}
 .exe-dl-toggler a{line-height:22px}
 .js .exe-dl dd{margin-left:44px}
+.exe-enlarge-icon b{font-size:1.2em}
 
 /* Forms */
 input,select{font-size:1em;font-family:inherit}
@@ -76,7 +77,14 @@ input,select{font-size:1em;font-family:inherit}
 .CasestudyIdevice .feedbackbutton,
 .ReflectionIdevice .feedbackbutton{margin:.5em 0 1em 0}
 
-#packageLicense{margin-top:2.5em}
+/* Licenses */
+#packageLicense{margin:2.5em 0 1.5em 0;text-align:left;line-height:1.2em;font-size:.9em}
+#packageLicense.cc{padding-left:95px;background:url(_style_licenses.png) no-repeat 0 0}
+#packageLicense.cc-by-sa{background-position:0 -100px}
+#packageLicense.cc-by-nd{background-position:0 -200px}
+#packageLicense.cc-by-nc-sa{background-position:0 -300px}
+#packageLicense.cc-by-nc-nd{background-position:0 -400px}
+#packageLicense.cc-0{background-position:0 -500px}
 #siteFooter{padding:20px}
 
 /* Lightbox */
@@ -96,10 +104,12 @@ background:#ededed;
     .iDevice{margin-bottom:20px}
 	html body{background:#fff;color:#000;font-size:11pt}
 	@page{margin:2cm}
+	/* Uncomment this to print URL after links:
 	a{font-weight:bolder;text-decoration:none!important}
 	a[href^=http]:after{content:" <" attr(href) "> "}
+	*/
 	.external-iframe{display:none}
-	.external-iframe-src{display:block!important;margin:2em auto;font-size:.95em}
+	.external-iframe-src{display:block!important;margin:2em 0;font-size:.95em;text-align:center}
 	#main .iDeviceTitle{background:none;padding-left:0}
 	body #header,body #emptyHeader,body #nodeDecoration{height:auto!important;min-height:0;border:none;padding:0}
 }
