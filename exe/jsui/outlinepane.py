@@ -116,7 +116,7 @@ class OutlinePane(Renderable, Resource):
         """
         if client.currentNodeId:
             client.sendScript('var outline = eXe.app.getController("Outline");\
-                if (outline) outline.select(%s)' % client.currentNodeId)
+                if (outline) outline.select("%s")' % client.currentNodeId)
         else:
             raise Exception('No current node in client')
 

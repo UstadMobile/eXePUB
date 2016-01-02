@@ -70,7 +70,7 @@ Ext.define('eXe.view.filepicker.FileList', {
                         icon = ICON_MAP[record.get('type')][locked];
 					if (!icon)
 						icon = DEFAULT_ICON;
-					debugger;
+					
 					var themeName = eXe.app.config.theme;
 					icon = icon.replace("__EXETHEME__", themeName);
 					var iconImgType = THEME_IMGTYPES[themeName] ? 

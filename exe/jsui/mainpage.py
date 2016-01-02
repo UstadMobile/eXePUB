@@ -54,6 +54,7 @@ from exe.importers.xliffimport   import XliffImport
 from exe.importers.scanresources import Resources
 from exe.engine.path             import Path, toUnicode, TempDirPath
 from exe.engine.package          import Package
+from exe.engine.epubhandle       import EPUBHandle
 from exe                         import globals as G
 from tempfile                    import mkdtemp
 from exe.engine.mimetex          import compile
@@ -104,7 +105,8 @@ class MainPage(RenderableLivePage):
         self.authoringPages = {}
         self.classificationSources = {}
 
-        G.application.resourceDir = Path(package.resourceDir)
+        if isinstance(package, Package):
+            G.application.resourceDir = Path(package.resourceDir)
 
         self.location_buttons = LocationButtons()
 
@@ -360,9 +362,14 @@ class MainPage(RenderableLivePage):
 
     def handleLoadPackage(self, client, filename, filter_func=None):
         """Load the package named 'filename'"""
-        package = self._loadPackage(client, filename, newLoad=True)
+        if filename[-5:] == ".epub":
+            package = EPUBHandle.load(filename)
+        else:
+            package = self._loadPackage(client, filename, newLoad=True)
+        
         self.session.packageStore.addPackage(package)
         self.webServer.root.bindNewPackage(package, self.session)
+            
         client.sendScript((u'eXe.app.gotoUrl("/%s")' % \
                           package.name).encode('utf8'), filter_func=filter_func)
 
