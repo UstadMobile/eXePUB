@@ -249,10 +249,16 @@ Ext.define('eXe.controller.Outline', {
         if (authoring && authoring.submitLink) {
     		authoring.submitLink('changeNode', nodeid, 0);
     	}else {
-    		var node = this.getOutlineXmlTreeStoreStore().getNodeById(nodeid);
-    		if(node.data.epubhref) {
+    		var store = this.getOutlineXmlTreeStoreStore();
+    		var node = store.getNodeById(nodeid);
+    		if(node && node.data.epubhref) {
     			var epubPageHREF = document.location.href + "/resources/" + node.data.epubhref;
     			Ext.ComponentQuery.query('#authoring')[0].getDoc().location.href = epubPageHREF;
+    		}else if(!node && store.isLoading()) {
+    			//this is a node just added; wait for the store to load
+    			setTimeout((function() {
+    				this.loadNodeOnAuthoringPage(nodeid);
+    			}).bind(this), 500);
     		}
         }
     },

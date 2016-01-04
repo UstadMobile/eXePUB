@@ -15,6 +15,11 @@ class EPUBOPF(object):
     
     NAMESPACE_OPF = "http://www.idpf.org/2007/opf"
 
+    '''Maximum number of suffixes we will go through to find a free
+    filename
+    '''
+    FIND_FILENAME_MAX_ATTEMPTS = 500
+
 
     def __init__(self, href, opf_str = None, container_path = None):
         '''
@@ -39,7 +44,13 @@ class EPUBOPF(object):
         self.navigation_doc = None
         
         self.container_path = container_path
-        
+    
+    def save(self):
+        package_file = open(self.href, "w")
+        package_file.write(etree.tostring(self.package_el, encoding = "UTF-8", pretty_print = True))
+        package_file.flush()
+        package_file.close()
+    
     @property
     def manifest(self):
         item_els =self.package_el.findall("./{%(ns)s}manifest/{%(ns)s}item" %  
@@ -54,7 +65,48 @@ class EPUBOPF(object):
             
         return manifest
         
-    
+    def add_item_to_manifest(self, item_id, media_type, href, properties = None, auto_save = True):
+        """Adds an item to the OPF file manifest
+        Parameters
+        ----------
+        item_id : String
+            As per id attribute - must be unique
+        media_type : String
+            
+        """
+        manifest_el = self.package_el.find("./{%s}manifest" % EPUBOPF.NAMESPACE_OPF)
+        new_item_el = etree.SubElement(manifest_el, "{%s}item" % EPUBOPF.NAMESPACE_OPF, 
+                                       href = href, id = item_id)
+        new_item_el.set("media-type", media_type)
+        if auto_save:
+            self.save()
+        
+        return new_item_el
+        
+        
+    def get_id_for_href(self, href):
+        
+        return href
+        
+    def find_free_filename(self, basename, extension):
+        manifest_items = self.manifest
+        
+        suffix = ""
+        for attempt_count in range(0, EPUBOPF.FIND_FILENAME_MAX_ATTEMPTS):
+            current_filename = basename + suffix + extension
+            
+            name_taken = False
+            for id, item in manifest_items.iteritems():
+                if item.href == current_filename:
+                    name_taken = True
+                    break
+            
+            if not name_taken:
+                return current_filename
+            
+            suffix = "_%s" % str(attempt_count)
+        
+        return None
         
     
     def get_navigation(self):
