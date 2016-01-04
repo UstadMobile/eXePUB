@@ -54,7 +54,7 @@ from exe.importers.xliffimport   import XliffImport
 from exe.importers.scanresources import Resources
 from exe.engine.path             import Path, toUnicode, TempDirPath
 from exe.engine.package          import Package
-from exe.engine.epubhandle       import EPUBHandle
+from exe.engine.epubpackage       import EPUBPackage
 from exe                         import globals as G
 from tempfile                    import mkdtemp
 from exe.engine.mimetex          import compile
@@ -363,7 +363,7 @@ class MainPage(RenderableLivePage):
     def handleLoadPackage(self, client, filename, filter_func=None):
         """Load the package named 'filename'"""
         if filename[-5:] == ".epub":
-            package = EPUBHandle.load(filename)
+            package = EPUBPackage.load(filename)
         else:
             package = self._loadPackage(client, filename, newLoad=True)
         

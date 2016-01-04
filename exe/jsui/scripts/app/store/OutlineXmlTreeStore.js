@@ -17,6 +17,18 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //===========================================================================
 
+Ext.define("eXe.model.EpubNavModel", {
+	extend : "Ext.data.TreeModel",
+	fields: [{
+		name: 'text',
+		type: 'string'
+	},
+	{
+		name: 'epubhref',
+		type: 'string'
+	}]
+});
+
 Ext.define('eXe.store.OutlineXmlTreeStore', {
     extend: 'Ext.data.TreeStore',
 
@@ -28,7 +40,7 @@ Ext.define('eXe.store.OutlineXmlTreeStore', {
             root: {
             	loaded: true
             },
-            
+            model: "eXe.model.EpubNavModel",
             proxy: {
                 type: 'ajax',
                 url: 'outlinePane', //Modified on beforeload

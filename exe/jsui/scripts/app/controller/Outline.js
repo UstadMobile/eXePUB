@@ -244,10 +244,17 @@ Ext.define('eXe.controller.Outline', {
 		});
     },
 
-    loadNodeOnAuthoringPage: function(node) {
+    loadNodeOnAuthoringPage: function(nodeid) {
         var authoring = Ext.ComponentQuery.query('#authoring')[0].getWin();
-        if (authoring && authoring.submitLink)
-    		authoring.submitLink('changeNode', node, 0);
+        if (authoring && authoring.submitLink) {
+    		authoring.submitLink('changeNode', nodeid, 0);
+    	}else {
+    		var node = this.getOutlineXmlTreeStoreStore().getNodeById(nodeid);
+    		if(node.data.epubhref) {
+    			var epubPageHREF = document.location.href + "/resources/" + node.data.epubhref;
+    			Ext.ComponentQuery.query('#authoring')[0].getDoc().location.href = epubPageHREF;
+    		}
+        }
     },
     
     //called from exe.jsui.outlinepane.OutlinePane.handleSetTreeSelection

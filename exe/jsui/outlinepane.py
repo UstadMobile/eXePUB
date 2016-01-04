@@ -26,6 +26,9 @@ import logging
 from exe.webui.renderable import Renderable
 from exe.webui.livepage import allSessionPackageClients
 from twisted.web.resource import Resource
+from exe.engine.epubnav import EPUBNavItem
+import os.path
+
 log = logging.getLogger(__name__)
 
 
@@ -156,6 +159,7 @@ class OutlinePane(Renderable, Resource):
         log.debug("Render")
         request.setHeader('content-type', 'application/xml')
         node_id = request.args['node'][0]
+        container_path = None
         xml = u'<?xml version="1.0" encoding="UTF-8"?>'
         xml += u'<!-- start outline pane -->'
         xml += u'<nodes>'
@@ -168,6 +172,10 @@ class OutlinePane(Renderable, Resource):
             xml += u'<text>%s</text>' % self.encode2nicexml(node.title)
             xml += u'<id>%s</id>' % self.encode2nicexml(node.id)
             xml += u'<expanded>true</expanded>'
+            if isinstance(node, EPUBNavItem):
+                epub_href = os.path.join(os.path.dirname(node.opf.container_path), node.href)
+                xml += u'<epubhref>%s</epubhref>' % self.encode2nicexml(epub_href)
+                
             if node.children:
                 xml += u'<leaf>false</leaf>'
             else:

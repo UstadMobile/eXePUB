@@ -9,16 +9,18 @@ from exe.engine.epubitem import EPUBItem
 from exe.engine.epubopf import EPUBOPF
 from exe.engine.path           import Path, TempDirPath, toUnicode
 import zipfile
-import xml.dom.minidom 
+from lxml import etree
 
-class EPUBHandle(object):
+class EPUBPackage(object):
     '''
     classdocs
     '''
+    
+    
 
     @classmethod
     def load(cls, filename):
-        epub_handle = EPUBHandle(filename = filename)
+        epub_handle = EPUBPackage(filename = filename)
         
         return epub_handle
 
@@ -46,17 +48,21 @@ class EPUBHandle(object):
             if container.media_type == "application/oebps-package+xml":
                 opf_path = os.path.join(self.resourceDir, container.full_path)
                 opf_str = open(opf_path, 'r').read()
-                self.opfs.append(EPUBOPF(opf_path, opf_str)) 
+                self.opfs.append(EPUBOPF(opf_path, opf_str = opf_str, 
+                                         container_path = container.full_path)) 
         
         
         # for now we handle one OPF in a package
         self.main_opf = self.opfs[0]
+        self.main_manifest = self.main_opf.manifest
         self.root = self.main_opf.get_navigation()
         
     def findNode(self, node_id):
         return self.root.find_node(node_id)
 
 class EPUBOCF(object):
+    
+    NAMESPACE_OCF = "urn:oasis:names:tc:opendocument:xmlns:container"
             
     def __init__(self, ocf_doc = None):
         self.root_containers = []
@@ -65,11 +71,11 @@ class EPUBOCF(object):
     
 
     def parseXML(self, ocf_doc_str):
-        doc = xml.dom.minidom.parseString(ocf_doc_str)
-        root_container_els = doc.getElementsByTagName("rootfile")
+        doc = etree.fromstring(ocf_doc_str)
+        root_container_els = doc.findall(".//{%s}rootfile" % EPUBOCF.NAMESPACE_OCF)
         for root in root_container_els:
-            self.root_containers.append(EPUBOCFRoot(root.attributes['full-path'].value,
-                                            root.attributes['media-type'].value))
+            self.root_containers.append(EPUBOCFRoot(root.get('full-path'),
+                                            root.get('media-type')))
     
         
 class EPUBOCFRoot(object):
