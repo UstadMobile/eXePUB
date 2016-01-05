@@ -40,7 +40,7 @@ class EPUBPackage(object):
         #TODO: inspect filenames for untrusted entries e.g. .. and /
         zippedFile = zipfile.ZipFile(filename, "r")
         zippedFile.extractall(self.resourceDir)
-        self.currentNode = EPUBItem("index", "index.xhtml", "text/html")
+        
         ocf_str = open(self.resourceDir/"META-INF/container.xml", 'r').read()
         self.ocf = EPUBOCF(ocf_doc = ocf_str)
         self.opfs = []
@@ -56,6 +56,7 @@ class EPUBPackage(object):
         self.main_opf = self.opfs[0]
         self.main_manifest = self.main_opf.manifest
         self.root = self.main_opf.get_navigation()
+        self.currentNode = self.root
         
     def findNode(self, node_id):
         return self.root.find_node(node_id)

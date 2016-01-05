@@ -88,10 +88,11 @@ class OutlinePane(Renderable, Resource):
         if node is not None and node is not self.package.root:
             # Update our server version of the package
             if (node.isAncestorOf(self.package.currentNode) or
-                node is self.package.currentNode):
+                node == self.package.currentNode):
                 self.package.currentNode = node.parent
                 client.currentNodeId = self.package.currentNode.id
             node.delete()
+            
             client.sendScript('eXe.app.getController("Outline").reload()', filter_func=allSessionPackageClients)
             client.call('eXe.app.getController("Outline").loadNodeOnAuthoringPage', client.currentNodeId)
         else:

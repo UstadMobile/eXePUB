@@ -83,6 +83,24 @@ class EPUBOPF(object):
         
         return new_item_el
         
+    
+    def delete_item_by_href(self, href, auto_save = True):
+        """Delete an item from the manifest and removes the file from resourceDir"""
+        item_el = self.package_el.find(".//{%s}item[@href='%s']" % (EPUBOPF.NAMESPACE_OPF, href))
+        if item_el is not None:
+            item_id = item_el.get("id")
+            item_el.getparent().remove(item_el)
+            
+            item_path = os.path.join(os.path.dirname(self.href), href)
+            if os.path.isfile(item_path):
+                os.remove(item_path)
+            
+            spine_itemref = self.package_el.findall(".//{%s}itemref[@idref='%s']")
+            for itemref in spine_itemref:
+                spine_itemref.getparent().remove(itemref)
+            
+            if auto_save:
+                self.save()
         
     def get_id_for_href(self, href):
         
@@ -120,7 +138,8 @@ class EPUBOPF(object):
         
         nav_doc_path = os.path.join(os.path.dirname(self.href), nav_el.get("href"))
         nav_doc_str = open(nav_doc_path).read()
-        self.navigation_doc = EPUBNavDocument(self, EPUBOPFItem(nav_el), nav_doc_str)
+        self.navigation_doc = EPUBNavDocument(self, EPUBOPFItem(nav_el), nav_doc_str, 
+                                              file_path = nav_doc_path)
         return self.navigation_doc
     
     def get_item_by_href(self, href):
