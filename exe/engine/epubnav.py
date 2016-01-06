@@ -89,7 +89,19 @@ class EPUBNavItem(object):
                 return EPUBNavItem(self.opf, parent_el)
             elif parent_el.tag[-3:] == "nav":
                 return self.opf.get_navigation()
+    
+    def next_sibling(self):
+        if self.element.getnext() is not None:
+            return EPUBNavItem(self.opf, self.element.getnext())
         
+        return None
+    
+    def previous_sibling(self):
+        if self.element.getprevious() is not None:
+            return EPUBNavItem(self.opf, self.element.getprevious()) 
+        
+        return None
+    
     def ancestors(self):
         """Iterates over our ancestors"""
         if self.parent is not None: # All top level nodes have no ancestors
@@ -121,6 +133,62 @@ class EPUBNavItem(object):
         if auto_save:
             #save the navigation document as it will be now
             self.opf.get_navigation().save()
+    
+    def move_vertical(self, increment, auto_save = True):
+        ol_parent = self.element.getparent()
+        current_pos = ol_parent.index(self.element)
+        new_pos = current_pos + increment
+        if new_pos >= 0 and new_pos < len(ol_parent):
+            ol_parent.remove(self.element)
+            ol_parent.insert(new_pos, self.element)
+            
+            if auto_save:
+                self.opf.get_navigation().save()
+            return True
+        
+        return False
+    
+    def up(self, auto_save = True):
+        return self.move_vertical(-1, auto_save)
+    
+    def down(self, auto_save = True):
+        return self.move_vertical(1, auto_save)
+    
+    @property
+    def index(self):
+        """Returns the index of this navitem at it's level (e.g. pos of li tag within ol tag)"""
+        return self.element.getparent().index(self.element)
+    
+    def promote(self, auto_save = True):
+        """Move this node up one level in the hierachy if possible"""
+        if self.parent is not None and self.parent.parent is not None:
+            current_ol_parent = self.element.getparent()
+            new_ol_parent = self.parent.element.getparent()
+            new_index = self.parent.index + 1
+            current_ol_parent.remove(self.element)
+            new_ol_parent.insert(new_index, self.element)
+            
+            if auto_save:
+                self.opf.get_navigation().save()
+                
+            return True
+            
+        return False
+    
+    def demote(self, auto_save = True):
+        previous_sibling = self.previous_sibling()
+        if previous_sibling is not None:
+            current_ol_parent = self.element.getparent()
+            new_ol_parent = previous_sibling.ol_element
+            if new_ol_parent is None:
+                new_ol_parent = etree.SubElement(previous_sibling.element, 
+                                                 "{%s}ol" % self.element.nsmap.get(None))
+            current_ol_parent.remove(self.element)
+            new_ol_parent.insert(0, self.element)
+            
+            if auto_save:
+                self.opf.get_navigation().save()
+            
     
     @property
     def ol_element(self):
