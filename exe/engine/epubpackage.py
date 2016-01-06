@@ -49,7 +49,7 @@ class EPUBPackage(object):
                 opf_path = os.path.join(self.resourceDir, container.full_path)
                 opf_str = open(opf_path, 'r').read()
                 self.opfs.append(EPUBOPF(opf_path, opf_str = opf_str, 
-                                         container_path = container.full_path)) 
+                                         container_path = container.full_path, package = self)) 
         
         
         # for now we handle one OPF in a package
@@ -57,6 +57,40 @@ class EPUBPackage(object):
         self.main_manifest = self.main_opf.manifest
         self.root = self.main_opf.get_navigation()
         self.currentNode = self.root
+        self.isChanged = False
+    
+    def save(self, filename=None, tempFile=False):
+        if filename:
+            filename = Path(filename)
+            # If we are being given a new filename...
+            # Change our name to match our new filename
+            name = filename.splitpath()[1]
+            if not tempFile:
+                self.name = name.basename().splitext()[0]
+        elif self.filename:
+            # Otherwise use our last saved/loaded from filename
+            filename = Path(self.filename)
+        else:
+            # If we don't have a last saved/loaded from filename,
+            # raise an exception because, we need to have a new
+            # file passed when a brand new package is saved
+            raise AssertionError(u'No name passed when saving a new package')
+        
+        if not tempFile:
+            # Update our new filename for future saves
+            self.filename = filename
+            filename.safeSave(self.doSave, _('SAVE FAILED!\nLast succesful save is %s.'))
+            self.isChanged = False
+            #self.updateRecentDocuments(filename)
+    
+    def doSave(self, file_obj):
+        zip_fd = zipfile.ZipFile(file_obj, "w", zipfile.ZIP_DEFLATED)
+        for root, dirs, files in os.walk(self.resourceDir):
+            for file in files:
+                file_path = os.path.join(root, file)
+                zip_fd.write(file_path, os.path.relpath(file_path, self.resourceDir)) 
+        
+        zip_fd.close()
         
     def findNode(self, node_id):
         return self.root.find_node(node_id)

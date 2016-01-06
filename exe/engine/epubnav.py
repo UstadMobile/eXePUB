@@ -129,6 +129,8 @@ class EPUBNavItem(object):
         if nav_el.find("{%s}a[@href='%s']" % (ns_default, my_href)) is None:
             #nothing points here anymore - should be removed
             self.opf.delete_item_by_href(my_href)
+        
+        self.opf.set_package_changed()
             
         if auto_save:
             #save the navigation document as it will be now
@@ -144,6 +146,7 @@ class EPUBNavItem(object):
             
             if auto_save:
                 self.opf.get_navigation().save()
+            self.opf.set_package_changed()
             return True
         
         return False
@@ -167,6 +170,7 @@ class EPUBNavItem(object):
             new_index = self.parent.index + 1
             current_ol_parent.remove(self.element)
             new_ol_parent.insert(new_index, self.element)
+            self.opf.set_package_changed()
             
             if auto_save:
                 self.opf.get_navigation().save()
@@ -185,6 +189,7 @@ class EPUBNavItem(object):
                                                  "{%s}ol" % self.element.nsmap.get(None))
             current_ol_parent.remove(self.element)
             new_ol_parent.insert(0, self.element)
+            self.opf.set_package_changed()
             
             if auto_save:
                 self.opf.get_navigation().save()
@@ -254,6 +259,7 @@ class EPUBNavItem(object):
                 self.opf.handle_item_renamed(old_href, new_filename)
                 title_el.set("href", new_filename)
         
+        self.opf.set_package_changed()
         if auto_save:
             self.opf.get_navigation().save()
     
@@ -311,10 +317,10 @@ class EPUBNavItem(object):
         
         if auto_save:
             self.opf.get_navigation().save()
-                
+        
+        self.opf.set_package_changed()
         return EPUBNavItem(self.opf, new_li_item)
     
-    #def delete(self):
             
     
 

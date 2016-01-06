@@ -20,7 +20,7 @@ class EPUBOPF(object):
     FIND_FILENAME_MAX_ATTEMPTS = 500
 
 
-    def __init__(self, href, opf_str = None, container_path = None):
+    def __init__(self, href, opf_str = None, container_path = None, package = None):
         '''
         Parameters
         ----------
@@ -43,12 +43,18 @@ class EPUBOPF(object):
         self.navigation_doc = None
         
         self.container_path = container_path
+        self.package = package
     
     def save(self):
         package_file = open(self.href, "w")
         package_file.write(etree.tostring(self.package_el, encoding = "UTF-8", pretty_print = True))
         package_file.flush()
         package_file.close()
+    
+    def set_package_changed(self, changed = True):
+        """Set the package changed flag""" 
+        if self.package is not None:
+            self.package.isChanged = changed
     
     @property
     def manifest(self):

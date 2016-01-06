@@ -342,7 +342,11 @@ class MainPage(RenderableLivePage):
             filename = self.package.filename
             assert filename, 'Somehow save was called without a filename on a package that has no default filename.'
         # Add the extension if its not already there and give message if not saved
-        filename = self.b4save(client, filename, '.elp', _(u'SAVE FAILED!'))
+        extension = ".elp"
+        if filename[-5:].lower() == '.epub':
+            extension = ".epub"
+        
+        filename = self.b4save(client, filename, extension, _(u'SAVE FAILED!'))
         try:
             self.package.save(filename)  # This can change the package name
         except Exception, e:
