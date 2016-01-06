@@ -6,7 +6,6 @@ Created on Dec 28, 2015
 
 from lxml import etree
 import os.path
-from exe.engine.epubnav import EPUBNavDocument
 
 class EPUBOPF(object):
     '''
@@ -84,6 +83,21 @@ class EPUBOPF(object):
         return new_item_el
         
     
+    def handle_item_renamed(self, old_href, new_href, auto_save = True):
+        """Handle when an item in the manifest has been renamed
+        """
+        item_el = self.package_el.find(".//{%s}item[@href='%s']" % (EPUBOPF.NAMESPACE_OPF, old_href))
+        itemrefs = self.package_el.find(".//{%s}itemref[@idref='%s']" % (EPUBOPF.NAMESPACE_OPF, item_el.get("id")))
+        item_el.set("href", new_href)
+        new_id = self.get_id_for_href(new_href)
+        item_el.set("id", new_id)
+        if itemrefs is not None:
+            for item in itemrefs:
+                item.set("idref", new_id)
+        
+        if auto_save:
+            self.save()
+    
     def delete_item_by_href(self, href, auto_save = True):
         """Delete an item from the manifest and removes the file from resourceDir"""
         item_el = self.package_el.find(".//{%s}item[@href='%s']" % (EPUBOPF.NAMESPACE_OPF, href))
@@ -107,6 +121,17 @@ class EPUBOPF(object):
         return href
         
     def find_free_filename(self, basename, extension):
+        """Find a free filename for the given basename and extension
+        if already taken generate a new value in the form of
+        basename_NUM.extension
+        Parameters
+        ----------
+        basename : string
+            The file basename to use e.g. "mypage"
+        extension : string
+            The end extension to use including . e.g. ".xhtml"
+        
+        """
         manifest_items = self.manifest
         
         suffix = ""
@@ -138,6 +163,7 @@ class EPUBOPF(object):
         
         nav_doc_path = os.path.join(os.path.dirname(self.href), nav_el.get("href"))
         nav_doc_str = open(nav_doc_path).read()
+        from exe.engine.epubnav import EPUBNavDocument
         self.navigation_doc = EPUBNavDocument(self, EPUBOPFItem(nav_el), nav_doc_str, 
                                               file_path = nav_doc_path)
         return self.navigation_doc

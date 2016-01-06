@@ -6,7 +6,7 @@ Created on Jan 1, 2016
 from lxml import etree
 import os.path
 from exe.engine.path    import Path
-from pygments.lexers import other
+from exe.engine.epubpackage import EPUBPackage
 
 class EPUBNavItem(object):
     
@@ -94,7 +94,7 @@ class EPUBNavItem(object):
         """Iterates over our ancestors"""
         if self.parent is not None: # All top level nodes have no ancestors
             node = self
-            while node is not None and node != self.package.root:
+            while node is not None and node != self.opf.get_navigation():
                 if not hasattr(node, 'parent'):
                     #log.warn("ancestor node has no parent")
                     node = None
@@ -107,6 +107,7 @@ class EPUBNavItem(object):
         return self in node.ancestors()   
     
     def delete(self, auto_save = True):
+        #TODO: Delete children recursively to ensure those files are removed 
         my_href = self.href
         self.parent.ol_element.remove(self.element)
         
@@ -137,25 +138,64 @@ class EPUBNavItem(object):
             
         return None
     
-    @property
-    def title(self):
+    def _get_title_el(self):
+        """There must be EITHER an a element or a span element (not  both)
+        """
+        title_el = self._get_child_by_tagname(self.element, "a")
+        if title_el is not None:
+            return title_el
+        title_el = self._get_child_by_tagname(self.element, "span")
+        return title_el
+         
+    
+    def get_title(self):
         """According to the EPUB Navigation document spec: the li_item
         must contain either a single a element or a single span element:
         the text content of which is the title
         """
-        if self.element is not None:
-            title_el = self._get_child_by_tagname(self.element, "a")
-            if title_el is not None:
-                return title_el.text
-            title_el = self._get_child_by_tagname(self.element, "span")
-            if title_el is not None:
-                return title_el.text
+        title_el = self._get_title_el()
+        if title_el is not None:
+            return title_el.text
         
         '''
         'We must be the navigation element which isn't nessasarily itself
          in the table of contents
          '''
         return ""
+    
+    def set_title(self, title, auto_save = True):
+        """Set the title : Find the right element and set the text
+        """
+        title_el = self._get_title_el()
+        old_title = title_el.text
+        if title == old_title:
+            #no change
+            return
+        
+        title_el.text = title
+        
+        if self.href is not None:
+            old_href = self.href
+            new_filename = self.opf.find_free_filename(EPUBPackage.sanitize_for_filename(title), ".xhtml")
+            dirname = os.path.dirname(self.opf.href)
+            current_path = os.path.join(dirname, self.href)
+            new_path = os.path.join(dirname, new_filename)
+            if new_path != current_path:
+                os.rename(current_path, new_path)
+                #now set the href link properly
+                self.opf.handle_item_renamed(old_href, new_filename)
+                title_el.set("href", new_filename)
+        
+        if auto_save:
+            self.opf.get_navigation().save()
+    
+            
+    
+    def RenamedNodePath(self):
+        """Here for compatibility with node.py - does nothing"""
+        pass
+    
+    title = property(get_title, set_title)
     
     @property     
     def href(self):
@@ -183,7 +223,7 @@ class EPUBNavItem(object):
                     
         return result
     
-    def createChild(self, template_path = None, title = "New Page"):
+    def createChild(self, template_path = None, title = "New Page", auto_save = True):
         new_html_filename = self.opf.find_free_filename(EPUBNavItem.DEFAULT_PAGENAME, ".xhtml")
         new_html_path = os.path.join(os.path.dirname(self.opf.href), new_html_filename)
         if template_path is None:
@@ -200,6 +240,9 @@ class EPUBNavItem(object):
         new_li_item = etree.SubElement(self.ol_element, "{%s}li" % namespace)
         a_el = etree.SubElement(new_li_item, "{%s}a" % namespace, href = new_html_filename)
         a_el.text = title
+        
+        if auto_save:
+            self.opf.get_navigation().save()
                 
         return EPUBNavItem(self.opf, new_li_item)
     

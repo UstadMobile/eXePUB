@@ -16,7 +16,7 @@ class EPUBPackage(object):
     classdocs
     '''
     
-    
+    FILENAME_RESERVED_CHARS = ['/','\\', '?', '%', '*', ':', '|', '"', '<', '>']
 
     @classmethod
     def load(cls, filename):
@@ -60,7 +60,24 @@ class EPUBPackage(object):
         
     def findNode(self, node_id):
         return self.root.find_node(node_id)
-
+    
+    @staticmethod
+    def sanitize_for_filename(name):
+        """Replace any prohibited characters with an underscore and hex
+        code : leaving the result unique and compliant with most file
+        systems"""
+        new_name = ""
+        for index in range(len(name)):
+            current_char = name[index:index+1]
+            if current_char in EPUBPackage.FILENAME_RESERVED_CHARS:
+                new_name += "_" + current_char.encode("hex")
+            elif current_char.isspace():
+                new_name += "_"
+            else:
+                new_name += current_char
+                
+        return new_name
+    
 class EPUBOCF(object):
     
     NAMESPACE_OCF = "urn:oasis:names:tc:opendocument:xmlns:container"
