@@ -289,7 +289,7 @@ class EPUBNavItem(object):
     @property
     def children(self):
         result = []
-        if self.ol_element:
+        if self.ol_element is not None:
             for child in self.ol_element:
                 #technically all children should be li
                 if child.tag[-2:] == "li":

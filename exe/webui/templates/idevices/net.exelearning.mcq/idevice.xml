@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<idevice xmlns="http://www.ustadmobile.com/ns/exelearning-idevice">
+    <id>net.exelearning.mcq</id>
+    <label>Multi Choice Question</label>
+    <category>Interactive</category>
+    <visible>true</visible>
+    
+    <system-resources>
+        <script>jqueryui.js</script>
+        <script>jquery.js</script>
+        <css>jquery.css</css>
+    </system-resources>
+    
+    <idevice-resources>
+        <script>myjavascript.js</script>
+    </idevice-resources>
+    
+</idevice>

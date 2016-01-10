@@ -17,16 +17,28 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # ===========================================================================
+
 """
 IdevicePane is responsible for creating the XHTML for iDevice links
 """
 
 import logging
 from exe.webui.renderable import Renderable
+from nevow import inevow
 from twisted.web.resource import Resource
 from exe.webui.livepage import allSessionClients
+from exe.engine.package import Package
+from exe.engine.epubpackage import EPUBPackage
+from exe                         import globals as G
 import locale
 import json
+import os
+import os.path
+import traceback
+import sys
+import json
+
+from lxml import etree
 
 log = logging.getLogger(__name__)
 
@@ -36,6 +48,9 @@ class IdevicePane(Renderable, Resource):
     IdevicePane is responsible for creating the XHTML for iDevice links
     """
     name = 'idevicePane'
+    
+    NAMESPACE_IDEVICE = "http://www.ustadmobile.com/ns/exelearning-idevice"
+    
 
     def __init__(self, parent):
         """ 
@@ -80,10 +95,13 @@ class IdevicePane(Renderable, Resource):
             request.args["action"][0] == "AddIdevice"):
 
             self.package.isChanged = True
-            prototype = self.prototypes.get(request.args["object"][0])
-            if prototype:
-                node = self.package.findNode(request.args["currentNode"][0])
-                node.addIdevice(prototype.clone())
+            if isinstance(self.package, EPUBPackage):
+                pass
+            else:
+                prototype = self.prototypes.get(request.args["object"][0])
+                if prototype:
+                    node = self.package.findNode(request.args["currentNode"][0])
+                    node.addIdevice(prototype.clone())
 
             
     def addIdevice(self, idevice):
@@ -109,11 +127,24 @@ class IdevicePane(Renderable, Resource):
         """
         Returns an xml string for load the client Idevices store
         """
-
+        
         # Now do the rendering
         log.debug("Render")
-
-        request.setHeader('content-type', 'application/xml')
+        
+        
+        if "action" in request.args and request.args["action"][0] == "AddIdeviceJS":
+            #add to the resource manager here and then return the generated id
+            new_id = self.package.main_opf.resource_manager.add_idevice_to_page(
+                       request.args['idevice_type'][0], request.args["page_id"][0])
+            return json.dumps({"idevice_id" : new_id}) 
+        elif isinstance(self.package, Package):
+            request.setHeader('content-type', 'application/xml')
+            return self.generate_python_idevices_list(request)
+        elif isinstance(self.package, EPUBPackage):
+            request.setHeader('content-type', 'application/xml')
+            return self.generate_html_idevices_list(request)
+    
+    def generate_python_idevices_list(self, request = None):
         xml = u'<?xml version="1.0" encoding="UTF-8"?>'
         xml += u"<!-- IDevice Pane Start -->\n"
         xml += u"<idevices>\n"
@@ -151,6 +182,41 @@ class IdevicePane(Renderable, Resource):
         xml += u"</idevices>\n"
         xml += u"<!-- IDevice Pane End -->\n"
         return xml.encode('utf8')
+    
+
+    
+    def generate_html_idevices_list(self, request=None):
+        common_idevice_dir = G.application.config.webDir/"templates"/"idevices"
+        user_idevice_dir = G.application.config.configDir/"idevices"
+        
+                
+        root_el = etree.Element("{%s}idevices" % IdevicePane.NAMESPACE_IDEVICE,
+                                nsmap = {None: IdevicePane.NAMESPACE_IDEVICE})
+        
+        
+        def list_idevice_dir(dir, root_el):
+            if not os.path.isdir(dir):
+                return
+            
+            dir_contents = os.listdir(dir)
+            
+            for name in dir_contents:
+                sub_path = os.path.join(dir, name)
+                if os.path.isdir(sub_path) and os.path.exists(sub_path/"idevice.xml"):
+                    try:
+                        idevice_el = etree.parse(sub_path/"idevice.xml").getroot()
+                        root_el.append(idevice_el)
+                    except:
+                        traceback.print_exc(file=sys.stdout)
+                        log.warn("Exception reading idevice xml: %s" % sub_path)
+            
+            
+        
+        list_idevice_dir(common_idevice_dir, root_el)
+        list_idevice_dir(user_idevice_dir, root_el)
+        
+        return etree.tostring(root_el,  encoding="UTF-8")
+        
 
     def render_POST(self, request=None):
         idevices = json.loads(request.args['idevices'][0])

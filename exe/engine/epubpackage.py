@@ -59,6 +59,10 @@ class EPUBPackage(object):
         self.currentNode = self.root
         self.isChanged = False
     
+    
+        
+        
+    
     def save(self, filename=None, tempFile=False):
         if filename:
             filename = Path(filename)

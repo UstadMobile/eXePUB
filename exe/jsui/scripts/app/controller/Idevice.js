@@ -36,6 +36,19 @@ Ext.define('eXe.controller.Idevice', {
             var outlineTreePanel = eXe.app.getController("Outline").getOutlineTreePanel(),
                 selected = outlineTreePanel.getSelectionModel().getSelection();
             authoring.submitLink("AddIdevice", record.data.id, 1, selected !== 0? selected[0].data.id : '0');
+        }else if(authoring && eXe.app.config.packageType == "EPUBPackage") {
+        	var outlineTreePanel = eXe.app.getController("Outline").getOutlineTreePanel(),
+            	selected = outlineTreePanel.getSelectionModel().getSelection();
+        	Ext.Ajax.request({
+        		url: location.pathname + "/idevicePane?action=AddIdeviceJS&page_id=" + 
+        			selected[0].data.id + "idevice_id=" + record.id,
+    			scope: this,
+    			success: function(response) {
+    				var jsonResp = Ext.JSON.decode(response.responseText);
+    				var newIdeviceId = jsonResp['idevice_id'];
+    				alert("Add new idevice: " + newIdeviceId);
+    			}
+        	})
         }
     },
     

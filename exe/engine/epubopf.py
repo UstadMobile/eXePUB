@@ -6,6 +6,7 @@ Created on Dec 28, 2015
 
 from lxml import etree
 import os.path
+from exe.engine.epubresourcemanager import EPUBResourceManager
 
 class EPUBOPF(object):
     '''
@@ -44,6 +45,7 @@ class EPUBOPF(object):
         
         self.container_path = container_path
         self.package = package
+        self.resource_manager = EPUBResourceManager(self.package, self)
     
     def save(self):
         package_file = open(self.href, "w")

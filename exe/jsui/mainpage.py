@@ -224,15 +224,21 @@ class MainPage(RenderableLivePage):
             self.webServer.monitor()
 
     def render_config(self, ctx, data):
+        authoring_src = None
+        if len(self.package.name) > 4 and self.package.name[-5:] == ".epub":
+            authoring_src = ""
+        else:
+            authoring_src = '%s/authoring?clientHandleId=%s' % (self.package.name, IClientHandle(ctx).handleId)
         config = {'lastDir': G.application.config.lastDir,
                   'locationButtons': self.location_buttons.buttons,
                   'lang': G.application.config.locale.split('_')[0],
                   'showPreferences': G.application.config.showPreferencesOnStart == '1' and not G.application.preferencesShowed,
                   'loadErrors': G.application.loadErrors,
                   'showIdevicesGrouped': G.application.config.showIdevicesGrouped == '1',
-                  'authoringIFrameSrc': '%s/authoring?clientHandleId=%s' % (self.package.name, IClientHandle(ctx).handleId),
+                  'authoringIFrameSrc': authoring_src,
                   'pathSep': os.path.sep,
-                  'theme' : G.application.config.theme
+                  'theme' : G.application.config.theme,
+                  'packageType' : self.package.__class__.__name__
                  }
         G.application.preferencesShowed = True
         G.application.loadErrors = []
