@@ -135,7 +135,7 @@ class IdevicePane(Renderable, Resource):
         if "action" in request.args and request.args["action"][0] == "AddIdeviceJS":
             #add to the resource manager here and then return the generated id
             new_id = self.package.main_opf.resource_manager.add_idevice_to_page(
-                       request.args['idevice_type'][0], request.args["page_id"][0])
+                       request.args['idevice_id'][0], request.args["page_id"][0])
             return json.dumps({"idevice_id" : new_id}) 
         elif isinstance(self.package, Package):
             request.setHeader('content-type', 'application/xml')

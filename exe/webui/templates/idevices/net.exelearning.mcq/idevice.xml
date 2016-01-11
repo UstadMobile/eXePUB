@@ -6,14 +6,15 @@
     <category>Interactive</category>
     <visible>true</visible>
     
+    <!--Map to exe-files/common -->
     <system-resources>
-        <script>jqueryui.js</script>
-        <script>jquery.js</script>
-        <css>jquery.css</css>
+        <script>jquery-ui-1.10.3.custom.min.js</script>
+        <css>test-common-file.css</css>
     </system-resources>
     
+    <!-- Map to exe-files/idevices/ideviceid -->
     <idevice-resources>
-        <script>myjavascript.js</script>
+        <script>mcq-idevice.js</script>
     </idevice-resources>
     
 </idevice>

@@ -41,12 +41,12 @@ Ext.define('eXe.controller.Idevice', {
             	selected = outlineTreePanel.getSelectionModel().getSelection();
         	Ext.Ajax.request({
         		url: location.pathname + "/idevicePane?action=AddIdeviceJS&page_id=" + 
-        			selected[0].data.id + "idevice_id=" + record.id,
+        			selected[0].data.id + "&idevice_id=" + record.id,
     			scope: this,
     			success: function(response) {
     				var jsonResp = Ext.JSON.decode(response.responseText);
     				var newIdeviceId = jsonResp['idevice_id'];
-    				alert("Add new idevice: " + newIdeviceId);
+    				authoring.eXeEpubAuthoring.addIdevice(record.id, newIdeviceId);
     			}
         	})
         }

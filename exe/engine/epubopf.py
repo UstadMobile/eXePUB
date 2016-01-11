@@ -6,7 +6,9 @@ Created on Dec 28, 2015
 
 from lxml import etree
 import os.path
+import shutil
 from exe.engine.epubresourcemanager import EPUBResourceManager
+import mimetypes
 
 class EPUBOPF(object):
     '''
@@ -89,7 +91,16 @@ class EPUBOPF(object):
             self.save()
         
         return new_item_el
+    
+    def add_file(self, src_file, path_in_package, media_type = None, auto_save = True):
+        """Adds an external file to the manifest in the given location"""
+        dst_dir = os.path.join(os.path.dirname(self.href), os.path.dirname(path_in_package))
+        if not os.path.isdir(dst_dir):
+            os.makedirs(dst_dir)
         
+        shutil.copy2(src_file, os.path.join(os.path.dirname(self.href), path_in_package))
+        self.add_item_to_manifest(self.get_id_for_href(path_in_package), 
+                                  mimetypes.guess_type(path_in_package)[0], path_in_package)
     
     def handle_item_renamed(self, old_href, new_href, auto_save = True):
         """Handle when an item in the manifest has been renamed
@@ -182,7 +193,10 @@ class EPUBOPF(object):
                 return item
             
         return None
-                
+       
+    def contains_href(self, href):
+        href_el = self.package_el.find(".//{%s}item[@href='%s']" % (EPUBOPF.NAMESPACE_OPF, href))
+        return href_el is not None     
     
 
 class EPUBOPFItem(object):

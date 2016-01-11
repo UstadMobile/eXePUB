@@ -67,6 +67,11 @@ Ext.define('eXe.controller.Outline', {
             },
             '#outline_down_node': {
                 click: { fn: this.processNodeEvent, action: 'DownNode' }
+            },
+            '#authoring': {
+            	load: {
+            		fn : this.processAuthoringPageLoad
+            	}
             }
         });
         
@@ -261,6 +266,19 @@ Ext.define('eXe.controller.Outline', {
     			}).bind(this), 500);
     		}
         }
+    },
+    
+    processAuthoringPageLoad: function(evt) {
+    	if(eXe.app.isEPUBFormat()) {
+    		var authoringDoc = Ext.ComponentQuery.query('#authoring')[0].getDoc();
+    		var scriptEl = authoringDoc.createElement("script");
+    		scriptEl.setAttribute("src", "/scripts/epub_authoring.js");
+    		scriptEl.setAttribute("type", "text/javascript");
+    		authoringDoc.getElementsByTagName("head")[0].appendChild(scriptEl);
+    		
+    		//authoringDoc.getElementsByTagName("head")[0].innerHTML += 
+    		//	"<script src='/scripts/epub_authoring.js' type='text/javascript'></script>"
+    	}
     },
     
     //called from exe.jsui.outlinepane.OutlinePane.handleSetTreeSelection

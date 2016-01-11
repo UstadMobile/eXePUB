@@ -269,6 +269,17 @@ Ext.onReady(function() {
 		        authoring.submitLink("changeNode", selected !== 0? selected[0].data.id : '0');
 	        }
 	    },
+	    
+	    /**
+	     * 
+	     */
+	    isEPUBFormat: function() {
+	    	return eXe.app.config.packageType === "EPUBPackage";
+	    },
+	    
+	    isELPFormat: function() {
+	    	return eXe.app.config.packageType !== "EPUBPackage";
+	    },
 
 	    gotoUrl: function(location) {
 	        eXe.app.quitWarningEnabled = false;
