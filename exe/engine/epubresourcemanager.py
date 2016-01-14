@@ -85,6 +85,8 @@ class EPUBResourceManager(object):
         required_files = self.get_idevice_required_files(idevice_el)
         self.add_required_files_to_package(required_files)
         
+        self.update_page(page_id)
+        
         if auto_save:
             self.save()
         
@@ -120,9 +122,8 @@ class EPUBResourceManager(object):
                     
         return required_files
     
-    def get_idevice_required_files(self, idevice_el, res_types = ["css", "script", "res"]):
+    def get_idevice_required_files(self, idevice_el, res_types = ["css", "script", "res"], required_files = []):
         """Return a list of the files required for this idevice: optionally filtered by file type"""
-        required_files = []
         
         system_resources_el = idevice_el.find("./{%s}system-resources" % EPUBResourceManager.NS_IDEVICE)
         if system_resources_el is not None:
@@ -166,8 +167,62 @@ class EPUBResourceManager(object):
         root_el = etree.parse(idevice_dir/"idevice.xml").getroot()
         return (idevice_dir, root_el)
     
-    def add_resources_for_idevice(self):
-        pass
+    
+    def update_page(self, page_id):
+        """Regenerate script and link elements as they are required for the idevices on the page"""
+        
+        #find the page itself
+        opf_item = self.opf.get_item_by_id(page_id)
+        page_path = os.path.join(os.path.dirname(self.opf.href), opf_item.href)
+        
+        #According to the epub spec: contents MUST be XHTML not just HTML
+        page_content_el = etree.parse(page_path).getroot()
+        
+        #find idevices in this page
+        page_resources_el = self.root_el.find(".//{%s}itemref[@idref='%s']" % (EPUBResourceManager.NS_EXERES, page_id))
+        
+        #TODO: Ha
+        page_idevice_els = page_resources_el.findall("./{%s}idevice" % EPUBResourceManager.NS_EXERES)
+        
+        required_css = []
+        required_js = []
+        for idevice in page_idevice_els:
+            idevice_type = idevice.get("type")
+            idevice_def_el = self.get_idevice_el(idevice_type)[1]
+            
+            self.get_idevice_required_files(idevice_def_el, res_types=["css"], required_files = required_css)
+            self.get_idevice_required_files(idevice_def_el, res_types=["script"], required_files = required_js)
+        
+        
+        #now build the resource list, remove any existing generated script and  link elements, add ones we need
+        ns_xhtml = page_content_el.nsmap.get(None)
+        page_head_el = page_content_el.find("./{%s}head" % ns_xhtml)
+        for auto_item in page_head_el.findall(".//{%s}*[@data-exeres='true']" % ns_xhtml):
+            auto_item.getparent().remove(auto_item)
+        
+        for css_file in required_css:
+            link_el = etree.SubElement(page_head_el, "{%s}link" % ns_xhtml)
+            link_el.set("rel", "stylesheet")
+            link_el.set("type", "text/css")
+            link_el.set("href", css_file)
+            link_el.set("data-exeres", "true")
+        
+        for js_script in required_js:
+            script_el = etree.SubElement(page_head_el, "{%s}script" % ns_xhtml)
+            script_el.set("src", js_script)
+            script_el.set("type", "text/javascript")
+            script_el.set("data-exeres", "true")
+            script_el.text = "\n"
+            
+        updated_src = etree.tostring(page_content_el, encoding="UTF-8", pretty_print = True)
+        
+        page_fd = open(page_path, "w")
+        page_fd.write(updated_src)
+        page_fd.flush()
+        page_fd.close()
+        
+        #generated_elements = (".//")
+        x = 42 
         
     
     def save(self):

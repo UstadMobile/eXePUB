@@ -193,6 +193,13 @@ class EPUBOPF(object):
                 return item
             
         return None
+    
+    def get_item_by_id(self, id):
+        for item_id, item in self.manifest.iteritems():
+            if item_id == id:
+                return item
+            
+        return None
        
     def contains_href(self, href):
         href_el = self.package_el.find(".//{%s}item[@href='%s']" % (EPUBOPF.NAMESPACE_OPF, href))
