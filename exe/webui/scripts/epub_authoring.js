@@ -23,7 +23,22 @@ var eXeEpubAuthoring = (function() {
 		return resourcesArr;
 	};
 	
+	var createNewIdeviceElement = function(id, ideviceType) {
+		
+	};
+	
+	var _ideviceContainer = null;
+	
 	return {
+		
+		/** 
+		 * Each page is designed (for now) to have one idevice 
+		 * container: these are the selectors that will be used
+		 * in order to find that container
+		 */
+		IDEVICE_CONTAINER_SELECTORS: ["[data-role*='idevicecontainer']", 
+		                              "[role*='main']", "#main"],
+		
 		addIdevice: function(ideviceType, ideviceId) {
 			//load required scripts if not already loaded
 			this.addIdeviceXHTTP = new XMLHttpRequest();
@@ -44,7 +59,20 @@ var eXeEpubAuthoring = (function() {
 					var numResources = resourcesArr.length;
 					if(resourcesArr && resourcesArr.length) {
 						eXeEpubAuthoring.loadResources(resourcesArr, function() {
-							//TODO: Create the idevice dom node
+							var ideviceContainer = eXeEpubAuthoring.getIdeviceContainer();
+							var ideviceEl = document.createElement("div");
+							var ideviceCssClass = ideviceXML.getElementsByTagName("cssclass")[0].textContent;
+							ideviceEl.setAttribute("class", "Idevice " + ideviceCssClass);
+							ideviceEl.setAttribute("id", "id" + ideviceId);
+							ideviceContainer.appendChild(ideviceEl);
+							var creationEvent = new CustomEvent("idevicecreate", {
+								detail: {
+									ideviceType: ideviceType,
+									ideviceId: ideviceId
+								},
+								bubbles: true
+							});
+							ideviceEl.dispatchEvent(creationEvent);
 						});
 					}
 				}
@@ -95,7 +123,29 @@ var eXeEpubAuthoring = (function() {
 			}
 			
 			loadScriptFn();
-		}
+		},
+		
+		/**
+		 * Find the element that is to be used as the container of idevices: this is where idevices 
+		 * will be appended to.
+		 */
+		getIdeviceContainer: function() {
+			if(_ideviceContainer) {
+				return _ideviceContainer;
+			}
+			
+			var result;
+			for(var i = 0; i < eXeEpubAuthoring.IDEVICE_CONTAINER_SELECTORS.length; i++) {
+				result = document.querySelector(eXeEpubAuthoring.IDEVICE_CONTAINER_SELECTORS[i]);
+				if(result) {
+					_ideviceContainer = result;
+					break;
+				}
+			}
+			
+			return _ideviceContainer;
+		},
+		
 	};
 })();
 
