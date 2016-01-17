@@ -89,7 +89,7 @@ var eXeEpubTinyMce = (function() {
 	};
 })();
 
-
+/*
 var eXeTinyMceDefaults = {
 	// General options
 	selector: "div.mceEditor",	
@@ -116,6 +116,7 @@ var eXeTinyMceDefaults = {
 	link_list: tinymceLinkListURL,
 	link_list_label: "Link to page"
 };
+*/
 
 /*
 $(function() {

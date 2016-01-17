@@ -2,6 +2,92 @@
  * Handles authoring mode
  */
 
+/**
+ * Class representing an editable idevice
+ */
+var eXeEpubIdevice = function(ideviceId) {
+	this.ideviceId = ideviceId;
+	this.editActive = false;
+};
+
+eXeEpubIdevice.prototype = {
+		
+	initToolbar: function() {
+		var ideviceEl = this._getIdeviceEl();
+		var toolbarEl = document.createElement("div");
+		toolbarEl.setAttribute("class", "epub-idevice-toolbar");
+		
+		var editButton = document.createElement("img");
+		editButton.setAttribute("class", "exe-epub-button-editidevice");
+		editButton.setAttribute("src", "/images/edit.gif");
+		editButton.addEventListener("click",  this.toggleEdit.bind(this), 
+				false);
+		toolbarEl.appendChild(editButton);
+		
+		var deleteButton = document.createElement("img");
+		deleteButton.setAttribute("src", "/images/stock-delete.png");
+		deleteButton.addEventListener("click", this.handleClickDelete.bind(this),
+				false);
+		
+		toolbarEl.appendChild(deleteButton);
+		toolbarEl.setAttribute("id", "exe_epub_toolbar_" + this.ideviceId);
+		
+		ideviceEl.parentNode.insertBefore(toolbarEl, ideviceEl.nextSibling);
+		ideviceEl.setAttribute('data-idevice-editing', 'off');
+	},
+	
+	_getIdeviceEl: function() {
+		return document.getElementById("id" + this.ideviceId);
+	},
+	
+	_getIdeviceType: function() {
+		return this._getIdeviceEl().getAttribute("data-idevice-type");
+	},
+	
+	_getToolbarEl: function() {
+		return document.getElementById("exe_epub_toolbar_" + this.ideviceId);
+	},
+	
+	toggleEdit: function() {
+		var ideviceEl = this._getIdeviceEl();
+		var editingState = ideviceEl.getAttribute("data-idevice-editing");
+		
+		var evtName;
+		var imageSrc;
+		var newEditState;
+		
+		if(editingState === "on") {
+			evtName = "ideviceeditoff";
+			imageSrc = "/images/edit.gif";
+			newEditState = "off";
+		}else {
+			evtName = "ideviceediton";
+			imageSrc = "/images/stock-apply.png";
+			newEditState = "on";
+		}
+		
+		var editEvent = new CustomEvent(evtName, {
+			detail: {
+				ideviceType: this._getIdeviceType(),
+				ideviceId: this.ideviceId
+			},
+			bubbles: true
+		});
+		
+		ideviceEl.dispatchEvent(editEvent);
+		ideviceEl.setAttribute("data-idevice-editing", newEditState);
+		
+		//edit img is the first child of the toolbar...
+		this._getToolbarEl().childNodes[0].src = imageSrc;
+	},
+	
+	handleClickDelete: function() {
+		
+	}
+	
+};
+
+
 var eXeEpubAuthoring = (function() {
 	
 	//"private" methods
@@ -24,6 +110,8 @@ var eXeEpubAuthoring = (function() {
 	};
 	
 	var _ideviceContainer = null;
+	
+	var _editableIdevices = {};
 	
 	return {
 		
@@ -62,7 +150,12 @@ var eXeEpubAuthoring = (function() {
 							var ideviceCssClass = ideviceXML.getElementsByTagName("cssclass")[0].textContent;
 							ideviceEl.setAttribute("class", "Idevice " + ideviceCssClass);
 							ideviceEl.setAttribute("id", "id" + ideviceId);
+							ideviceEl.setAttribute("data-idevice-type", ideviceType);
 							ideviceContainer.appendChild(ideviceEl);
+							
+							_editableIdevices[ideviceId] = new eXeEpubIdevice(ideviceId);
+							_editableIdevices[ideviceId].initToolbar();
+							
 							var creationEvent = new CustomEvent("idevicecreate", {
 								detail: {
 									ideviceType: ideviceType,
@@ -79,7 +172,7 @@ var eXeEpubAuthoring = (function() {
 					"/idevice.xml");
 			this.addIdeviceXHTTP.send();
 		},
-	
+		
 		/**
 		 * Load a CSS or Javascript resource if it is not yet already loaded 
 		 * 
