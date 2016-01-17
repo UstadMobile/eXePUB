@@ -18,11 +18,27 @@ class EPUBPackage(object):
     
     FILENAME_RESERVED_CHARS = ['/','\\', '?', '%', '*', ':', '|', '"', '<', '>']
 
+    IDEVICE_CONTAINER_FINDERS = [".//{%s}*[@data-role='idevicecontainer']",
+                                 ".//{%s}*[@role='main']", 
+                                 ".//{%s}*[@id='main']" ] 
+
     @classmethod
     def load(cls, filename):
         epub_handle = EPUBPackage(filename = filename)
         
         return epub_handle
+    
+    @classmethod
+    def get_idevice_container_el(self, page_el):
+        """Given the page element: find the element that contains idevices"""
+        result = None
+        ns_xhtml = page_el.nsmap.get(None)
+        for finder in EPUBPackage.IDEVICE_CONTAINER_FINDERS:
+            result = page_el.find(finder % ns_xhtml)
+            if result is not None:
+                break
+        
+        return result
 
 
     def __init__(self, filename = None, name = None):

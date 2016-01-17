@@ -42,6 +42,7 @@ from exe.jsui.recentmenu         import RecentMenu
 from exe.jsui.stylemenu          import StyleMenu
 from exe.jsui.propertiespage     import PropertiesPage
 from exe.webui.authoringpage     import AuthoringPage
+from exe.webui.authoringpageepub import AuthoringPageEPUB
 from exe.webui.stylemanagerpage  import StyleManagerPage
 from exe.webui.renderable        import File
 from exe.export.websiteexport    import WebsiteExport
@@ -115,6 +116,13 @@ class MainPage(RenderableLivePage):
         Returns the authoring page that corresponds to
         the url http://127.0.0.1:port/package_name/authoring
         """
+        
+        if isinstance(self.package, EPUBPackage):
+            if self.authoringPage is None:
+                self.authoringPage = AuthoringPageEPUB(self)
+            
+            return self.authoringPage    
+        
         request = inevow.IRequest(ctx)
         if 'clientHandleId' in request.args:
             clientid = request.args['clientHandleId'][0]

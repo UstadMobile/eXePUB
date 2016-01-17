@@ -6,6 +6,7 @@ Created on Jan 8, 2016
 from lxml import etree
 import os.path
 import os
+
 from exe                         import globals as G
 
 class EPUBResourceManager(object):
@@ -85,7 +86,11 @@ class EPUBResourceManager(object):
         required_files = self.get_idevice_required_files(idevice_el)
         self.add_required_files_to_package(required_files)
         
-        self.update_page(page_id)
+        idevice_css_class = idevice_el.find(".//{%s}cssclass" % EPUBResourceManager.NS_IDEVICE).text
+        self.update_page(page_id, new_idevice_id = pg_idevice_id, 
+                         new_idevice_cssclass="Idevice %s" % idevice_css_class)
+        
+        
         
         if auto_save:
             self.save()
@@ -168,15 +173,18 @@ class EPUBResourceManager(object):
         return (idevice_dir, root_el)
     
     
-    def update_page(self, page_id):
-        """Regenerate script and link elements as they are required for the idevices on the page"""
-        
-        #find the page itself
+    def _get_page_path(self, page_id):
+        """Returns the file system path to the given page id"""
         opf_item = self.opf.get_item_by_id(page_id)
         page_path = os.path.join(os.path.dirname(self.opf.href), opf_item.href)
+        return page_path
+    
+    def update_page(self, page_id, new_idevice_id = None, new_idevice_cssclass = None):
+        """Regenerate script and link elements as they are required for the idevices on the page"""
+        page_path = self._get_page_path(page_id)
         
         #According to the epub spec: contents MUST be XHTML not just HTML
-        page_content_el = etree.parse(page_path).getroot()
+        page_html_el = etree.parse(page_path).getroot()
         
         #find idevices in this page
         page_resources_el = self.root_el.find(".//{%s}itemref[@idref='%s']" % (EPUBResourceManager.NS_EXERES, page_id))
@@ -195,8 +203,8 @@ class EPUBResourceManager(object):
         
         
         #now build the resource list, remove any existing generated script and  link elements, add ones we need
-        ns_xhtml = page_content_el.nsmap.get(None)
-        page_head_el = page_content_el.find("./{%s}head" % ns_xhtml)
+        ns_xhtml = page_html_el.nsmap.get(None)
+        page_head_el = page_html_el.find("./{%s}head" % ns_xhtml)
         for auto_item in page_head_el.findall(".//{%s}*[@data-exeres='true']" % ns_xhtml):
             auto_item.getparent().remove(auto_item)
         
@@ -214,16 +222,23 @@ class EPUBResourceManager(object):
             script_el.set("data-exeres", "true")
             script_el.text = "\n"
             
-        updated_src = etree.tostring(page_content_el, encoding="UTF-8", pretty_print = True)
+        
+        #check and see if we need to add the div dom element for the new idevice
+        if new_idevice_id is not None:
+            from exe.engine.epubpackage import EPUBPackage
+            idevice_container_el = EPUBPackage.get_idevice_container_el(page_html_el)
+            idevice_div_el = etree.SubElement(idevice_container_el, "{%s}div" % ns_xhtml)
+            idevice_div_el.set("id", "id%s" % new_idevice_id)
+            idevice_div_el.set("class", new_idevice_cssclass)
+            idevice_div_el.text = " "
+            
+        updated_src = etree.tostring(page_html_el, encoding="UTF-8", pretty_print = True)
         
         page_fd = open(page_path, "w")
         page_fd.write(updated_src)
         page_fd.flush()
         page_fd.close()
-        
-        #generated_elements = (".//")
-        x = 42 
-        
+                
     
     def save(self):
         fd = open(self._xml_file_path, "w")

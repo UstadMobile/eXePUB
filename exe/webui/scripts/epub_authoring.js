@@ -23,10 +23,6 @@ var eXeEpubAuthoring = (function() {
 		return resourcesArr;
 	};
 	
-	var createNewIdeviceElement = function(id, ideviceType) {
-		
-	};
-	
 	var _ideviceContainer = null;
 	
 	return {
@@ -35,6 +31,8 @@ var eXeEpubAuthoring = (function() {
 		 * Each page is designed (for now) to have one idevice 
 		 * container: these are the selectors that will be used
 		 * in order to find that container
+		 * 
+		 * If changed: see also epubpackage.py get_idevice_container_el
 		 */
 		IDEVICE_CONTAINER_SELECTORS: ["[data-role*='idevicecontainer']", 
 		                              "[role*='main']", "#main"],
