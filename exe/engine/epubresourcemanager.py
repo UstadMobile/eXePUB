@@ -105,13 +105,13 @@ class EPUBResourceManager(object):
             if not self.opf.contains_href(file):
                 if file[:len(EPUBResourceManager.PREFIX_COMMON_FILES)] == EPUBResourceManager.PREFIX_COMMON_FILES:
                     rel_path = file[len(EPUBResourceManager.PREFIX_COMMON_FILES)+1:]
-                    src_path = G.application.config.webDir/"templates"/rel_path
+                    src_path = os.path.join(G.application.config.webDir, "templates", rel_path)
                 elif file[:len(EPUBResourceManager.PREFIX_IDEVICE_FILES)] == EPUBResourceManager.PREFIX_IDEVICE_FILES:
                     idevice_trimmed = file[len(EPUBResourceManager.PREFIX_IDEVICE_FILES)+1:]
-                    sep_index = idevice_trimmed.index("/")
+                    sep_index = idevice_trimmed.index('/')
                     idevice_type = idevice_trimmed[:sep_index]
                     rel_path = idevice_trimmed[sep_index+1:]
-                    src_path = self.find_idevice_dir(idevice_type)/rel_path
+                    src_path = os.path.join(self.find_idevice_dir(idevice_type), rel_path)
                     
                 self.opf.add_file(src_path, file)
             
@@ -122,7 +122,7 @@ class EPUBResourceManager(object):
             res_type_files = resources_el.findall("./{%s}%s" % (EPUBResourceManager.NS_IDEVICE, res_type))
             if res_type_files is not None:
                 for res_file in res_type_files:
-                    filename = os.path.join(prefix, res_file.text)
+                    filename = "%s/%s" % (prefix, res_file.text)
                     if filename not in required_files:
                         required_files.append(filename)
                     

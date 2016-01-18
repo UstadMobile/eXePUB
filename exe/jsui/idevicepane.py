@@ -202,9 +202,10 @@ class IdevicePane(Renderable, Resource):
             
             for name in dir_contents:
                 sub_path = os.path.join(dir, name)
-                if os.path.isdir(sub_path) and os.path.exists(sub_path/"idevice.xml"):
+                idevice_xml_path = os.path.join(sub_path, "idevice.xml")
+                if os.path.isdir(sub_path) and os.path.exists(idevice_xml_path):
                     try:
-                        idevice_el = etree.parse(sub_path/"idevice.xml").getroot()
+                        idevice_el = etree.parse(idevice_xml_path).getroot()
                         root_el.append(idevice_el)
                     except:
                         traceback.print_exc(file=sys.stdout)
