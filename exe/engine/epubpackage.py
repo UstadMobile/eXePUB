@@ -132,6 +132,7 @@ class EPUBPackage(object):
                 
         return new_name
     
+    
 class EPUBOCF(object):
     
     NAMESPACE_OCF = "urn:oasis:names:tc:opendocument:xmlns:container"

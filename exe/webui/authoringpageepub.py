@@ -10,6 +10,7 @@ from exe.webui.renderable    import RenderableResource
 from exe                     import globals as G
 from twisted.web.resource    import Resource
 
+
 log = logging.getLogger(__name__)
 
 
@@ -26,7 +27,14 @@ class AuthoringPageEPUB(RenderableResource):
         '''
         Constructor
         '''
-        
+    
+    def render_POST(self, request=None):
+        response = {}
+        if "action" in request.args:
+            if request.args['action'][0] == "saveidevicehtml":
+                page_id = request.args['page_id'][0]
+                self.package.main_opf.set_page_idevice_html(page_id,
+                        request.args['idevice_id'][0], request.args['html'][0])
      
     def render_GET(self, request=None):
         if request is not None:

@@ -204,6 +204,39 @@ class EPUBOPF(object):
     def contains_href(self, href):
         href_el = self.package_el.find(".//{%s}item[@href='%s']" % (EPUBOPF.NAMESPACE_OPF, href))
         return href_el is not None     
+        
+    def _get_item_path(self, item_id):
+        """Return the location on the filesystem of the given item id"""
+        item = self.get_item_by_id(item_id)
+        if item is not None:
+            return os.path.join(os.path.dirname(self.href), item.href)
+        else:
+            return None
+        
+    def set_page_idevice_html(self, page_id, idevice_id, html):
+        """Save the actual HTML content of the idevice"""
+        page_path = self._get_item_path(page_id)
+        page_html_el = etree.parse(page_path).getroot()
+        ns_xhtml = page_html_el.nsmap.get(None)
+        idevice_el = page_html_el.find('.//{%s}*[@id="id%s"]' % (ns_xhtml, idevice_id))
+        
+        #empty the eleement as it is now
+        for child in idevice_el:
+            idevice_el.remove(child)
+        
+        #pack it into a single element so it parses OK
+        html = "<div xmlns=\"%s\">%s</div>" % (ns_xhtml, html)
+        new_el = etree.fromstring(html)
+        for el in new_el:
+            idevice_el.append(el)
+        
+        
+        page_fd = open(page_path, "w")
+        page_fd.write(etree.tostring(page_html_el, encoding = "UTF-8", pretty_print = True))
+        page_fd.flush()
+        page_fd.close()
+        
+         
     
 
 class EPUBOPFItem(object):

@@ -36,6 +36,7 @@ eXeEpubIdevice.prototype = {
 		ideviceEl.setAttribute('data-idevice-editing', 'off');
 	},
 	
+	
 	_getIdeviceEl: function() {
 		return document.getElementById("id" + this.ideviceId);
 	},
@@ -125,6 +126,33 @@ var eXeEpubAuthoring = (function() {
 		IDEVICE_CONTAINER_SELECTORS: ["[data-role*='idevicecontainer']", 
 		                              "[role*='main']", "#main"],
 		
+        getQueryVars: function(queryStr) {
+            var locationQuery = window.location.search.substring.length >= 1 ?
+                window.location.search.substring(1) : "";
+            var query = (typeof queryStr !== "undefined") ? queryStr : 
+                locationQuery;
+            
+            var retVal = {};
+            if(window.location.search.length > 2) {
+                var vars = query.split("&");
+                for (var i=0;i<vars.length;i++) {
+                    var pair = vars[i].split("=");
+                    retVal[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
+                }
+            }
+            return retVal;
+        },
+        
+        init: function() {
+        	var pageIdevices = document.querySelectorAll(".Idevice");
+        	for(var i = 0; i < pageIdevices.length; i++) {
+        		//all id attrs are idX where X is the actual id
+        		var ideviceId = pageIdevices[i].getAttribute("id").substring(2);
+        		_editableIdevices[ideviceId] = new eXeEpubIdevice(ideviceId);
+        		_editableIdevices[ideviceId].initToolbar();
+        	}
+        },
+		                              
 		addIdevice: function(ideviceType, ideviceId) {
 			//load required scripts if not already loaded
 			this.addIdeviceXHTTP = new XMLHttpRequest();
@@ -237,7 +265,29 @@ var eXeEpubAuthoring = (function() {
 			return _ideviceContainer;
 		},
 		
+		saveIdeviceHTML: function(ideviceId, html, callback) {
+			//var saveURL = document.location.
+			var queryVars = eXeEpubAuthoring.getQueryVars();
+			var pageID = queryVars['exe-page-id'];
+			
+			var xmlHTTP = new XMLHttpRequest();
+			xmlHTTP.onreadystatechange = function() {
+				//for now - do nothing
+			};
+			
+			//wrap innerHTML in a single element so it can be unwrapped by lxml
+			xmlHTTP.open("POST", queryVars["exe-authoring-save-to"], true);
+			xmlHTTP.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+			xmlHTTP.send("action=saveidevicehtml&" +
+					"page_id=" + encodeURIComponent(pageID) + 
+					"&idevice_id=" + encodeURIComponent(ideviceId) +
+					"&html=" + encodeURIComponent(html));
+		}
+		
 	};
 })();
+
+//for now run init immediately: this script is dynamically loaded after the page itself loads
+eXeEpubAuthoring.init();
 
 

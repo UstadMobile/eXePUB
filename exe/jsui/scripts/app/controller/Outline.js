@@ -257,7 +257,12 @@ Ext.define('eXe.controller.Outline', {
     		var store = this.getOutlineXmlTreeStoreStore();
     		var node = store.getNodeById(nodeid);
     		if(node && node.data.epubhref) {
+    			var authoringHREF = document.location.href + "/authoring";
     			var epubPageHREF = document.location.href + "/resources/" + node.data.epubhref;
+    			epubPageHREF += "?exe-authoring-mode=true&exe-page-id=" + 
+    				encodeURIComponent(node.id) + "&exe-authoring-save-to=" +
+    				encodeURIComponent(authoringHREF);
+    				
     			Ext.ComponentQuery.query('#authoring')[0].getDoc().location.href = epubPageHREF;
     		}else if(!node && store.isLoading()) {
     			//this is a node just added; wait for the store to load
@@ -275,9 +280,6 @@ Ext.define('eXe.controller.Outline', {
     		scriptEl.setAttribute("src", "/scripts/epub_authoring.js");
     		scriptEl.setAttribute("type", "text/javascript");
     		authoringDoc.getElementsByTagName("head")[0].appendChild(scriptEl);
-    		
-    		//authoringDoc.getElementsByTagName("head")[0].innerHTML += 
-    		//	"<script src='/scripts/epub_authoring.js' type='text/javascript'></script>"
     	}
     },
     

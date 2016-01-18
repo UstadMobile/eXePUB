@@ -88,7 +88,8 @@ class EPUBResourceManager(object):
         
         idevice_css_class = idevice_el.find(".//{%s}cssclass" % EPUBResourceManager.NS_IDEVICE).text
         self.update_page(page_id, new_idevice_id = pg_idevice_id, 
-                         new_idevice_cssclass="Idevice %s" % idevice_css_class)
+                         new_idevice_cssclass="Idevice %s" % idevice_css_class,
+                         new_idevice_type = idevice_type)
         
         
         
@@ -179,7 +180,7 @@ class EPUBResourceManager(object):
         page_path = os.path.join(os.path.dirname(self.opf.href), opf_item.href)
         return page_path
     
-    def update_page(self, page_id, new_idevice_id = None, new_idevice_cssclass = None):
+    def update_page(self, page_id, new_idevice_id = None, new_idevice_cssclass = None, new_idevice_type = None):
         """Regenerate script and link elements as they are required for the idevices on the page"""
         page_path = self._get_page_path(page_id)
         
@@ -230,6 +231,7 @@ class EPUBResourceManager(object):
             idevice_div_el = etree.SubElement(idevice_container_el, "{%s}div" % ns_xhtml)
             idevice_div_el.set("id", "id%s" % new_idevice_id)
             idevice_div_el.set("class", new_idevice_cssclass)
+            idevice_div_el.set("data-idevice-type", new_idevice_type)
             idevice_div_el.text = " "
             
         updated_src = etree.tostring(page_html_el, encoding="UTF-8", pretty_print = True)

@@ -3,7 +3,6 @@
  */
 document.addEventListener("idevicecreate", function(evt) {
 	if(evt.detail.ideviceType === "net.exelearning.text") {
-		eXeEpubTinyMce.initExternalToolbarHolder();
 		var targetEl = evt.target || evt.srcElement;
 		var elId= "id" + evt.detail.ideviceId;
 		document.getElementById(elId).innerHTML = "Edit Me";
@@ -18,6 +17,7 @@ document.addEventListener("ideviceediton", function(evt) {
 			editor.focus();
 		}else {
 			var tinyMceOpts = eXeEpubTinyMce.getDefaultOptions();
+			eXeEpubTinyMce.initExternalToolbarHolder();
 			tinyMceOpts.selector = "#id" + evt.detail.ideviceId; 
 			tinyMceOpts.auto_focus = "id" + evt.detail.ideviceId;
 			tinymce.init(tinyMceOpts);
@@ -30,6 +30,9 @@ document.addEventListener("ideviceeditoff", function(evt) {
 	if(evt.detail.ideviceType === "net.exelearning.text") {
 		var editor = tinymce.get("id"+evt.detail.ideviceId);
 		editor.getBody().setAttribute("contenteditable", false);
+		
+		var htmlContent = document.getElementById("id" + evt.detail.ideviceId).innerHTML;
+		eXeEpubAuthoring.saveIdeviceHTML(evt.detail.ideviceId, htmlContent);
 	}
 }, false);
 
