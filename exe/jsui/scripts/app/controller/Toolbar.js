@@ -93,9 +93,9 @@ Ext.define('eXe.controller.Toolbar', {
             '#file_export_website': {
                 click: { fn: this.processExportEvent, exportType: "webSite" }
             },
-            '#file_export_googledrive': {
-                click: { fn: this.startExportGoogleDrive }
-            },
+//            '#file_export_googledrive': {
+//                click: { fn: this.startExportGoogleDrive }
+//            },
             '#file_export_procomun': {
                 click: { fn: this.exportProcomun }
             },
