@@ -174,7 +174,7 @@ class OutlinePane(Renderable, Resource):
             xml += u'<id>%s</id>' % self.encode2nicexml(node.id)
             xml += u'<expanded>true</expanded>'
             if isinstance(node, EPUBNavItem):
-                epub_href = os.path.join(os.path.dirname(node.opf.container_path), node.href)
+                epub_href = "%s/%s" % (os.path.dirname(node.opf.container_path), node.href)
                 xml += u'<epubhref>%s</epubhref>' % self.encode2nicexml(epub_href)
                 
             if node.children:
