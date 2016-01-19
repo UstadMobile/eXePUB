@@ -94,14 +94,23 @@ class EPUBOPF(object):
         return new_item_el
     
     def add_file(self, src_file, path_in_package, media_type = None, auto_save = True):
-        """Adds an external file to the manifest in the given location"""
+        """
+        Adds an external file to the manifest in the given location
+        
+        path_in_package _MAY_ be adjusted in case such a file already exists
+        
+        Returns a tuple containing the manifest item id and the path in package 
+        """
         dst_dir = os.path.join(os.path.dirname(self.href), os.path.dirname(path_in_package))
         if not os.path.isdir(dst_dir):
             os.makedirs(dst_dir)
         
         shutil.copy2(src_file, os.path.join(os.path.dirname(self.href), path_in_package))
-        self.add_item_to_manifest(self.get_id_for_href(path_in_package), 
-                                  mimetypes.guess_type(path_in_package)[0], path_in_package)
+        manifest_id = self.get_id_for_href(path_in_package)
+        self.add_item_to_manifest(manifest_id, 
+                      mimetypes.guess_type(path_in_package)[0], path_in_package)
+        return (manifest_id, path_in_package)
+        
     
     def handle_item_renamed(self, old_href, new_href, auto_save = True):
         """Handle when an item in the manifest has been renamed
@@ -225,10 +234,13 @@ class EPUBOPF(object):
         for child in idevice_el:
             idevice_el.remove(child)
         
+        #process and look for resources that need added to the package
+        html = self.resource_manager.process_previewed_images(html, page_id, idevice_id)
+        
         #pack it into a single element so it parses OK
         html = "<div xmlns=\"%s\">%s</div>" % (ns_xhtml, html)
         
-        soup = BeautifulSoup(html)
+        soup = BeautifulSoup(html, smartQuotesTo = None, fromEncoding="UTF-8")
         new_el = etree.fromstring(soup.prettify())
         for el in new_el:
             idevice_el.append(el)

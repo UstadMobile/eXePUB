@@ -6,8 +6,16 @@ Created on Jan 8, 2016
 from lxml import etree
 import os.path
 import os
+import shutil
 
 from exe                         import globals as G
+from exe.engine.htmlToText import HtmlToText
+from exe.engine.path import Path, toUnicode
+
+import logging
+log = logging.getLogger(__name__)
+
+
 
 class EPUBResourceManager(object):
     '''
@@ -24,6 +32,8 @@ class EPUBResourceManager(object):
     
     """File prefix used for files that are specific to a given type of idevice"""
     PREFIX_IDEVICE_FILES = "exe-files/idevices"
+    
+    PREFIX_USER_FILES = "exe-files/user-added"
 
     def __init__(self, package, opf):
         '''
@@ -114,8 +124,43 @@ class EPUBResourceManager(object):
                     src_path = os.path.join(self.find_idevice_dir(idevice_type), rel_path)
                     
                 self.opf.add_file(src_path, file)
+    
+    def add_user_file_to_idevice(self, idevice_id, user_file_path, new_basename = None):
+        """
+        Adds a file that was put in place by the user (e.g. user
+        uploaded image etc.  We keep it linked with the idevice
+        so we know if the idevice gets deleted what files might need
+        deleted.
+        """
+        if new_basename is None:
+            new_basename = os.path.basename(user_file_path) 
+        
+        path_in_pkg = "%s/%s" % (EPUBResourceManager.PREFIX_USER_FILES, new_basename)
+        added_entry = self.opf.add_file(user_file_path, path_in_pkg)
+        self.link_user_file_to_idevice(added_entry[0], idevice_id)
+        return added_entry
             
-            
+    def link_user_file_to_idevice(self, file_manifest_id, idevice_id, auto_save = True):
+        """
+        Makes an entry in exeresources.xml under
+        user-resources/itemref[idref=file_manifest_id]/ideviceref[idref=idevice_id]
+        
+        Thus marking the given resource from the manifest as a requirement of
+        that particular idevice.
+        """
+        ns = EPUBResourceManager.NS_EXERES
+        user_resources_el = self.root_el.find("./{%s}user-resources" % ns)
+        itemref_el = user_resources_el.find("./{%s}itemref[@idref=\"%s\"]" % (ns, file_manifest_id))
+        if itemref_el is None:
+            itemref_el = etree.SubElement(user_resources_el, "{%s}itemref" % ns, idref = idevice_id)
+        
+        idevice_ref_el = itemref_el.find("./{%s}ideviceref[@idref=\"%s\"]" % (ns, idevice_id))
+        if idevice_ref_el is None:
+            etree.SubElement(itemref_el, "{%s}ideviceref" % ns, idref = idevice_id)
+        
+        if auto_save:
+            self.save()
+        
     
     def _append_required_files_from_resources_el(self, resources_el, prefix, res_types, required_files = []):
         for res_type in res_types:
@@ -248,3 +293,151 @@ class EPUBResourceManager(object):
         fd.flush()
         fd.close()    
         
+        
+        
+    def process_previewed_images(self, content, page_id, idevice_id):
+        """
+        to build up the corresponding resources from any images (etc.) added
+        in by the tinyMCE image-browser plug-in,
+        which will have put them into src="../previews/"
+
+        Now updated to include special math images as well, as generated
+        by our custom exemath plugin to TinyMCE.  These are to follow the
+        naming convention of "eXe_LaTeX_math_#.gif" (where the # is only
+        guaranteed to be unique per Preview session, and can therefore end
+        up being resource-ified into "eXe_LaTeX_math_#.#.gif"). Furthermore,
+        they are to be paired with a source LateX file which is to be of
+        the same name, followed by .tex, e.g., "eXe_LaTeX_math_#.gif.tex"
+        (and to maintain this pairing, as a resource will need to be named
+        "eXe_LaTeX_math_#.#.gif.tex" if applicable, where this does differ
+        slightly from what could be its automatic unique-ified 
+        resource-ification of: "eXe_LaTeX_math_#.gif.#.tex"!!!)
+        """
+        new_content = content
+
+        # first, clear out any empty images.
+        # Image and the new Math are unfortunately capable
+        # of submitting an empty image, which will show as:
+        #   <img src="/" />
+        # (note that at least the media plugin still embeds a full 
+        #  and valid empty-media tag, so no worries about them.)
+        # These should be stopped in the plugin itself, but until then:
+        empty_image_str = "<img src=\"/\" />"
+        if new_content.find(empty_image_str) >= 0: 
+            new_content = new_content.replace(empty_image_str, "");
+            log.warn("Empty image tag(s) removed from content");
+
+
+        # By this point, tinyMCE's javascript file browser handler:
+        #         common.js's: chooseImage_viaTinyMCE() 
+        # has already copied the file into the web-server's relative 
+        # directory "/previews", BUT, something in tinyMCE's handler 
+        # switches "/previews" to "../previews", so beware.....
+        # 
+        # At least it does NOT quote anything, and shows it as, for example: 
+        #   <img src="../previews/%Users%r3m0w%Pictures%Remos_MiscPix% \
+        #        SampleImage.JPG" height="161" width="215" /> 
+        # old quoting-handling is still included in the following parsing,
+        # which HAD allowed users to manually enter src= "file://..." URLs, 
+        # but with the image now copied into previews, such URLS are no more.
+
+        # DESIGN NOTE: eventually the following processing should be
+        # enhanced to look at the HTML tags passed in, and ensure that
+        # what is being found as 'src="../previews/.."' is really within
+        # an IMG tag, etc.
+        # For now, though, this easy parsing is working well:
+        # JR        search_str = "src=\"../previews/" 
+        search_str = "src=\"/previews/"
+        # BEWARE OF THE ABOVE in regards to ProcessPreviewedMedia(),
+        # which takes advantage of the fact that the embedded media
+        # actually gets stored as src="previews/".
+        # If this little weirdness of Images being stored as src="../previews/"
+        # even changes to src="previews/", so more processing will be needed!
+
+        found_pos = new_content.find(search_str) 
+        while found_pos >= 0: 
+            end_pos = new_content.find('\"', found_pos + len(search_str)) 
+            if end_pos == -1: 
+                # now unlikely that this has already been quoted out, 
+                # since the search_str INCLUDES a \", but check anyway:
+                end_pos = new_content.find('&quot', found_pos + 1) 
+            else: 
+                # okay, the end position \" was found, BUT beware of this 
+                # strange case, where the image file:/// URLs 
+                # were entered manually in one part of it 
+                # (and therefore escaped to &quot), AND another quote occurs 
+                # further below (perhaps even in a non-quoted file:/// via 
+                # a tinyMCE browser, but really from anything!) 
+                # So..... see if a &quot; is found in the file-name, and 
+                # if so, back the end_pos up to there.  
+                # NOTE: until actually looking at the HTML tags, and/or
+                # we might be able to do this more programmatically by 
+                # first seeing HOW the file:// is initially quoted, 
+                # whether by a \" or by &quot;, but for now, 
+                # just check this one.
+                end_pos2 = new_content.find('&quot', found_pos + 1) 
+                if end_pos2 > 0 and end_pos2 < end_pos:
+                    end_pos = end_pos2
+            if end_pos >= found_pos:
+                # next, extract the actual file url, to be replaced later 
+                # by the local resource file:
+                file_url_str = new_content[found_pos:end_pos] 
+                # and to get the actual file path, 
+                # rather than the complete URL:
+
+                # first compensate for how TinyMCE HTML-escapes accents:
+                pre_input_file_name_str = file_url_str[len(search_str):]
+                log.debug("ProcessPreviewedImages: found escaped file = " \
+                           + pre_input_file_name_str)
+                converter = HtmlToText(pre_input_file_name_str)
+                input_file_name_str = converter.convertToText()
+
+                log.debug("ProcessPreviewedImages: unescaped filename = " \
+                           + input_file_name_str)
+
+                webDir = Path(G.application.tempWebDir)
+                previewDir = webDir.joinpath('previews')
+                server_filename = previewDir.joinpath(input_file_name_str);
+
+                # and now, extract just the filename string back out of that:
+                file_name_str = server_filename.abspath().encode('utf-8');
+
+                # Be sure to check that this file even exists before even 
+                # attempting to create a corresponding GalleryImage resource:
+                if os.path.exists(file_name_str) \
+                and os.path.isfile(file_name_str): 
+                    # Although full filenames (including flatted representations
+                    # of their source directory tree) were used to help keep the
+                    # filenames here in previewDir unique, this does cause
+                    # problems with the filenames being too long, if they
+                    # are kept that way.
+                    # So.... if an optional .exe_info file is coupled to
+                    # this one, go ahead and read in its original basename,
+                    # in order to rename the file back to something shorter.
+                    # After all, the resource process has its own uniqueifier.
+
+                    # test for the optional .exe_info:
+                    basename_value = os.path.basename(file_name_str)
+                    descrip_file_path = Path(server_filename + ".exe_info")
+                    if os.path.exists(descrip_file_path) \
+                    and os.path.isfile(descrip_file_path): 
+                        descrip_file = open(descrip_file_path, 'rb')
+                        basename_info = descrip_file.read().decode('utf-8')
+                        log.debug("ProcessPreviewedImages: decoded basename = " \
+                            + basename_info)
+                        # split out the value of this "basename=file" key 
+                        basename_key_str = "basename="
+                        basename_found_pos = basename_info.find(basename_key_str) 
+                        # should be right there at the very beginning:
+                        if basename_found_pos == 0: 
+                            basename_value = \
+                                   basename_info[len(basename_key_str):]
+                    
+                    #now we add the file to the package...
+                    new_entry = self.add_user_file_to_idevice(idevice_id, file_name_str, 
+                                                              new_basename = basename_value)
+                    new_content = new_content.replace(file_url_str, "src=\"%s" % new_entry[1])
+                    
+            found_pos = new_content.find(search_str, found_pos + 1) 
+    
+        return new_content
