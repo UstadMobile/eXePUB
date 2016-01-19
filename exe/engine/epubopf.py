@@ -9,6 +9,7 @@ import os.path
 import shutil
 from exe.engine.epubresourcemanager import EPUBResourceManager
 import mimetypes
+from BeautifulSoup import BeautifulSoup
 
 class EPUBOPF(object):
     '''
@@ -226,7 +227,9 @@ class EPUBOPF(object):
         
         #pack it into a single element so it parses OK
         html = "<div xmlns=\"%s\">%s</div>" % (ns_xhtml, html)
-        new_el = etree.fromstring(html)
+        
+        soup = BeautifulSoup(html)
+        new_el = etree.fromstring(soup.prettify())
         for el in new_el:
             idevice_el.append(el)
         
