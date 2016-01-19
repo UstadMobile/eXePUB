@@ -14,6 +14,7 @@
  * 
  */
 
+
 var eXeEpubTinyMce = (function() {
 	
 	//When creating space at the top: ignore these elements
@@ -73,7 +74,7 @@ var eXeEpubTinyMce = (function() {
 				inline: true,
 				fixed_toolbar_container: "#externalToolbarHolder",
 				menubar: false,
-			    //file_browser_callback : exe_tinymce.chooseImage,
+			    file_browser_callback : exe_tinymce.chooseImage,
 			    entity_encoding: 'raw',
 			    //see plugin note above if changing
 			    plugins: [

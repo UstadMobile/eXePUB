@@ -1,3 +1,171 @@
+//Begin functions copied out of authoring.js 
+var eXe = parent.eXe;
+
+
+
+//TinyMCE file_browser_callback
+var exe_tinymce = {
+	
+	chooseImage : function(field_name, url, type, win) {
+		var tinyMCEVersion = 4;
+		
+		var fn = function(local_imagePath) {
+			win.focus();
+		
+			// if the user hits CANCEL, then bail "immediately",
+			// i.e., after bringing the tinyMCE image dialog back into focus, above.
+			if (local_imagePath == "") {
+			   return;
+			}
+		
+			// UNescape, to remove the %20's for spaces, etc.:
+			var unescaped_local_imagePath = unescape(local_imagePath);
+			var oldImageStr = new String(unescaped_local_imagePath);
+			
+			/* HTML 5 */
+			exe_tinymce.uploaded_file_1_name = "";
+			
+			var last_uploaded_file_path = unescaped_local_imagePath.split("\\");
+			var last_uploaded_file_name = last_uploaded_file_path[last_uploaded_file_path.length-1];
+			/* Main file */
+			if (field_name=="src") {
+				exe_tinymce.uploaded_file_1_name = last_uploaded_file_name;
+			}		
+			/* /HTML5 */		
+		
+			// and replace path delimiters (':', '\', or '/') or '%', ' ', or '&' 
+			// with '_':
+			var RegExp1 = /[\ \\\/\:\%\&]/g;
+			var ReplaceStr1 = new String("_");
+			var newImageStr = oldImageStr.replace(RegExp1, ReplaceStr1);
+		
+			// For simplicity across various file encoding schemes, etc.,
+			// just ensure that the TinyMCE media window also gets a URI safe link, 
+			// for doing its showPreview():
+			var early_preview_imageName = encodeURIComponent(newImageStr);
+			// and one more escaping of the '%'s to '_'s, to flatten for simplicity:
+			var preview_imageName  = early_preview_imageName.replace(RegExp1, ReplaceStr1);
+			var full_previewImage_url = "/previews/"+preview_imageName;
+		
+			// pass the file information on to the server,
+			// to copy it into the server's "previews" directory:
+			window.parent.nevow_clientToServerEvent('previewTinyMCEimage', this, '', win, win.name, field_name, unescaped_local_imagePath, preview_imageName)
+			
+			if(tinyMCEVersion != 4) {
+				
+				
+				// first, clear out any old value in the tinyMCE image filename field:
+				win.document.forms[0].elements[field_name].value = "";
+				
+				
+				
+				// set the tinyMCE image filename field:
+				win.document.forms[0].elements[field_name].value = full_previewImage_url;
+				// then force its onchange event:
+			
+				// PreviewImage is only available for images:
+				if (type == "image") {
+				   win.ImageDialog.showPreviewImage(full_previewImage_url);
+				}
+				else if (type == "media") {
+				   win.window.Media.preview();
+				}
+			
+				// this onchange works, but it's dirty because it is hardcoding the 
+				// onChange=".." event of that field, and if that were to ever change 
+				// in tinyMCE, then this would be out of sync.
+			
+				// and finally, be sure to update the tinyMCE window's image data:
+				if (win.getImageData) {
+					win.getImageData();
+				} else {
+					if (window.tinyMCE.getImageData) {
+					   window.tinyMCE.getImageData();
+					}
+				}
+			}else {
+				win.document.getElementById(field_name).value = full_previewImage_url;
+			}
+			
+			
+		
+			
+		}
+
+		// ask user for image or media, depending on type requested:
+		if (type == "image") {
+		   askUserForImage(false, fn);
+		} else if (type == "media") {
+		   askUserForMedia(fn);
+		} else if (type == "file") {
+		   // new for advlink plugin, to link ANY resource into text:
+		   // re-use the Media browser, which defaults to All file types (*.*)
+		   askUserForMedia(fn);
+		} else if (type == "image2insert" || type == "media2insert" || type == "file2insert") {
+			if (type == "file2insert" && url.indexOf('#') >= 0) {
+				// looks like a link to an internal anchor due to the #, so do
+				// not proceed any further, since there is no more action necessary:
+				return;
+				// UNLESS this causes problems with embedding real filenames w/ #!!
+				// But this will only be for links or filenames typed by hand;
+				// those textlink URLs inserted via its file browser will use 
+				// type=file rather than type=file2insert
+			}
+			// new direct insert capabilities, no file browser needed.
+			// just copy the passed-in URL directly, no browser necessary:
+			fn(url);
+		}
+	}//chooseImage
+	
+};
+
+
+//Asks the user for an image, returns the path or an empty string
+function askUserForImage(multiple, fn, filter) {
+    var fp, mode;
+    if (multiple)
+        mode = parent.eXe.view.filepicker.FilePicker.modeOpenMultiple;
+    else
+        mode = parent.eXe.view.filepicker.FilePicker.modeOpen;
+    fp = parent.Ext.create("eXe.view.filepicker.FilePicker", {
+        type: mode,
+        title: multiple? parent._("Select one or more images") : parent._("Select an image"),
+        modal: true,
+        scope: this,
+        callback: function(fp) {
+            if (fp.status == parent.eXe.view.filepicker.FilePicker.returnOk) {
+                if (multiple) {
+		            var result = new String("");
+                    for (f in fp.files) {
+		                if (result != "") {
+		                    result += "&";
+		                }
+		                result += escape(fp.files[f].path);
+		            }
+		            fn(result);
+		        } else {
+                    fn(fp.file.path);
+                }
+            }
+            else
+                fn("");
+        }
+    });
+    fp.appendFilters([
+        filter
+        ? filter
+        : { "typename": parent._("Image Files (.jpg, .jpeg, .png, .gif, .svg)"), "extension": "*.png", "regex": /.*\.(jpg|jpeg|png|gif|svg)$/i },
+          { "typename": parent._("All Files"), "extension": "*.*", "regex": /.*$/ }
+    ]);
+    parent.window.focus();
+    fp.show();
+}
+
+
+//End functions copied out of authoring.js
+
+
+
 /**
  * Handles authoring mode
  */
