@@ -312,13 +312,25 @@ var eXeEpubAuthoring = (function() {
         },
         
         init: function() {
-        	var pageIdevices = document.querySelectorAll(".Idevice");
-        	for(var i = 0; i < pageIdevices.length; i++) {
-        		//all id attrs are idX where X is the actual id
-        		var ideviceId = pageIdevices[i].getAttribute("id").substring(2);
-        		_editableIdevices[ideviceId] = new eXeEpubIdevice(ideviceId);
-        		_editableIdevices[ideviceId].initToolbar();
-        	}
+        	//load other required scripts
+        	var resourcesToLoad = ['/templates/tinymce/tinymce.full.min.js',
+        	                       '/templates/tinymce4-exe-settings.js',
+        	                       '/templates/tinymce/skins/lightgray/skin.ie7.min.css',
+        	                       '/templates/tinymce/skins/lightgray/content.min.css',
+        	                       '/templates/tinymce/skins/lightgray/skin.min.css',
+        	                       '/templates/tinymce/skins/lightgray/content.inline.min.css',
+        	                       '/templates/tinymce/plugins/visualblocks/css/visualblocks.css'
+        	                       ];
+        	
+        	eXeEpubAuthoring.loadResources(resourcesToLoad, function() {
+        		var pageIdevices = document.querySelectorAll(".Idevice");
+            	for(var i = 0; i < pageIdevices.length; i++) {
+            		//all id attrs are idX where X is the actual id
+            		var ideviceId = pageIdevices[i].getAttribute("id").substring(2);
+            		_editableIdevices[ideviceId] = new eXeEpubIdevice(ideviceId);
+            		_editableIdevices[ideviceId].initToolbar();
+            	}
+        	});
         },
 		                              
 		addIdevice: function(ideviceType, ideviceId) {
