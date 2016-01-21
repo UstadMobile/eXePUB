@@ -241,7 +241,8 @@ class EPUBOPF(object):
         html = "<div xmlns=\"%s\">%s</div>" % (ns_xhtml, html)
         
         soup = BeautifulSoup(html, smartQuotesTo = None, fromEncoding="UTF-8")
-        new_el = etree.fromstring(soup.prettify())
+        html_clean = soup.prettif().replace("&nbsp;", "&#160;")
+        new_el = etree.fromstring(html_clean)
         for el in new_el:
             idevice_el.append(el)
         
