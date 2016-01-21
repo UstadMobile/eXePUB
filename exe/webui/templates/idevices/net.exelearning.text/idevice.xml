@@ -10,19 +10,6 @@
     <!--Map to exe-files/common -->
     <system-resources>
         <script>exe_jquery.js</script>
-        
-        <!-- 
-        <script>tinymce/tinymce.full.min.js</script>
-        <script>tinymce4-exe-settings.js</script>
-        
-        <css>tinymce/skins/lightgray/skin.ie7.min.css</css>
-        <css>tinymce/skins/lightgray/content.min.css</css>
-        <css>tinymce/skins/lightgray/skin.min.css</css>
-        <css>tinymce/skins/lightgray/content.inline.min.css</css>
-        <css>tinymce/plugins/visualblocks/css/visualblocks.css</css>
-        <res>tinymce/skins/lightgray/fonts/tinymce.ttf</res>
-        <res>tinymce/skins/lightgray/fonts/tinymce.woff</res>
-         -->
     </system-resources>
     
     <!-- Map to exe-files/idevices/ideviceid -->

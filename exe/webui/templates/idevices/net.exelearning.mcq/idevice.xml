@@ -9,7 +9,7 @@
     
     <!--Map to exe-files/common -->
     <system-resources>
-        <script>jquery-ui-1.10.3.custom.min.js</script>
+        <script>exe_jquery.js</script>
         <css>test-common-file.css</css>
     </system-resources>
     
