@@ -240,8 +240,7 @@ class EPUBOPF(object):
         #pack it into a single element so it parses OK
         html = "<div xmlns=\"%s\">%s</div>" % (ns_xhtml, html)
         
-        soup = BeautifulSoup(html)
-        
+        soup = BeautifulSoup(html)        
         new_el = etree.fromstring(soup.prettify(formatter="xml"))
         for el in new_el:
             idevice_el.append(el)
