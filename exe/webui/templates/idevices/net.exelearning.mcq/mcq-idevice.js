@@ -20,7 +20,8 @@ eXeMCQIdevice.prototype = {
 		$(emphasisEl).append(headerEl);
 		
 		var titleEl = $("<h1/>", {
-			"class" : "ideviceTitle"
+			"class" : "ideviceTitle",
+			"id" : "exe-mcq-title-" + this.ideviceId
 		});
 		$(titleEl).text("Multi Choice Exercise");
 		$(headerEl).append(titleEl);
@@ -40,7 +41,7 @@ eXeMCQIdevice.prototype = {
 		this._addQuestionSection("0");
 		this._addAnswerToQuestion("0", "1");
 		this._addAnswerToQuestion("0", "2");
-		this._updateAnswerSections("0");
+		
 	},
 	
 	/**
@@ -50,7 +51,7 @@ eXeMCQIdevice.prototype = {
 		var parentEl = $("#id" + this.ideviceId).find(
 				".iDevice_content_wrapper");
 		
-		var questionSection = $("<section", {
+		var questionSection = $("<section/>", {
 			"class" : "question"
 		});
 		$(parentEl).append(questionSection);
@@ -61,7 +62,7 @@ eXeMCQIdevice.prototype = {
 			onsubmit : "return false",
 			"class": "activity-form"
 		});
-		$(parentEl).append(formEl);
+		$(questionSection).append(formEl);
 		
 		formEl.append("<h1 class=\"js-sr-av\">Question</h1>");
 		var questionDiv = $("<div/>", {
@@ -92,6 +93,92 @@ eXeMCQIdevice.prototype = {
 		return $("form[name='multi-choice-form-" + this.ideviceId + "_" + questionId + "']");
 	},
 	
+	_getNextBlockId: function() {
+		var currentMax = 0;
+		var questionIds = this._getQuestionIds();
+		var thisVal;
+		for(var i = 0; i < questionIds.length; i++) {
+			try {
+				thisVal = parseInt(questionIds[i]);
+				currentMax = Math.max(thisVal, currentMax);
+			}catch(err) {
+				//do nothing - not a numerical id
+			}
+			
+			var answerIds = this._getAnswerIds(questionIds[i]);
+			for(var j = 0; j < answerIds.length; j++) {
+				try {
+					thisVal = parseInt(answerIds[j]);
+					currentMax = Math.max(thisVal, currentMax);
+				}catch(err){
+					//do nothing - not a numerical id
+				}
+			}
+		}
+		
+		return currentMax + 1;
+	},
+	
+	_getQuestionIds: function() {
+		var questionIds = [];
+		var questionEls = $("#id" + this.ideviceId).find(".block.question.iDevice_content");
+		
+		var currentId = null;
+		for(var i = 0; i < questionEls.length; i++) {
+			currentId = $(questionEls[i]).attr("id");
+			if(currentId) {
+				//The question id itself has an id in the form of taquestionX_YY
+				currentId = currentId.substring(currentId.indexOf("_")+1);
+				questionIds.push(currentId);
+			}
+		}
+		
+		return questionIds;
+	},
+	
+	_getAnswerIds: function(questionId) {
+		var answerInputEls =  this._getQuestionForm(questionId).find("input");
+		var answerIds = [];
+		var currentId;
+		for(var i = 0; i < answerInputEls.length; i++) {
+			currentId = answerInputEls[i].getAttribute("id");
+			if(currentId && currentId.charAt(0) === 'i') {
+				answerIds.push(currentId.substring(currentId.indexOf("_") + 1));
+			}
+		}
+		
+		return answerIds;
+	},
+	
+	handleClickAddQuestion: function(evt) {
+		var newQuestionId = ""+this._getNextBlockId();
+		this._addQuestionSection(newQuestionId);
+		eXeEpubAuthoring.setTinyMceEnabledById("taquestion" + this.ideviceId + 
+				"_" + newQuestionId, true);
+		
+		for(var i = 0; i < 2; i++) {
+			this.handleClickAddAnswer({ 
+				data: {
+					questionId : newQuestionId
+				}
+			});
+		}
+		
+		this._addEditControlsToQuestion(newQuestionId);
+	},
+	
+	handleClickAddAnswer: function(evt) {
+		var questionId = evt.data.questionId;
+		var newAnswerId = this._getNextBlockId();
+		this._addAnswerToQuestion(questionId, "" + newAnswerId);
+		this._setAnswerToEditingMode(questionId, newAnswerId, 
+				this._getNumAnswersForQuestion(questionId)-1);
+		eXeEpubAuthoring.setTinyMceEnabledById("taans" + this.ideviceId 
+				+ "_" + newAnswerId, true);
+		eXeEpubAuthoring.setTinyMceEnabledById("taf" + this.ideviceId 
+				+ "_" + newAnswerId, true);
+	},
+	
 	_addAnswerToQuestion: function(questionId, answerId) {
 		//As per exe mcqs: a question lives inside of a form
 		var questionFormEl  = this._getQuestionForm(questionId);
@@ -115,6 +202,7 @@ eXeMCQIdevice.prototype = {
 		
 		var inputEl = $("<input/>", {
 			"type" : "radio",
+			"id" : "i" + this.ideviceId + "_" + answerId,
 			"name" : "option" + this.ideviceId + "_" + questionId,
 			"onclick" : "$exe.getFeedback(" + numAnswers + "," +
 				(numAnswers+1) + ", '" + this.ideviceId + "_" + questionId + "', " +
@@ -151,6 +239,7 @@ eXeMCQIdevice.prototype = {
 		feedbackDiv.text("Answer Feedback");
 		feedbackSection.append(feedbackDiv);
 		feedbacksSection.append(feedbackSection);
+		this._updateAnswerSections(questionId);
 	},
 	
 	_updateAnswerSections: function(questionId) {
@@ -167,14 +256,164 @@ eXeMCQIdevice.prototype = {
 	_getEl: function() {
 		return document.getElementById("id" + this.ideviceId);
 	},
+	
+	/**
+	 * Make a list of all element ids that tinymce should be
+	 * enabled on
+	 */
+	_getEditableElIds: function() {
+		var questionIds = this._getQuestionIds();
+		var editableIds = ["exe-mcq-title-" + this.ideviceId];
 		
+		var answerIds;
+		var j;
+		for(var i = 0; i < questionIds.length; i++) {
+			editableIds.push("taquestion" + this.ideviceId + "_" + questionIds[i]);
+			
+			answerIds = this._getAnswerIds(questionIds[i]);
+			for(j = 0; j < answerIds.length; j++) {
+				//The answer element itself
+				editableIds.push("taans" + this.ideviceId + "_" + answerIds[j]);
+				//The feedback element
+				editableIds.push("taf" + this.ideviceId + "_" + answerIds[j]);
+			}
+		}
 		
+		return editableIds;
+	},
+	
+	/**
+	 * Runs the given function for each potential answer for
+	 * every question.  The function should take three arguments:
+	 * the questionId, the answerId and the answer index
+	 */
+	_runOnEachAnswer: function(fn) {
+		var questionIds = this._getQuestionIds();
+		
+		var j;
+		var answerIds;
+		for(var i = 0; i < questionIds.length; i++) {
+			answerIds = this._getAnswerIds(questionIds[i]);
+			for(j = 0; j < answerIds.length; j++) {
+				fn.apply(this, [questionIds[i], answerIds[j], j]);
+			}
+		}
+	},
+	
 	editOn: function() {
+		var editableIds = this._getEditableElIds();
+		for(var i = 0; i < editableIds.length; i++){
+			eXeEpubAuthoring.setTinyMceEnabledById(editableIds[i], true);
+		}
+		
+		var questionIds = this._getQuestionIds();
+		var questionFormEl;
+		for(var i = 0; i < questionIds.length; i++) {
+			this._addEditControlsToQuestion(questionIds[i]);
+		}
+		
+		var addQuestionEl = $("<button class='exe_edit_addquestion exe-editing-only'>Add Question</button>");
+		addQuestionEl.on("click", this.handleClickAddQuestion.bind(this));
+		$("#id" + this.ideviceId).find(".iDevice_inner").append(addQuestionEl);
+		
+		this._runOnEachAnswer(this._setAnswerToEditingMode.bind(this));
+	},
+	
+	_addEditControlsToQuestion: function(questionId) {
+		var addAnswerEl = $("<button class='exe_edit_addanswer exe-editing-only'>Add Answer</button>");
+		addAnswerEl.on("click", { questionId : questionId },
+				this.handleClickAddAnswer.bind(this));
+		questionFormEl = this._getQuestionForm(questionId);
+		$(questionFormEl).find(".iDevice_answers").after(addAnswerEl);
+		
+		
+		var deleteAnswerImg = $("<img/>", {
+			src: "/images/stock-delete.png",
+			"class" : "exe-mcq-delete-button"
+		});
+		deleteAnswerImg.on("click", {
+			questionId : questionId
+		}, this.handleClickDeleteQuestion.bind(this));
+		var deleteQuestionDiv = $("<div/>", {
+			"class": "exe-editing-only exe-mcq-delete-holder"
+		});
+		deleteQuestionDiv.append(deleteAnswerImg);
+		
+		$(this._getQuestionForm(questionId)).prepend(deleteQuestionDiv);
+	},
+	
+	/**
+	 * Enable editing of feedback for the given answer by shifting its 
+	 * feedback element
+	 */
+	_setAnswerToEditingMode: function(questionId, answerId, answerIndex) {
+		var feedbackElId = "taf" + this.ideviceId + "_" + answerId;
+		var feedbackEl = $("#" + feedbackElId).detach();
+		var answerContentEl = $("#answer-" + this.ideviceId + "_" + answerId);
+		answerContentEl.append("<div class='exe-editing-only'>Feedback:</div>");
+		answerContentEl.append(feedbackEl);
+		var deleteAnswerImg = $("<img/>", {
+			src: "/images/stock-delete.png",
+			"class" : "exe-mcq-delete-button"
+		});
+		
+		
+		deleteAnswerImg.on("click", { 
+				answerId : answerId, 
+				questionId: questionId
+			}, this.handleClickDeleteAnswer.bind(this));
+		
+		var deleteAnswerDiv = $("<div/>", {
+			"class" : "exe-editing-only exe-mcq-delete-holder"
+		});
+		deleteAnswerDiv.append(deleteAnswerImg);
+		
+		answerContentEl.closest(".iDevice_answer").prepend(deleteAnswerDiv);
 		
 	},
 	
-	editOff: function() {
+	handleClickDeleteAnswer: function(evt) {
+		var answerId = evt.data.answerId;
+		var numAnswers = this._getNumAnswersForQuestion(evt.data.questionId);
 		
+		var answerEl = $("#answer-" + this.ideviceId + "_" + answerId).closest(".iDevice_answer");
+		eXeEpubAuthoring.removeAllTinyMceInstances(answerEl[0]);
+		answerEl.remove();
+		
+		var feedbackEl = $("#taf" + this.ideviceId + "_" + answerId)
+		eXeEpubAuthoring.removeAllTinyMceInstances(feedbackEl[0]);
+		feedbackEl.remove();
+		
+		//Remove the last indexed hidden feedback holder
+		$("#sa" + (numAnswers-1) + "b" + this.ideviceId + "_" + evt.data.questionId).remove();
+		
+		this._updateAnswerSections(evt.data.questionId);
+	},
+	
+	handleClickDeleteQuestion: function(evt) {
+		var questionId = evt.data.questionId;
+		var questionEl = this._getQuestionForm(questionId).parent();
+		eXeEpubAuthoring.removeAllTinyMceInstances(questionEl[0]);
+		questionEl.remove();
+	},
+	
+	editOff: function() {
+		var editableIds = this._getEditableElIds();
+		for(var i = 0; i < editableIds.length; i++){
+			eXeEpubAuthoring.setTinyMceEnabledById(editableIds[i], false);
+		}
+		
+		$("#id" + this.ideviceId).find(".exe-editing-only").remove();
+		
+		this._runOnEachAnswer(function(questionId, answerId, answerIndex) {
+			var feedbackElId = "taf" + this.ideviceId + "_" + answerId;
+			var feedbackElHiderId = "sa" + answerIndex +"b" + this.ideviceId + 
+				"_" + questionId;
+			$("#" + feedbackElHiderId).append($("#" + feedbackElId).detach());
+		});
+		
+		var htmlToSave = eXeEpubAuthoring.getSavableHTML(this._getEl());
+		eXeEpubAuthoring.saveIdeviceHTML(this.ideviceId, htmlToSave);
 	}
 };
 
@@ -190,8 +429,22 @@ eXeMCQIdevice.prototype = {
 		}
 	}, false);
 	
+	document.addEventListener("ideviceediton", function(evt) {
+		if(evt.detail.ideviceType === "net.exelearning.mcq") {
+			var ideviceId = evt.detail.ideviceId;
+			if(!_mcqIdevices[ideviceId]) {
+				_mcqIdevices[ideviceId] = new eXeMCQIdevice(ideviceId);
+			}
+			
+			_mcqIdevices[evt.detail.ideviceId].editOn();
+		}
+	}, false);
 	
-	
+	document.addEventListener("ideviceeditoff", function(evt) {
+		if(evt.detail.ideviceType === "net.exelearning.mcq") {
+			_mcqIdevices[evt.detail.ideviceId].editOff();
+		}
+	});
 })();
 
 

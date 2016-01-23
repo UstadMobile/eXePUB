@@ -278,6 +278,7 @@ var eXeEpubAuthoring = (function() {
 		return resourcesArr;
 	};
 	
+	
 	var _ideviceContainer = null;
 	
 	var _editableIdevices = {};
@@ -462,6 +463,63 @@ var eXeEpubAuthoring = (function() {
 					"page_id=" + encodeURIComponent(pageID) + 
 					"&idevice_id=" + encodeURIComponent(ideviceId) +
 					"&html=" + encodeURIComponent(html));
+		},
+		
+		/**
+		 * Turn TinyMCE editing on or off on a given element.
+		 * @param id
+		 * @param editingEnabled
+		 * @param options
+		 * @param options.auto_focus - if true will auto focus this editing element
+		 * @param options.tinymceopts - if set will use as the tinymce init options (no selector setting required - this is handled)
+		 */
+		setTinyMceEnabledById: function(id, editingEnabled, options) {
+			var editor = tinymce.get(id);
+			options = options || {};
+			eXeEpubTinyMce.initExternalToolbarHolder();
+			var el = document.getElementById(id); 
+			
+			if(editingEnabled) {
+				var tinyMceOpts = options.tinymceopts ? options.tinymceopts : eXeEpubTinyMce.getDefaultOptions();
+				tinyMceOpts.selector = "#" + id;
+				tinymce.init(tinyMceOpts);
+			}else {
+				tinymce.remove("#" + id);
+				document.getElementById(id).setAttribute("contenteditable", false);
+			}
+		},
+		
+		/**
+		 * Before removing elements from the DOM: if they have tinyMCE 
+		 * attached we should turn it off so as not to confuse tinymce
+		 * if another element comes along with the same ID
+		 */
+		removeAllTinyMceInstances: function(el) {
+			var mceEditors = el.querySelectorAll(".mce-content-body");
+			for(var i = 0; i < mceEditors.length; i++) {
+				tinymce.remove("#" + mceEditors[i].getAttribute("id"));
+			}
+		},
+		
+		/**
+		 * Remove TinyMCE classes etc. from the HTML of a given element that 
+		 */
+		getSavableHTML: function(el) {
+			var dupNode = el.cloneNode(true);
+			var allChildren = dupNode.getElementsByTagName("*");
+			for(var i = 0; i < allChildren.length; i++) {
+				if(allChildren[i].classList.contains("mce-content-body")) {
+					allChildren[i].classList.remove("mce-content-body");
+					if(allChildren[i].classList.contains("mce-edit-focus")) {
+						allChildren[i].classList.remove("mce-edit-focus");
+					}
+					
+					allChildren[i].removeAttribute("contenteditable");
+					allChildren[i].removeAttribute("spellcheck")
+				} 
+			}
+			
+			return dupNode.innerHTML;
 		}
 		
 	};

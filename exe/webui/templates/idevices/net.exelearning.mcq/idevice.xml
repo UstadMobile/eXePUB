@@ -16,6 +16,7 @@
     <!-- Map to exe-files/idevices/ideviceid -->
     <idevice-resources>
         <script>mcq-idevice.js</script>
+        <css>mcq-idevice.css</css>
     </idevice-resources>
     
 </idevice>
