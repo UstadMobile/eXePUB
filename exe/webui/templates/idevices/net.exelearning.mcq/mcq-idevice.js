@@ -414,6 +414,54 @@ eXeMCQIdevice.prototype = {
 		
 		var htmlToSave = eXeEpubAuthoring.getSavableHTML(this._getEl());
 		eXeEpubAuthoring.saveIdeviceHTML(this.ideviceId, htmlToSave);
+		
+		var activitiesXML = this.makeTinCanActivities();
+		var tinCanStr = new XMLSerializer().serializeToString(activitiesXML);
+		eXeEpubAuthoring.saveIdeviceTinCanXML(this.ideviceId, tinCanStr);
+	},
+	
+	/**
+	 * Generate a set of tincan activities for this 
+	 */
+	makeTinCanActivities: function() {
+		var ns = eXeEpubAuthoring.NS_TINCAN;
+		var xmlDoc = document.implementation.createDocument(ns, "activities");
+		var questionIds = this._getQuestionIds();
+		for(var i = 0; i < questionIds.length; i++) {
+			var activityEl = xmlDoc.createElementNS(ns, "activity");
+			activityEl.setAttribute("id", this.ideviceId + "." + 
+					questionIds[i]);
+			
+			//for now set name and desc to be the same
+			var questionTextEls = ["name", "description"];
+			for(var j = 0; j < questionTextEls.length; j++) {
+				var questionTextEl = xmlDoc.createElementNS(ns, "name");
+				questionTextEl.setAttribute("lang", "en");
+				questionTextEl.textContent = $("#taquestion" + this.ideviceId + "_" + questionIds[i]).text();
+				activityEl.appendChild(questionTextEl);
+			}
+			
+			var choicesEl = xmlDoc.createElementNS(ns, "choices");
+			activityEl.appendChild(choicesEl);
+			
+			var answerIds = this._getAnswerIds(questionIds[i]);
+			for(var k = 0; k < answerIds.length; k++) {
+				var compEl = xmlDoc.createElementNS(ns, "component");
+				var idEl = xmlDoc.createElementNS(ns, "id");
+				idEl.textContent = "choice_" + this.ideviceId + "." + 
+					questionIds[i] + "." + answerIds[k];
+				compEl.appendChild(idEl);
+				
+				var descEl = xmlDoc.createElementNS(ns, "description");
+				descEl.setAttribute("lang", "en");
+				descEl.textContent = $("#taans" + this.ideviceId + "_" + answerIds[k]).text();
+				compEl.appendChild(descEl);
+				choicesEl.appendChild(compEl);
+			}
+			xmlDoc.documentElement.appendChild(activityEl);
+		}
+		
+		return xmlDoc;
 	}
 };
 

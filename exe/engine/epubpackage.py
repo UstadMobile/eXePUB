@@ -7,6 +7,7 @@ Represents an EPUB file as it's used in the editing process
 import os.path
 from exe.engine.epubitem import EPUBItem
 from exe.engine.epubopf import EPUBOPF
+from exe.engine.tincanxmlmanager import TinCanXMLManager
 from exe.engine.path           import Path, TempDirPath, toUnicode
 import zipfile
 from lxml import etree
@@ -73,6 +74,7 @@ class EPUBPackage(object):
         self.main_manifest = self.main_opf.manifest
         self.root = self.main_opf.get_navigation()
         self.currentNode = self.root
+        self.tincan_manager = TinCanXMLManager(self)
         self.isChanged = False
     
     

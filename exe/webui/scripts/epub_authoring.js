@@ -295,6 +295,10 @@ var eXeEpubAuthoring = (function() {
 		IDEVICE_CONTAINER_SELECTORS: ["[data-role*='idevicecontainer']", 
 		                              "[role*='main']", "#main"],
 		
+        NS_TINCAN : "http://projecttincan.com/tincan.xsd",
+        
+        NS_EXETINCAN: "http://ustadmobile.com/ns/exe-tincan",
+		                              
         getQueryVars: function(queryStr) {
             var locationQuery = window.location.search.substring.length >= 1 ?
                 window.location.search.substring(1) : "";
@@ -463,6 +467,17 @@ var eXeEpubAuthoring = (function() {
 					"page_id=" + encodeURIComponent(pageID) + 
 					"&idevice_id=" + encodeURIComponent(ideviceId) +
 					"&html=" + encodeURIComponent(html));
+		},
+		
+		saveIdeviceTinCanXML: function(ideviceId, tincanXML, callback) {
+			var queryVars = eXeEpubAuthoring.getQueryVars();
+			var xmlHTTP = new XMLHttpRequest();
+			
+			xmlHTTP.open("POST", queryVars['exe-authoring-save-to'], true);
+			xmlHTTP.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+			xmlHTTP.send("action=saveidevicetincan&" +
+					"idevice_id=" + encodeURIComponent(ideviceId) +
+					"&tincan_xml=" + encodeURIComponent(tincanXML));
 		},
 		
 		/**
