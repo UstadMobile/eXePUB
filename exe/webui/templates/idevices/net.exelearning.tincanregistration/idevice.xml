@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<idevice xmlns="http://www.ustadmobile.com/ns/exelearning-idevice">
+    <id>net.exelearning.tincanregistration</id>
+    <label>Start Record</label>
+    <category>Interactive</category>
+    <visible>true</visible>
+    <cssclass>TinCanRegistrationIdevice</cssclass>
+    
+    <!--Map to exe-files/common -->
+    <system-resources>
+        <script>exe_jquery.js</script>
+        <script>tincan.js</script>
+        <script>exe_tincan.js</script>
+    </system-resources>
+    
+    <!-- Map to exe-files/idevices/ideviceid -->
+    <idevice-resources>
+        <script>tincanregistration-idevice.js</script>
+    </idevice-resources>
+    
+</idevice>

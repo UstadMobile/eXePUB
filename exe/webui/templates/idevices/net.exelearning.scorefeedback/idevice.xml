@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<idevice xmlns="http://www.ustadmobile.com/ns/exelearning-idevice">
+    <id>net.exelearning.scorefeedback</id>
+    <label>Score Feedback</label>
+    <category>Interactive</category>
+    <visible>true</visible>
+    <cssclass>ScoreFeedbackIdevice</cssclass>
+    
+    <!--Map to exe-files/common -->
+    <system-resources>
+        <script>exe_jquery.js</script>
+        <css>test-common-file.css</css>
+    </system-resources>
+    
+    <!-- Map to exe-files/idevices/ideviceid -->
+    <idevice-resources>
+        <script>scorefeedback-idevice.js</script>
+    </idevice-resources>
+    
+</idevice>

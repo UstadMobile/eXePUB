@@ -17,6 +17,8 @@ class EPUBOPF(object):
     '''
     
     NAMESPACE_OPF = "http://www.idpf.org/2007/opf"
+    
+    NAMESPACE_DC = "http://purl.org/dc/elements/1.1/"
 
     '''Maximum number of suffixes we will go through to find a free
     filename
@@ -39,6 +41,13 @@ class EPUBOPF(object):
         # The etree root element
         if opf_str:
             self.package_el = etree.fromstring(opf_str)
+            
+            #check for a title - old versions of eXe made invalid opfs with no title
+            if self._get_title_el() is None:
+                metadata_el = self.package_el.find(".//{%s}metadata" % EPUBOPF.NAMESPACE_OPF)
+                title_el = etree.SubElement(metadata_el, "{%s}title" % EPUBOPF.NAMESPACE_DC)
+                title_el.text = "Package"
+            
         else:
             self.package_el = None # this could be construction of a blank item
         
@@ -60,6 +69,22 @@ class EPUBOPF(object):
         """Set the package changed flag""" 
         if self.package is not None:
             self.package.isChanged = changed
+    
+    def get_opf_id(self):
+        identifier_el = None
+        unique_id = self.package_el.get("unique-identifier")
+        if unique_id is not None:
+            identifier_el = self.package_el.find(".//{%s}identifier[@id='%s']" % (EPUBOPF.NAMESPACE_DC, unique_id))
+        else:
+            identifier_el = self.package_el.find(".//{%s}identifier" % EPUBOPF.NAMESPACE_DC)
+        
+        return identifier_el.text
+    
+    def _get_title_el(self):
+        return self.package_el.find(".//{%s}title" % (EPUBOPF.NAMESPACE_DC))
+    
+    def get_title(self):
+        return self._get_title_el().text
     
     @property
     def manifest(self):
