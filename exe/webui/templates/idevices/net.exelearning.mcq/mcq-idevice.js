@@ -352,6 +352,16 @@ eXeMCQIdevice.prototype = {
 		var answerContentEl = $("#answer-" + this.ideviceId + "_" + answerId);
 		answerContentEl.append("<div class='exe-editing-only'>Feedback:</div>");
 		answerContentEl.append(feedbackEl);
+		answerContentEl.append("<div class='exe-editing-only'>Score:</div>");
+		var currentAnswerScore = answerContentEl.attr("data-score") || "";
+		
+		answerContentEl.append($("<input/>", {
+			id : "exe-mcq-score-" +this.ideviceId + "_" + questionId 
+				+ "_" + answerId,
+			value : currentAnswerScore,
+			'class' : "exe-editing-only exe-mcq-score-input"
+		}));
+		
 		var deleteAnswerImg = $("<img/>", {
 			src: "/images/stock-delete.png",
 			"class" : "exe-mcq-delete-button"
@@ -403,14 +413,16 @@ eXeMCQIdevice.prototype = {
 			eXeEpubAuthoring.setTinyMceEnabledById(editableIds[i], false);
 		}
 		
-		$("#id" + this.ideviceId).find(".exe-editing-only").remove();
-		
 		this._runOnEachAnswer(function(questionId, answerId, answerIndex) {
 			var feedbackElId = "taf" + this.ideviceId + "_" + answerId;
 			var feedbackElHiderId = "sa" + answerIndex +"b" + this.ideviceId + 
 				"_" + questionId;
 			$("#" + feedbackElHiderId).append($("#" + feedbackElId).detach());
+			var score = $("#answer-" + this.ideviceId + "_" + answerId).find(".exe-mcq-score-input").val();
+			$("#answer-" + this.ideviceId + "_" + answerId).attr("data-score", score);
 		});
+		
+		$("#id" + this.ideviceId).find(".exe-editing-only").remove();
 		
 		var htmlToSave = eXeEpubAuthoring.getSavableHTML(this._getEl());
 		eXeEpubAuthoring.saveIdeviceHTML(this.ideviceId, htmlToSave);
