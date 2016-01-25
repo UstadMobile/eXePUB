@@ -118,6 +118,10 @@ var eXeTinCan = (function() {
 		},
 		
 		
+		getPkgStateValue: function(key) {
+			
+		},
+		
 		getState: function(activityId, registrationUUID, callback) {
 			
 		}
