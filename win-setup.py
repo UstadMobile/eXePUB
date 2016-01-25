@@ -88,7 +88,7 @@ dataFiles(["exe/jsui/templates",
 
 opts = {
  "py2exe": {
-   "packages": ["encodings", "nevow", "nevow.flat", "cProfile", "functools", "csv", "libxml2", "robotparser", "chardet", "lxml", "feedparser", "BeautifulSoup", "BaseHTTPServer"],
+   "packages": ["encodings", "nevow", "nevow.flat", "cProfile", "functools", "csv", "libxml2", "robotparser", "chardet", "lxml", "feedparser", "BeautifulSoup", "bs4", "BaseHTTPServer"],
    "includes": ["PngImagePlugin", "JpegImagePlugin", "GifImagePlugin",
                 "IcoImagePlugin", "BmpImagePlugin"],
 
