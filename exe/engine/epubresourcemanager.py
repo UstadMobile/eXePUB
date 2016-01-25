@@ -108,6 +108,13 @@ class EPUBResourceManager(object):
         
         return pg_idevice_id
     
+    def handle_idevice_deleted(self, page_id, idevice_id):
+        pg_idevice_el = self.root_el.find(".//{%s}idevice[@id='%s']" % (EPUBResourceManager.NS_EXERES, idevice_id))
+        if pg_idevice_el is not None:
+            pg_idevice_el.getparent().remove(pg_idevice_el)
+                                          
+    
+    
     def add_required_files_to_package(self, required_files):
         for file in required_files:
             src_path = None

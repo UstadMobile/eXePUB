@@ -247,11 +247,22 @@ class EPUBOPF(object):
             return os.path.join(os.path.dirname(self.href), item.href)
         else:
             return None
+    
+    
+    def _get_page_html_el(self, page_id):
+        return etree.parse(self._get_item_path(page_id)).getroot()
+    
+    def _save_page_html(self, page_id, html_el):
+        page_fd = open(self._get_item_path(page_id), "w")
+        page_fd.write(etree.tostring(html_el, encoding = "UTF-8", pretty_print = True))
+        page_fd.flush()
+        page_fd.close()
+        
         
     def set_page_idevice_html(self, page_id, idevice_id, html):
         """Save the actual HTML content of the idevice"""
         page_path = self._get_item_path(page_id)
-        page_html_el = etree.parse(page_path).getroot()
+        page_html_el = self._get_page_html_el(page_id)
         ns_xhtml = page_html_el.nsmap.get(None)
         idevice_el = page_html_el.find('.//{%s}*[@id="id%s"]' % (ns_xhtml, idevice_id))
         
@@ -270,11 +281,17 @@ class EPUBOPF(object):
         for el in new_el:
             idevice_el.append(el)
         
+        self._save_page_html(page_id, page_html_el)
         
-        page_fd = open(page_path, "w")
-        page_fd.write(etree.tostring(page_html_el, encoding = "UTF-8", pretty_print = True))
-        page_fd.flush()
-        page_fd.close()
+        
+    def delete_idevice_from_page(self, page_id, idevice_id):
+        page_html_el = self._get_page_html_el(page_id)
+        ns_xhtml = page_html_el.nsmap.get(None)
+        idevice_el = page_html_el.find('.//{%s}*[@id="id%s"]' % (ns_xhtml, idevice_id))
+        idevice_el.getparent().remove(idevice_el)
+        self._save_page_html(page_id, page_html_el)
+        
+        
         
          
     

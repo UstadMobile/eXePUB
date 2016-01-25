@@ -41,11 +41,13 @@ class AuthoringPageEPUB(RenderableResource):
                                                                       
      
     def render_GET(self, request=None):
-        if request is not None:
-            args = request.args
-            a = 42
-            
-            
+        if "action" in request.args:
+            if request.args['action'][0] == "deleteidevice":
+                page_id = request.args['page_id'][0]
+                idevice_id = request.args['idevice_id'][0]
+                self.package.main_opf.delete_idevice_from_page(page_id, idevice_id)
+                self.package.main_opf.resource_manager.handle_idevice_deleted(page_id, idevice_id)
+        
         html =  "<html><body></body></html>".encode('utf8')
         return html
     

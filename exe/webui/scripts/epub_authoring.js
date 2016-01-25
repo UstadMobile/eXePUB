@@ -251,7 +251,30 @@ eXeEpubIdevice.prototype = {
 	},
 	
 	handleClickDelete: function() {
-		
+		if(confirm("Are you sure you want to delete this idevice?")) {
+			var queryVars = eXeEpubAuthoring.getQueryVars();
+			var pageID = queryVars['exe-page-id'];
+			
+			var xmlHTTP = new XMLHttpRequest();
+			xmlHTTP.onreadystatechange = (function(evt) {
+				if(xmlHTTP.readyState === 4 && xmlHTTP.status === 200) {
+					this.handleRemoved();
+				}
+			}).bind(this);
+			var deleteURL = queryVars["exe-authoring-save-to"] + 
+				"?page_id=" + encodeURIComponent(pageID) +
+				"&idevice_id=" + this.ideviceId +
+				"&action=deleteidevice";
+			xmlHTTP.open("get", deleteURL, true);
+			xmlHTTP.send();
+		}
+	},
+	
+	handleRemoved: function() {
+		var ideviceEl = this._getIdeviceEl();
+		ideviceEl.parentNode.removeChild(ideviceEl);
+		var toolbarEl = this._getToolbarEl();
+		toolbarEl.parentNode.removeChild(toolbarEl);
 	}
 	
 };
