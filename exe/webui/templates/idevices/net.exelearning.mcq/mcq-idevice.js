@@ -447,11 +447,15 @@ eXeMCQIdevice.prototype = {
 			//for now set name and desc to be the same
 			var questionTextEls = ["name", "description"];
 			for(var j = 0; j < questionTextEls.length; j++) {
-				var questionTextEl = xmlDoc.createElementNS(ns, "name");
+				var questionTextEl = xmlDoc.createElementNS(ns, questionTextEls[j]);
 				questionTextEl.setAttribute("lang", "en");
 				questionTextEl.textContent = $("#taquestion" + this.ideviceId + "_" + questionIds[i]).text();
 				activityEl.appendChild(questionTextEl);
 			}
+			
+			var interactionTypeEl = xmlDoc.createElementNS(ns, "interactionType");
+			interactionTypeEl.textContent = "choice";
+			activityEl.appendChild(interactionTypeEl);
 			
 			var choicesEl = xmlDoc.createElementNS(ns, "choices");
 			activityEl.appendChild(choicesEl);

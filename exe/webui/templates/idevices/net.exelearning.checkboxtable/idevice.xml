@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <idevice xmlns="http://www.ustadmobile.com/ns/exelearning-idevice">
-    <id>net.exelearning.scorefeedback</id>
-    <label>Score Feedback</label>
+    <id>net.exelearning.checkboxtable</id>
+    <label>Checkbox Table</label>
     <category>Interactive</category>
     <visible>true</visible>
-    <cssclass>ScoreFeedbackIdevice</cssclass>
+    <cssclass>CheckboxTableIdevice</cssclass>
     
     <!--Map to exe-files/common -->
     <system-resources>
@@ -16,7 +16,7 @@
     
     <!-- Map to exe-files/idevices/ideviceid -->
     <idevice-resources>
-        <script>scorefeedback-idevice.js</script>
+        <script>checkboxtable-idevice.js</script>
     </idevice-resources>
     
 </idevice>

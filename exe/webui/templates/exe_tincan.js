@@ -44,6 +44,32 @@ var eXeTinCan = (function() {
 			xmlHTTP.send();
 		},
 		
+		getActivitiesByInteractionType: function(interactionTypes, options, callback) {
+			this.getPackageTinCanXML((function(xmlDoc) {
+				var matchingActivities = [];
+				var interactionTypeEls = xmlDoc.querySelectorAll("interactionType");
+				
+				var j;
+				var match;
+				for(var i = 0 ; i < interactionTypeEls.length; i++) {
+					match = false;
+					for(j = 0; j < interactionTypes.length && !match; j++) {
+						if(interactionTypeEls[i].textContent === interactionTypes[j]) {
+							match = true;
+						}
+					}
+					
+					if(match) {
+						matchingActivities.push(interactionTypeEls[i].parentNode);
+					}
+				}
+				
+				if(typeof callback === "function") {
+					var cbContext = options && options.context ? options.context : this;
+					callback.apply(cbContext, [matchingActivities]);
+				}
+			}).bind(this));
+		},
 		
 		getCurrentRegistrationUUID: function() {
 			if(_currentRegistrationUUID === -1) {
