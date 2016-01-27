@@ -277,7 +277,13 @@ class EPUBOPF(object):
         html = "<div xmlns=\"%s\">%s</div>" % (ns_xhtml, html)
         
         soup = BeautifulSoup(html)        
-        new_el = etree.fromstring(soup.prettify(formatter="xml"))
+        new_el = etree.fromstring(soup.find("div").prettify(formatter="xml"))
+        
+        #the formatter will add white space - which messes up text areas
+        for textel in new_el.findall(".//{%s}textarea"):
+            if textel.text:
+                textel.text = textel.text.strip()
+            
         for el in new_el:
             idevice_el.append(el)
         

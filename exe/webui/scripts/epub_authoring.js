@@ -555,6 +555,10 @@ var eXeEpubAuthoring = (function() {
 					allChildren[i].removeAttribute("contenteditable");
 					allChildren[i].removeAttribute("spellcheck")
 				} 
+				
+				if(allChildren[i].nodeName.toLowerCase() === "textarea") {
+					allChildren[i].innerHTML = allChildren[i].value;
+				}
 			}
 			
 			return dupNode.innerHTML;

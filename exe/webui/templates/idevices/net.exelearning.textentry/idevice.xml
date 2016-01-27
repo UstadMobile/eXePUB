@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<idevice xmlns="http://www.ustadmobile.com/ns/exelearning-idevice">
+    <id>net.exelearning.textentry</id>
+    <label>Text Entry</label>
+    <category>Interactive</category>
+    <visible>true</visible>
+    <cssclass>TextEntryIdevice</cssclass>
+    
+    <!--Map to exe-files/common -->
+    <system-resources>
+        <script>exe_jquery.js</script>
+        <script>tincan.js</script>
+        <script>exe_tincan.js</script>
+    </system-resources>
+    
+    <!-- Map to exe-files/idevices/ideviceid -->
+    <idevice-resources>
+        <script>textentry-idevice.js</script>
+    </idevice-resources>
+    
+</idevice>
