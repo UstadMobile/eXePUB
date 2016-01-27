@@ -5,6 +5,12 @@
 var ScoreFeedbackIdevice = function(ideviceId) {
 	this.ideviceId = ideviceId;
 	this.scoreFeedbackItems = [];
+	var scoreFeedbackEls = $(".exe-score-feedback");
+	for(var i = 0; i < scoreFeedbackEls.length; i++) {
+		this.scoreFeedbackItems.push(new ScoreFeedbackItem(
+			scoreFeedbackEls.get(i), this));
+	}
+	
 	this.choiceActivities = null;
 }
 
@@ -167,7 +173,10 @@ ScoreFeedbackItem.prototype = {
 			'class' : 'exe-editing-only exe-scfb-editlinecont'
 		});
 		var currentExpr = $(this.el).attr("data-expression");
-		$($editLinesContainer).append(this._expressionToEditorEls(currentExpr))
+		var editorEls = this._expressionToEditorEls(currentExpr);
+		for(var i = 0; i < editorEls.length; i++) {
+			$editLinesContainer.append(editorEls[i]);
+		}
 		
 		$(this.el).prepend($editLinesContainer);
 	},
@@ -180,25 +189,45 @@ ScoreFeedbackItem.prototype = {
 		
 	},
 		
-	_expressionToEditorEls: function(str) {
-		if(str === "") {
+	_expressionToEditorEls: function(expression) {
+		if(expression === "") {
 			//it's blank - nothing here...
-			return this._makeEditLine();
+			return [this._makeEditLine()];
 		}
 		
-		var fnStart = str.indexOf(this.getVarFnName);
-		var quoteRegEx = /\'|\"/;
-		var quoteStartIndex = quoteRegEx.exec(str).index;
-		var quoteLength = quoteRegEx.exec(str.substring(quoteStartIndex+1)).index+1;
-		var varName = str.substring(quoteStartIndex+1, quoteStartIndex + quoteLength);
+		var editorEls = [];
+		var myRe = /\|\||&&/;
+		var startPos = 0;
 		
-		var operatorRegEx = /(=|<=|>=|>|<)/;
-		var operatorMatch = operatorRegEx.exec(str);
-		var operator = operatorMatch[0];
+		var nextMatch;
+		var exprRemaining = expression;
+		var lastJoiner = null;
 		
-		var compareTo = str.substring(operatorMatch.index + operator.length).trim();
+		do{
+			nextMatch = myRe.exec(exprRemaining);
+			var currentSection = exprRemaining.substring(0, nextMatch ? nextMatch.index : exprRemaining.length);
+			var fnStart = currentSection.indexOf(this.getVarFnName);
+			var quoteRegEx = /\'|\"/;
+			var quoteStartIndex = quoteRegEx.exec(currentSection).index;
+			var quoteLength = quoteRegEx.exec(currentSection.substring(quoteStartIndex+1)).index+1;
+			var varName = currentSection.substring(quoteStartIndex+1, quoteStartIndex + quoteLength);
+			
+			var operatorRegEx = /(=|<=|>=|>|<)/;
+			var operatorMatch = operatorRegEx.exec(currentSection);
+			var operator = operatorMatch[0];
+			
+			var compareTo = currentSection.substring(operatorMatch.index + operator.length).trim();
+			
+			editorEls.push(this._makeEditLine("&&", varName, operator, compareTo));
+			
+			if(nextMatch != null) {
+				lastJoiner = nextMatch[0];
+				exprRemaining = exprRemaining.substring(nextMatch.lastIndex+1)
+			}
+		}while (nextMatch != null); 
 		
-		return this._makeEditLine("&&", varName, operator, compareTo);
+		
+		return editorEls;
 	}
 		
 };
