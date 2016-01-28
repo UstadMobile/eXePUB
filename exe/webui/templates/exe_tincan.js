@@ -71,6 +71,26 @@ var eXeTinCan = (function() {
 			}).bind(this));
 		},
 		
+		getActivitiesByExtension: function(extensionKey, extensionValue, options,  callback) {
+			this.getPackageTinCanXML((function(xmlDoc) {
+				var matchingActivities = [];
+				var selector = "extension[key='" + extensionKey + "']";
+				var queryMatches = xmlDoc.querySelectorAll(selector);
+				var currentVal;
+				for(var i = 0; i < queryMatches.length; i++) {
+					currentVal = queryMatches[i].textContent.trim();
+					if(extensionValue === null || currentVal === extensionValue) {
+						matchingActivities.push(queryMatches[i].parentNode.parentNode);
+					}
+				}
+				
+				if(typeof callback === "function") {
+					var cbContext = options && options.context ? options.context : this;
+					callback.apply(cbContext, [matchingActivities]);
+				}
+			}).bind(this));
+		},
+		
 		getCurrentRegistrationUUID: function() {
 			if(_currentRegistrationUUID === -1) {
 				_currentRegistrationUUID = document.localStorage.getItem(

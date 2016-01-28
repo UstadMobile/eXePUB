@@ -1,0 +1,26 @@
+@CHARSET "UTF-8";
+
+.levels-box {
+	background-repeat: none;
+	background-position: center center;
+	min-width: 35px;
+	height: 35px;
+}
+
+.levels-box[data-level='0'] {
+	background-repeat: none;
+    background-position: center center;
+	background-image: url('level0.png');
+}
+
+.levels-box[data-level='1'] {
+	background-repeat: none;
+    background-position: center center;
+    background-image: url('level1.png');
+}
+
+.levels-box[data-level='2'] {
+	background-repeat: none;
+    background-position: center center;
+    background-image: url('level2.png');
+}

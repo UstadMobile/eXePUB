@@ -17,6 +17,10 @@
     <!-- Map to exe-files/idevices/ideviceid -->
     <idevice-resources>
         <script>levelstable-idevice.js</script>
+        <css>levelstable-idevice.css</css>
+        <res>level0.png</res>
+        <res>level1.png</res>
+        <res>level2.png</res>
         <res>levelstable-template.html</res>
     </idevice-resources>
     
