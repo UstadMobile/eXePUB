@@ -5,7 +5,7 @@
 var ScoreFeedbackIdevice = function(ideviceId) {
 	this.ideviceId = ideviceId;
 	this.scoreFeedbackItems = [];
-	var scoreFeedbackEls = $(".exe-score-feedback");
+	var scoreFeedbackEls = $("#id" + ideviceId).find(".exe-score-feedback");
 	for(var i = 0; i < scoreFeedbackEls.length; i++) {
 		this.scoreFeedbackItems.push(new ScoreFeedbackItem(
 			scoreFeedbackEls.get(i), this));
@@ -68,12 +68,27 @@ ScoreFeedbackIdevice.prototype = {
 		return document.getElementById("id" + this.ideviceId);
 	},
 	
+	_getNextBlockId: function() {
+		var allBlocks = $(this._getEl()).find(".exe-score-feedback");
+		var maxId = 0;
+		for(var i = 0; i < allBlocks.length; i++) {
+			maxId = Math.max(maxId, parseInt($(allBlocks.get(i)).attr("data-block-id")));
+		}
+		
+		return maxId;
+	},
+	
 	_addScoreFeedbackItem: function() {
+		var newBlockId = this._getNextBlockId();
 		newFeedbackItem = $("<div/>", {
 			"class" : "exe-score-feedback",
-			"data-expression" : ""
+			"data-expression" : "",
+			"data-block-id" : "" + newBlockId
 		});
-		newFeedbackItem.text("Feedback if matched");
+		newFeedbackItem.append($("<div/>", {
+			"class" : "exe-score-feedback-content",
+			"id" : "exe_sfbc_" + this.ideviceId + "_" + newBlockId
+		}).text("feedback if matched"));
 		$(this._getEl()).append(newFeedbackItem);
 		
 		var newItem = new ScoreFeedbackItem(newFeedbackItem.get(0), this);
@@ -87,25 +102,47 @@ ScoreFeedbackIdevice.prototype = {
 var ScoreFeedbackItem = function(el, idevice) {
 	this.el = el;
 	this.idevice = idevice;
+	this.blockId = $(el).attr("data-block-id")
 }
 
 ScoreFeedbackItem.prototype = {
 	
 	operators: ["=", ">", ">=", "<", "<="],
 	
+	joiners: [['&&', 'AND'], ['||', 'OR']],
+	
 	getVarFnName: "eXeTinCan.getPkgStateValue(",
 	
 	_makeEditLine: function(joiner, varName, operator, compareTo) {
+		var i;
+		var opt;
+		
+		
 		var lineCont = $("<div/>", {
 			'class' : "exe-scfb-editline exe-editing-only"
 		});
+		
+		if(joiner) {
+			var joinerSelect = $("<select/>", {
+				'class' : 'exe-scfb-joinerselect'
+			});
+			for(i = 0; i < this.joiners.length; i++) {
+				opt = $("<option/>", {
+					value : this.joiners[i][0]
+				}).text(this.joiners[i][1]);
+				if(joiner === this.joiners[i][0]) {
+					opt.attr("selected", "selected");
+				}
+				joinerSelect.append(opt);
+			}
+			lineCont.append(joinerSelect);
+		}
+		
 		var varDropDown = $("<select/>", {
 			'class': 'exe-scfb-varselect'
 		});
 		var varOpts = this.idevice.getVariableOptions();
 		
-		var i;
-		var opt;
 		for(i = 0; i < varOpts.length; i++) {
 			opt = $("<option/>", {
 				value : varOpts[i][0]
@@ -146,8 +183,19 @@ ScoreFeedbackItem.prototype = {
 			'value' : compareVal
 		});
 		lineCont.append(compareTo);
+		if(joiner) {
+			var delButton = $("<img/>", {
+				"src" : "/images/stock-delete.png"
+			}).on("click", this.handleClickDeleteExprLine.bind(this));
+			lineCont.append(delButton);
+		}
+		
 		
 		return lineCont;
+	},
+	
+	handleClickDeleteExprLine: function(evt) {
+		$(evt.delegateTarget).closest(".exe-scfb-editline").remove();
 	},
 	
 	_buildExpressionFromEditor: function(editEl) {
@@ -157,6 +205,9 @@ ScoreFeedbackItem.prototype = {
 		for(var i = 0; i < editorLines.length; i++) {
 			currentLine = $(editorLines.get(i));
 			//TODO: check if this editor line has and/or
+			if(i > 0) {
+				expr += currentLine.find(".exe-scfb-joinerselect").val() + " ";
+			}
 			
 			expr += "eXeTinCan.getPkgStateValue(\"";
 			expr += currentLine.find(".exe-scfb-varselect").val();
@@ -169,6 +220,9 @@ ScoreFeedbackItem.prototype = {
 	},
 		
 	editOn: function() {
+		var $editControlsContainer = $("<div/>", {
+			'class' : 'exe-editing-only exe-scfb-editctrls'
+		});
 		var $editLinesContainer = $("<div/>", {
 			'class' : 'exe-editing-only exe-scfb-editlinecont'
 		});
@@ -177,8 +231,21 @@ ScoreFeedbackItem.prototype = {
 		for(var i = 0; i < editorEls.length; i++) {
 			$editLinesContainer.append(editorEls[i]);
 		}
+		var addExprImg = $("<img/>", {
+			'src' : '/images/stock-add.png'
+		});
+		addExprImg.on("click", this.handleClickAddExpr.bind(this));
+		$editControlsContainer.append($editLinesContainer);
+		$editControlsContainer.append(addExprImg);
 		
-		$(this.el).prepend($editLinesContainer);
+		eXeEpubAuthoring.setTinyMceEnabledById("exe_sfbc_" + this.idevice.ideviceId 
+				+ "_" + this.blockId, true);
+		
+		$(this.el).prepend($editControlsContainer);
+	},
+	
+	handleClickAddExpr: function(evt) {
+		$(this.el).find(".exe-scfb-editlinecont").append(this._makeEditLine("&&"));
 	},
 	
 	editOff: function() {
@@ -186,7 +253,8 @@ ScoreFeedbackItem.prototype = {
 		var expr = this._buildExpressionFromEditor($(this.el).find(".exe-scfb-editlinecont"));
 		$(this.el).attr("data-expression", expr);
 		$(this.el).find(".exe-editing-only").remove();
-		
+		eXeEpubAuthoring.setTinyMceEnabledById("exe_sfbc_" + this.idevice.ideviceId 
+				+ "_" + this.blockId, false);
 	},
 		
 	_expressionToEditorEls: function(expression) {
@@ -218,11 +286,11 @@ ScoreFeedbackItem.prototype = {
 			
 			var compareTo = currentSection.substring(operatorMatch.index + operator.length).trim();
 			
-			editorEls.push(this._makeEditLine("&&", varName, operator, compareTo));
+			editorEls.push(this._makeEditLine(lastJoiner, varName, operator, compareTo));
 			
 			if(nextMatch != null) {
 				lastJoiner = nextMatch[0];
-				exprRemaining = exprRemaining.substring(nextMatch.lastIndex+1)
+				exprRemaining = exprRemaining.substring(nextMatch.index+nextMatch[0].length)
 			}
 		}while (nextMatch != null); 
 		
