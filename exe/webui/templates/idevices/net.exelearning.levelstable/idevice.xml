@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<idevice xmlns="http://www.ustadmobile.com/ns/exelearning-idevice">
+    <id>net.exelearning.levelstable</id>
+    <label>Levels Table</label>
+    <category>BFW</category>
+    <visible>true</visible>
+    <cssclass>ReviewTableIdevice</cssclass>
+    
+    <!--Map to exe-files/common -->
+    <system-resources>
+        <script>exe_jquery.js</script>
+        <script>tincan.js</script>
+        <script>exe_tincan.js</script>
+    </system-resources>
+    
+    <!-- Map to exe-files/idevices/ideviceid -->
+    <idevice-resources>
+        <script>levelstable-idevice.js</script>
+        <res>levelstable-template.html</res>
+    </idevice-resources>
+    
+</idevice>

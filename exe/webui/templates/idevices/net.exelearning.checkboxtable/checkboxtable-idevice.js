@@ -296,6 +296,88 @@ CheckboxTableIdevice.prototype = {
 		
 		var htmlToSave = eXeEpubAuthoring.getSavableHTML(this._getEl());
 		eXeEpubAuthoring.saveIdeviceHTML(this.ideviceId, htmlToSave);
+		
+		//make a tincan entry for this
+		
+		var checkboxTinCan = this.makeTinCanActivities();
+		var activitiesXML = this.makeTinCanActivities();
+		var tinCanStr = new XMLSerializer().serializeToString(activitiesXML);
+		eXeEpubAuthoring.saveIdeviceTinCanXML(this.ideviceId, tinCanStr);
+	},
+	
+	makeTinCanActivities: function() {
+		var ns = eXeEpubAuthoring.NS_TINCAN;
+		var xmlDoc = document.implementation.createDocument(ns, "activities");
+		
+		//parent activity that can be used for all subquestions
+		var parentActivity = xmlDoc.createElementNS(ns, "activity");
+		parentActivity.setAttribute("id", this.ideviceId + ".0");
+		var pgTitle = eXeEpubAuthoring.getQueryVars()['exe-authoring-page-nav-title'];
+		if(!pgTitle) {
+			pgTitle = "Checkbox Table: " + this.ideviceId;
+		}
+		
+		var questionTextEls = ["name", "description"];
+		for(var q = 0; q < questionTextEls.length; q++) {
+			var questionTextEl = xmlDoc.createElementNS(ns, questionTextEls[q]);
+			questionTextEl.setAttribute("lang", "en");
+			questionTextEl.textContent = pgTitle;
+			parentActivity.appendChild(questionTextEl);
+		}
+		
+		var extsEl = xmlDoc.createElementNS(ns, "extensions");
+		var extEl = xmlDoc.createElementNS(ns, "extension");
+		extEl.setAttribute("key", "http://www.ustadmobile.com/ns/tincan-ext-checkboxtable-parent");
+		extEl.textContent = "true";
+		extsEl.appendChild(extEl);
+		parentActivity.appendChild(extsEl);
+		
+		xmlDoc.documentElement.appendChild(parentActivity);
+		
+		
+		var questionIds = this._getQuestionIds();
+		for(var i = 0; i < questionIds.length; i++) {
+			var activityEl = xmlDoc.createElementNS(ns, "activity");
+			activityEl.setAttribute("id", this.ideviceId + "." + 
+					questionIds[i]);
+			
+			//for now set name and desc to be the same
+			
+			var j;
+			for(j = 0; j < questionTextEls.length; j++) {
+				var questionTextEl = xmlDoc.createElementNS(ns, questionTextEls[j]);
+				questionTextEl.setAttribute("lang", "en");
+				questionTextEl.textContent = $('#etcqdiv' + this.ideviceId + "_" + questionIds[i]).text();
+				activityEl.appendChild(questionTextEl);
+			}
+			
+			var interactionTypeEl = xmlDoc.createElementNS(ns, "interactionType");
+			interactionTypeEl.textContent = "choice";
+			activityEl.appendChild(interactionTypeEl);
+			
+			var choicesEl = xmlDoc.createElementNS(ns, "choices");
+			activityEl.appendChild(choicesEl);
+			
+			var colIds = this._getColIds();
+			var colName;
+			for(j = 0; j < colIds.length; j++) {
+				colName = this._getColNameById(colIds[j]);
+				var compEl = xmlDoc.createElementNS(ns, "component");
+				var idEl = xmlDoc.createElementNS(ns, "id");
+				idEl.textContent = "choice_" + this.ideviceId + "." + 
+					questionIds[i] + "." + colIds[j];
+				compEl.appendChild(idEl);
+				
+				var descEl = xmlDoc.createElementNS(ns, "description");
+				descEl.setAttribute("lang", "en");
+				descEl.textContent = this._getColNameById(colIds[j]);
+				compEl.appendChild(descEl);
+				choicesEl.appendChild(compEl);
+			}
+			xmlDoc.documentElement.appendChild(activityEl);
+		}
+		
+		return xmlDoc;
 	}
 
 };
