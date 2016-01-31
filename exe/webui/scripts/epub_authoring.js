@@ -505,6 +505,9 @@ var eXeEpubAuthoring = (function() {
 		
 		/**
 		 * Turn TinyMCE editing on or off on a given element.
+		 * 
+		 * TODO: Fix this to use selectors instead...
+		 * 
 		 * @param id
 		 * @param editingEnabled
 		 * @param options
