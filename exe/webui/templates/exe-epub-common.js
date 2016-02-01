@@ -109,6 +109,7 @@ var eXeEpubCommon = (function() {
             }
             return retVal;
         }
+        
 	};
 })();
 

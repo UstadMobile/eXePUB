@@ -9,10 +9,30 @@ var eXeTinCan = (function() {
 	
 	var KEY_CURRENT_REG = "eXeTC-Current-RegistrationUUID";
 	
+	var STATE_ID = "exe_pkg_state";
+	
 	var _tinCan = null;
 	
+	var _state = null;
+	
+	/**
+	 * Array of arrays in the form of 
+	 * [key requested, callback function, opts]
+	 */
+	var _pendingReadyKeys = [];
+	
+	var _xAPIstateStatus = 0;
+		
 	var mod = {
 		
+		STATE_PENDING : 0,
+		
+		STATE_LOADING : 1,
+		
+		STATE_UNAVAILABLE : 2,
+		
+		STATE_LOADED : 3,
+			
 		localStoragePrefix : "eXeTC-",
 		
 		/**
@@ -34,6 +54,7 @@ var eXeTinCan = (function() {
 		init: function() {
 			_tinCan = new TinCan();
 			this.setLRSParamsFromLaunchURL();
+			
 		},
 		
 		/**
@@ -64,6 +85,10 @@ var eXeTinCan = (function() {
 		        }); 
 		    	
 				_tinCan.recordStores[0] = newLRS;
+				if(queryVars['registration']) {
+					_currentRegistrationUUID = queryVars['registration'];
+				}
+				this.loadState();
 	    	}
 	    },
 		
@@ -195,13 +220,59 @@ var eXeTinCan = (function() {
 			}
 		},
 		
+		getPkgStateValue: function(key, callback, opts) {
+			if(_xAPIstateStatus === eXeTinCan.STATE_LOADED || _xAPIstateStatus === eXeTinCan.STATE_UNAVAILABLE) {
+				callback.call(opts && opts.context ? opts.context : this, _state[key]);
+			}else {
+				_pendingReadyKeys.push([key,callback, opts]);
+			}
+		},
 		
-		getPkgStateValue: function(key) {
+		loadState: function() {
+			_xAPIstateStatus = eXeTinCan.STATE_LOADING;
+			this.getPackageTinCanID(function(err, pkgId){
+				var params = {
+					agent : this.getActor(),
+					activity: pkgId,
+					callback : this.handleStateLoaded.bind(this)
+				};
+				
+				if(_currentRegistrationUUID !== -1) {
+					params.registration = _currentRegistration; 
+				}
+				
+				_tinCan.getState(KEY_CURRENT_REG, params);
+			}, {context : this})
+		},
+		
+		saveState: function() {
 			
 		},
 		
-		getState: function(activityId, registrationUUID, callback) {
+		handleStateLoaded: function(state) {
+			if(_state === null) {
+				_xAPIstateStatus = eXeTinCan.STATE_UNAVAILABLE;
+				//not good really... 
+				_state = {};
+			}else {
+				_xAPIstateStatus = eXeTinCan.STATE_LOADED;
+				_state = JSON.parse(state.content);
+			}
 			
+			var keyOpts;
+			var key;
+			for(var i = 0; i < _pendingReadyKeys.length; i++) {
+				try {
+					keyOpts = _pendingReadyKeys[i][2] ? _pendingReadyKeys[i][2] : {};
+					key = _pendingReadyKeys[i][0];
+					
+					_pendingReadyKeys[i][1].call(
+						keyOpts.context ? keyOpts.context : this, _state[key]);
+				}catch(err) {
+					console.log(err);
+				}
+			}
+			_pendingReadyKeys = [];
 		},
 		
 		/**
