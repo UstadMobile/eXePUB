@@ -71,5 +71,44 @@ Idevice.registerType = function(typeId, cls) {
 			Idevice._registeredDevices[evt.detail.ideviceId].editOff();
 		}
 	});
+	
+	var _initFn = function() {
+		var allIdevices = document.querySelectorAll("div[data-idevice-type='" + typeId + "']");
+		var deviceId;
+		for(var i = 0; i < allIdevices.length; i++) {
+			deviceId = allIdevices[i].getAttribute("id").substring(2);//idevice id attributes are prefixed by the letters 'id'
+			Idevice._registeredDevices = new cls(deviceId);
+		}
+	};
+	
+	if(document.readyState === "interactive" || document.readyState === "complete") {
+		_initFn();
+	}else {
+		document.addEventListener("DOMContentLoaded", _initFn, false);
+	}
 };
+
+/**
+ * Common utility functions
+ */
+var eXeEpubCommon = (function() {
+	return {
+		getQueryVars: function(queryStr) {
+            var locationQuery = window.location.search.substring.length >= 1 ?
+                window.location.search.substring(1) : "";
+            var query = (typeof queryStr !== "undefined") ? queryStr : 
+                locationQuery;
+            
+            var retVal = {};
+            if(window.location.search.length > 2) {
+                var vars = query.split("&");
+                for (var i=0;i<vars.length;i++) {
+                    var pair = vars[i].split("=");
+                    retVal[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
+                }
+            }
+            return retVal;
+        }
+	};
+})();
 

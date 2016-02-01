@@ -38,10 +38,11 @@ Ext.define('eXe.controller.Idevice', {
             authoring.submitLink("AddIdevice", record.data.id, 1, selected !== 0? selected[0].data.id : '0');
         }else if(authoring && eXe.app.config.packageType == "EPUBPackage") {
         	var outlineTreePanel = eXe.app.getController("Outline").getOutlineTreePanel(),
-            	selected = outlineTreePanel.getSelectionModel().getSelection();
+            	selected = outlineTreePanel.getSelectionModel().getSelection(),
+            	addIdeviceURL = location.pathname + "/idevicePane?action=AddIdeviceJS&page_id=" + 
+    				selected[0].data.id + "&idevice_id=" + record.id;
         	Ext.Ajax.request({
-        		url: location.pathname + "/idevicePane?action=AddIdeviceJS&page_id=" + 
-        			selected[0].data.id + "&idevice_id=" + record.id,
+        		url: addIdeviceURL,
     			scope: this,
     			success: function(response) {
     				var jsonResp = Ext.JSON.decode(response.responseText);

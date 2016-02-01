@@ -2,6 +2,8 @@
 function eXeMCQIdevice(ideviceId) {
 	Idevice.call(this, ideviceId);
 	this._nextBlockId = 0;
+	this._handleAnswerSelectedBound = this.handleAnswerSelected.bind(this);
+	this.bindEvents();
 }
 
 eXeMCQIdevice.prototype = Object.create(Idevice.prototype, {
@@ -47,7 +49,48 @@ eXeMCQIdevice.prototype = Object.create(Idevice.prototype, {
 	    configurable: true, 
 	    writable: true
 	},
-		
+	
+	bindEvents: {
+		value : function() {
+			var inputEls = $(this._getEl()).find("input");
+			var currentId;
+			for(var i = 0; i < inputEls.length; i++) {
+				currentId = $(inputEls.get(i)).attr("id");
+				if(currentId && currentId.charAt(0) === 'i') {
+					//make sure to remove any previous handlers
+					$(inputEls.get(i)).off("click", this._handleAnswerSelectedBound);
+					$(inputEls.get(i)).on("click", this._handleAnswerSelectedBound);
+				}
+			}
+		}
+	},
+	
+	handleAnswerSelected: {
+		value: function(evt) {
+			//when coming from the input element itself. get the id 
+			//will be in the form of ideviceId_blockId e.g. 0_4
+			var id = $(evt.delegateTarget).attr("id").substring(1);
+			var answerEl = $("#answer-" +id);
+			var stmtOpts = {
+				result: {
+					response: id
+				}
+			};
+			
+			var answerScore = $(answerEl).attr("data-score");
+			if(typeof answerScore !== "undefined" && answerScore !== "") {
+				stmtOpts.result.score = {
+					raw : parseFloat(answerScore)
+				};
+			}
+			
+			//get the TinCan base id first; then send the statement
+			eXeTinCan.getPackageTinCanID(function(err, packageTinCanId) {
+				var stmt = eXeTinCan.makeAnsweredStmt(packageTinCanId + "-" + this.ideviceId, stmtOpts);
+				eXeTinCan.sendStatement(stmt);
+			}, { context: this});
+		}
+	},
 	
 	
 	/**
@@ -106,9 +149,7 @@ eXeMCQIdevice.prototype = Object.create(Idevice.prototype, {
 		value: function(questionId) {
 			return $("form[name='multi-choice-form-" + this.ideviceId + "_" + questionId + "']");
 		},
-	}, 
-		
-	
+	},
 	
 	_getNextBlockId: {
 		value: function() {
@@ -479,6 +520,7 @@ eXeMCQIdevice.prototype = Object.create(Idevice.prototype, {
 			var activitiesXML = this.makeTinCanActivities();
 			var tinCanStr = new XMLSerializer().serializeToString(activitiesXML);
 			eXeEpubAuthoring.saveIdeviceTinCanXML(this.ideviceId, tinCanStr);
+			this.bindEvents();
 		},
 		configurable: true,
 		writable: true,
@@ -496,7 +538,7 @@ eXeMCQIdevice.prototype = Object.create(Idevice.prototype, {
 			var questionIds = this._getQuestionIds();
 			for(var i = 0; i < questionIds.length; i++) {
 				var activityEl = xmlDoc.createElementNS(ns, "activity");
-				activityEl.setAttribute("id", this.ideviceId + "." + 
+				activityEl.setAttribute("id", this.ideviceId + "_" + 
 						questionIds[i]);
 				
 				//for now set name and desc to be the same
@@ -519,8 +561,7 @@ eXeMCQIdevice.prototype = Object.create(Idevice.prototype, {
 				for(var k = 0; k < answerIds.length; k++) {
 					var compEl = xmlDoc.createElementNS(ns, "component");
 					var idEl = xmlDoc.createElementNS(ns, "id");
-					idEl.textContent = "choice_" + this.ideviceId + "." + 
-						questionIds[i] + "." + answerIds[k];
+					idEl.textContent = this.ideviceId + "_" + answerIds[k];
 					compEl.appendChild(idEl);
 					
 					var descEl = xmlDoc.createElementNS(ns, "description");

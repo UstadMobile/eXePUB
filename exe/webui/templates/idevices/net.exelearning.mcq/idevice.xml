@@ -9,8 +9,10 @@
     
     <!--Map to exe-files/common -->
     <system-resources>
-        <script>idevice.js</script>
+        <script>exe-epub-common.js</script>
         <script>exe_jquery.js</script>
+        <script>tincan.js</script>
+        <script>exe_tincan.js</script>
         <css>test-common-file.css</css>
     </system-resources>
     
