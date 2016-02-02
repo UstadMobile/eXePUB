@@ -85,10 +85,14 @@ eXeMCQIdevice.prototype = Object.create(Idevice.prototype, {
 			}
 			
 			//get the TinCan base id first; then send the statement
-			eXeTinCan.getPackageTinCanID(function(err, packageTinCanId) {
-				var stmt = eXeTinCan.makeAnsweredStmt(packageTinCanId + "-" + this.ideviceId, stmtOpts);
+			eXeTinCan.getTinCanAndPageIds({ 
+				context: this
+			},
+			function(err, packageTinCanId, itemId) {
+				var stmt = eXeTinCan.makeAnsweredStmt(packageTinCanId + "/" + itemId + "/" 
+					+ this.ideviceId, stmtOpts);
 				eXeTinCan.sendStatement(stmt);
-			}, { context: this});
+			});
 		}
 	},
 	
@@ -517,9 +521,10 @@ eXeMCQIdevice.prototype = Object.create(Idevice.prototype, {
 			var htmlToSave = eXeEpubAuthoring.getSavableHTML(this._getEl());
 			eXeEpubAuthoring.saveIdeviceHTML(this.ideviceId, htmlToSave);
 			
-			var activitiesXML = this.makeTinCanActivities();
-			var tinCanStr = new XMLSerializer().serializeToString(activitiesXML);
-			eXeEpubAuthoring.saveIdeviceTinCanXML(this.ideviceId, tinCanStr);
+			//var activitiesXML = this.makeTinCanActivities();
+			//var tinCanStr = new XMLSerializer().serializeToString(activitiesXML);
+			//eXeEpubAuthoring.saveIdeviceTinCanXML(this.ideviceId, tinCanStr);
+			this.saveTinCan(this.makeTinCanActivities());
 			this.bindEvents();
 		},
 		configurable: true,
@@ -542,17 +547,11 @@ eXeMCQIdevice.prototype = Object.create(Idevice.prototype, {
 						questionIds[i]);
 				
 				//for now set name and desc to be the same
-				var questionTextEls = ["name", "description"];
-				for(var j = 0; j < questionTextEls.length; j++) {
-					var questionTextEl = xmlDoc.createElementNS(ns, questionTextEls[j]);
-					questionTextEl.setAttribute("lang", "en");
-					questionTextEl.textContent = $("#taquestion" + this.ideviceId + "_" + questionIds[i]).text();
-					activityEl.appendChild(questionTextEl);
-				}
+				eXeTinCan.appendLangElements(activityEl, 
+						["name", "description"], "en", 
+						$("#taquestion" + this.ideviceId + "_" + questionIds[i]).text());
 				
-				var interactionTypeEl = xmlDoc.createElementNS(ns, "interactionType");
-				interactionTypeEl.textContent = "choice";
-				activityEl.appendChild(interactionTypeEl);
+				eXeTinCan.appendInteractionType(activityEl, "choice");
 				
 				var choicesEl = xmlDoc.createElementNS(ns, "choices");
 				activityEl.appendChild(choicesEl);

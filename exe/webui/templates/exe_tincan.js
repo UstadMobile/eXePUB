@@ -88,7 +88,7 @@ var eXeTinCan = (function() {
 				if(queryVars['registration']) {
 					_currentRegistrationUUID = queryVars['registration'];
 				}
-				this.loadState();
+				//this.loadState();
 	    	}
 	    },
 		
@@ -100,15 +100,24 @@ var eXeTinCan = (function() {
 		 * @param {Object} [opts] optional additional arguments
 		 * @param {Object} [opts.context] callback context to use
 		 */
-		getPackageTinCanID: function(callback, opts) {
-			this.getPackageTinCanXML((function(tcXmlDoc) {
+		getPackageTinCanID: function(opts, callback) {
+			this.getPackageTinCanXML(opts, (function(tcXmlDoc) {
 				var launchEl = tcXmlDoc.querySelector("launch");
 				var packageId = launchEl.parentNode.getAttribute("id");
 				callback.call(opts && opts.context ? opts.context : this, null, packageId);
 			}).bind(this));
 		},
 		
-		getPackageTinCanXML: function(callback, options) {
+		getTinCanAndPageIds: function(opts, callback) {
+			var cbContext = opts.context ? opts.context : this;
+			this.getPackageTinCanID(opts, (function(err, tinCanID) {
+				eXeEpubCommon.getPageID(opts, function(err, itemId) {
+					callback.call(cbContext, null, tinCanID, itemId);
+				});
+			}).bind(this));
+		},
+		
+		getPackageTinCanXML: function(options, callback) {
 			var pathToXML = "../tincan.xml";
 			var xmlHTTP = new XMLHttpRequest();
 			
@@ -128,7 +137,7 @@ var eXeTinCan = (function() {
 		},
 		
 		getActivitiesByInteractionType: function(interactionTypes, options, callback) {
-			this.getPackageTinCanXML((function(xmlDoc) {
+			this.getPackageTinCanXML({}, (function(xmlDoc) {
 				var matchingActivities = [];
 				var interactionTypeEls = xmlDoc.querySelectorAll("interactionType");
 				
@@ -155,7 +164,7 @@ var eXeTinCan = (function() {
 		},
 		
 		getActivitiesByExtension: function(extensionKey, extensionValue, options,  callback) {
-			this.getPackageTinCanXML((function(xmlDoc) {
+			this.getPackageTinCanXML({}, (function(xmlDoc) {
 				var matchingActivities = [];
 				var selector = "extension[key='" + extensionKey + "']";
 				var queryMatches = xmlDoc.querySelectorAll(selector);
@@ -230,7 +239,7 @@ var eXeTinCan = (function() {
 		
 		loadState: function() {
 			_xAPIstateStatus = eXeTinCan.STATE_LOADING;
-			this.getPackageTinCanID(function(err, pkgId){
+			this.getPackageTinCanID({}, function(err, pkgId){
 				var params = {
 					agent : this.getActor(),
 					activity: pkgId,
@@ -342,7 +351,39 @@ var eXeTinCan = (function() {
 		    	});
 			}
 			
-			return new TinCan.Statement(stmtParams);
+			return new TinCan.Statement(stmtParams, {'storeOriginal' : true});
+		},
+		
+		/**
+		 * Makes name and description elements with the lang 
+		 * 
+		 * @param {Element} element - the element (eg activity element) to add to
+		 * @param {Array} elementNames - Array of elements to create e.g. ['description', 'name']
+		 * @param {string} lang - the lang that the description / name is in e.g. en-us
+		 * @param {string} text - the text of the name/description itself
+		 */
+		appendLangElements: function(element, elementNames, lang, text) {
+			var textEl;
+			for(var j = 0; j < elementNames.length; j++) {
+				textEl = element.ownerDocument.createElementNS(
+						eXeEpubAuthoring.NS_TINCAN, elementNames[j]);
+				textEl.setAttribute("lang", lang);
+				textEl.textContent = text;
+				element.appendChild(textEl);
+			}
+		},
+		
+		/**
+		 * Appends an interactionType element to the given element
+		 * 
+		 * @param {Element} element The Element to append the interaction type to
+		 * @param {string} interactionType The text content put inside the interactionType e.g. choice, fill-in etc.
+		 */
+		appendInteractionType: function(element, interactionType) {
+			var iTypeEl = element.ownerDocument.createElementNS(
+					eXeEpubAuthoring.NS_TINCAN, "interactionType");
+			iTypeEl.textContent = interactionType;
+			element.appendChild(iTypeEl);
 		}
 	};
 	mod.init();

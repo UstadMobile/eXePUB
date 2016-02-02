@@ -40,6 +40,20 @@ Idevice.prototype = {
 	 */
 	editOff: function() {
 		
+	},
+	
+	/**
+	 * Save the given tincan activities on the server side as the 
+	 * tincan.xml representation of this idevice
+	 * 
+	 * @param {String|Document} The TinCan to save as an XML string or XML Document
+	 */
+	saveTinCan: function(tinCan) {
+		if(typeof tinCan !== "string") {
+			tinCan = new XMLSerializer().serializeToString(tinCan);
+		}
+		
+		eXeEpubAuthoring.saveIdeviceTinCanXML(this.ideviceId, tinCan);
 	}
 };
 
@@ -93,6 +107,11 @@ Idevice.registerType = function(typeId, cls) {
  */
 var eXeEpubCommon = (function() {
 	return {
+		
+		decodeURLComponent: function(comp) {
+			return decodeURIComponent(comp.replace("+", "%20"));
+		},
+		
 		getQueryVars: function(queryStr) {
             var locationQuery = window.location.search.substring.length >= 1 ?
                 window.location.search.substring(1) : "";
@@ -104,10 +123,61 @@ var eXeEpubCommon = (function() {
                 var vars = query.split("&");
                 for (var i=0;i<vars.length;i++) {
                     var pair = vars[i].split("=");
-                    retVal[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
+                    retVal[eXeEpubCommon.decodeURLComponent(pair[0])] = 
+                    	eXeEpubCommon.decodeURLComponent(pair[1]);
                 }
             }
             return retVal;
+        },
+        
+        
+        getOPF: function(opts, callback) {
+        	var opfPath = opts.opfPath ? opts.opfPath : "package.opf";
+        	
+        	//now load the opf
+        	var xmlHTTP = new XMLHttpRequest();
+        	xmlHTTP.onreadystatechange = (function(evt) {
+        		if(xmlHTTP.readyState === 4 && xmlHTTP.status === 200) {
+        			var xmlDoc = xmlHTTP.responseXML ? xmlHTTP.responseXML : 
+        				new DOMParser().parseFromString(xmlHTTP.responseText, "text/xml");
+        			callback.call(opts.context ? opts.context : this, 
+        					null, xmlDoc);
+        		}
+        	}).bind(this);
+        	xmlHTTP.open("get", opfPath, true);
+        	xmlHTTP.send();
+        },
+        
+        /**
+         * Finds out the current page id
+         * 
+         * @param {Object} opts
+         * @param {string} [opts.opfPath="package.opf"] Path to opf - defaults to package.opf
+         * @param {string} [opts.docPath=document.location.href] Path of the current document: 
+         *  defaults to using document.location.href
+         * @param {function} callback callback function accepting params (err, id)
+         *  
+         */
+        getPageID: function(opts, callback) {
+        	//TODO: Calculate this out when it could be in another directory
+        	var docPath = opts.docPath ? opts.docPath : document.location.href;
+        	var queryIndex = docPath.indexOf('?');
+        	var relativePath = docPath.substring(docPath.lastIndexOf('/')+1,
+        			queryIndex !== -1 ? queryIndex : docPath.length);
+        	this.getOPF(opts, (function(err, opfDoc){
+        		var itemId = this._getItemIdByHref(opfDoc, relativePath);
+            	callback.call(opts.context ? opts.context : this, 
+    					null, itemId);
+        	}).bind(this));
+        },
+        
+        _getItemIdByHref: function(opfDoc, pageHref) {
+        	var itemEl = opfDoc.querySelector("item[href='" + pageHref + "']");
+        	if(itemEl) {
+        		return itemEl.getAttribute("id");
+        	}else {
+        		return null;
+        	}
         }
         
 	};
