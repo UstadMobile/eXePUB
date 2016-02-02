@@ -494,12 +494,15 @@ var eXeEpubAuthoring = (function() {
 		
 		saveIdeviceTinCanXML: function(ideviceId, tincanXML, callback) {
 			var queryVars = eXeEpubAuthoring.getQueryVars();
+			var pageID = queryVars['exe-page-id'];
+			
 			var xmlHTTP = new XMLHttpRequest();
 			
 			xmlHTTP.open("POST", queryVars['exe-authoring-save-to'], true);
 			xmlHTTP.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 			xmlHTTP.send("action=saveidevicetincan&" +
-					"idevice_id=" + encodeURIComponent(ideviceId) +
+					"page_id=" + encodeURIComponent(pageID) +
+					"&idevice_id=" + encodeURIComponent(ideviceId) +
 					"&tincan_xml=" + encodeURIComponent(tincanXML));
 		},
 		

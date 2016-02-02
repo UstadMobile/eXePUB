@@ -1,0 +1,29 @@
+eXeLearning Experience API (XAPI) Implementation
+================================================
+
+The Experience API is implemented based on the Rustici launch method:
+
+https://github.com/RusticiSoftware/launch/blob/master/lms_lrs.md
+
+When xAPI parameters are provided the relevant iDevices will generate
+xAPI statements and send them to the defined LRS given by the 
+parameters from the Rustici Launch method.
+
+The ID scheme and setup is as follows and a tincan.xml file is created
+in the package root/tincan.xml as follows:
+
+1. The base activity ID is on the Acitivty that as per the tincan.xml
+spec has the launch element.  All other Activity IDs use this as their
+base.  It is in the form of epub:UUID where UUID is the generated UUID
+
+2. Other activities are in the form of the above prefix/page_id/idevice_id
+where page_id is the id of the page containing the idevice (as per the opf)
+and idevice_id is the generated idevice id (a unique serial number).  One
+Idevice (eg. Multi Choice Question) may generated multiple activities (eg
+for having multiple questions).  In this case the ID will be ideviceid_X
+where x is the idevice's own internal id scheme.
+
+iDevice generated Activities will have the extension key 
+ http://ustadmobile.com/ns/tincan-ext-idevice with the value of the
+idevice id itself.
+

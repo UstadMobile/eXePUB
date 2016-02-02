@@ -32,6 +32,9 @@ class TinCanXMLManager(object):
             
         self.update_launch_el()
     
+    def _get_base_id(self):
+        return "epub:%s" % self.package.main_opf.get_opf_id()
+    
     def update_launch_el(self, auto_save = True):
         #check to see if we have a launch item - if not - set it
         ns = TinCanXMLManager.NS_TINCAN
@@ -44,7 +47,7 @@ class TinCanXMLManager(object):
             launch_activity = launch_el.getparent()
         
         
-        launch_activity.set("id", self.package.main_opf.get_opf_id())
+        launch_activity.set("id", self._get_base_id())
         launch_activity.set("type", "http://adlnet.gov/expapi/activities/course")
         
         name_el = launch_activity.find("./{%s}name" % ns)
@@ -65,7 +68,7 @@ class TinCanXMLManager(object):
             self.save()
             
     
-    def set_activities_by_idevice(self, idevice_id, activities_str, auto_save = True):
+    def set_activities_by_idevice(self, page_id, idevice_id, activities_str, auto_save = True):
         ns = TinCanXMLManager.NS_TINCAN
         ext_key = TinCanXMLManager.EXT_KEY_IDEVICE
          
@@ -77,7 +80,11 @@ class TinCanXMLManager(object):
         activities_el = etree.fromstring(activities_str)
         doc_activities = self.xml_doc.find("./{%s}activities" % ns)
         
+        
+        id_prefix = self._get_base_id()
         for activity_el in activities_el:
+            activity_el.set("id", "%s/%s/%s" % (id_prefix, page_id, activity_el.get("id")))
+            
             extensions_el = activity_el.find("./{%s}extensions" % ns)
             if extensions_el is None:
                 extensions_el = etree.SubElement(activity_el, "{%s}extensions" % ns)

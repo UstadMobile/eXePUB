@@ -37,7 +37,8 @@ class AuthoringPageEPUB(RenderableResource):
                         request.args['idevice_id'][0], request.args['html'][0])
             elif request.args['action'][0] == "saveidevicetincan":
                 self.package.tincan_manager.set_activities_by_idevice(
-                        request.args['idevice_id'][0], request.args['tincan_xml'][0])
+                        request.args['page_id'][0], request.args['idevice_id'][0], 
+                        request.args['tincan_xml'][0])
                                                                       
      
     def render_GET(self, request=None):
