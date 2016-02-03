@@ -43,6 +43,16 @@ Idevice.prototype = {
 	},
 	
 	/**
+	 * Turn on or off tinymce editing on this idevice for any elements
+	 * that have the class exe-editable.  Such elements MUST also have
+	 * a unique id attribute
+	 */
+	setTinyMceEnabled: function(enabled) {
+		eXeEpubAuthoring.setTinyMceEnabledBySelector(this._getEl(), 
+				".exe-editable", enabled);
+	},
+	
+	/**
 	 * Save the given tincan activities on the server side as the 
 	 * tincan.xml representation of this idevice
 	 * 

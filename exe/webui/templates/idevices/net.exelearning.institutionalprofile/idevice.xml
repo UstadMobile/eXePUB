@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<idevice xmlns="http://www.ustadmobile.com/ns/exelearning-idevice">
+    <id>net.exelearning.institutionalprofile</id>
+    <label>Institutional Profile</label>
+    <category>BFW</category>
+    <visible>true</visible>
+    <cssclass>InstitutionalProfileIdevice</cssclass>
+    
+    <!--Map to exe-files/common -->
+    <system-resources>
+        <script>exe-epub-common.js</script>
+        <script>exe_jquery.js</script>
+        <script>tincan.js</script>
+        <script>exe_tincan.js</script>
+    </system-resources>
+    
+    <!-- Map to exe-files/idevices/ideviceid -->
+    <idevice-resources>
+        <script>institutional-profile-idevice.js</script>
+        <res>institutional-profile-template.html</res>
+    </idevice-resources>
+    
+</idevice>
