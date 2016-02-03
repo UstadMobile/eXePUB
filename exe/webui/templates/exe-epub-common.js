@@ -54,7 +54,42 @@ Idevice.prototype = {
 		}
 		
 		eXeEpubAuthoring.saveIdeviceTinCanXML(this.ideviceId, tinCan);
+	},
+	
+	/**
+	 * Used to create internal ids - included elements should have a
+	 * data-block-id attribute
+	 */
+	getNextBlockId: function() {
+		var maxId = 0;
+		var currentBlocks = this._getEl().querySelectorAll("[data-block-id");
+		for(var i = 0; i < currentBlocks.length; i++) {
+			try {
+				maxId = Math.max(maxId, 
+					parseInt(currentBlocks[i].getAttribute("data-block-id")));
+			}catch(err) {}//badly formatted/something else?
+		}
+		
+		return maxId + 1;
+	},
+	
+	/**
+	 * Goes through a given element and whenever the id contains
+	 * __IDEVICEID__ this will be replaced with the actual ideviceId
+	 * Useful for templates etc.
+	 */
+	setIdeviceIdAttrs: function(el) {
+		var elArr = el.querySelectorAll("[id]");
+		var id;
+		for(var i = 0; i < elArr.length; i++) {
+			id = elArr[i].getAttribute("id");
+			if(id.indexOf("__IDEVICEID__") !== -1) {
+				elArr[i].setAttribute("id", 
+					id.replace("__IDEVICEID__", this.ideviceId));
+			}
+		}
 	}
+	
 };
 
 Idevice._registeredDevices = {};

@@ -9,8 +9,7 @@ var LevelsTableIdevice = function(ideviceId) {
 
 LevelsTableIdevice.prototype = {
 	create: function() {
-		
-		 $("#id" + this.ideviceId).load("exe-files/idevices/net.exelearning.levelstable/levelstable-template.html .levels-table-template",
+		$("#id" + this.ideviceId).load("exe-files/idevices/net.exelearning.levelstable/levelstable-template.html .levels-table-template",
 				 this.bindEvents.bind(this));
 		 
 	},
@@ -82,20 +81,10 @@ LevelsTableIdevice.prototype = {
 		var selectSrc = $("<select/>", {
 			'class' : 'levels-table-selectsrc'
 		});
-		$(rowEditor).append(selectSrc);
 		
-		var sourceEls = this.availableCheckboxActivities;
-		var currentSrc =  $(row).attr("data-src-checkbox-table");
-		for(var i = 0; i < sourceEls.length; i++) {
-			var opt = $("<option/>", {
-				value: sourceEls[i].getAttribute("id")
-			}).text(sourceEls[i].querySelector("name").textContent);
-			if(currentSrc === sourceEls[i].getAttribute("id")) {
-				opt.attr("selected", "selected");
-			}
-			selectSrc.append(opt);
-		}
-		
+		$(rowEditor).append(
+				eXeEpubAuthoring.activitiesArrToSelectEl(
+						this.availableCheckboxActivities));
 		
 		$(rowEditor).append("Filter column:");
 		

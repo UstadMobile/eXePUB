@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <idevice xmlns="http://www.ustadmobile.com/ns/exelearning-idevice">
-    <id>net.exelearning.checkboxtable</id>
-    <label>Checkbox Table</label>
-    <category>Interactive</category>
+    <id>net.exelearning.actorsprofile</id>
+    <label>Actors Profile</label>
+    <category>BFW</category>
     <visible>true</visible>
-    <cssclass>CheckboxTableIdevice</cssclass>
+    <cssclass>ActorsProfileIdevice</cssclass>
     
     <!--Map to exe-files/common -->
     <system-resources>
@@ -17,7 +17,8 @@
     
     <!-- Map to exe-files/idevices/ideviceid -->
     <idevice-resources>
-        <script>checkboxtable-idevice.js</script>
+        <script>actorsprofile-idevice.js</script>
+        <res>actorsprofile-template.html</res>
     </idevice-resources>
     
 </idevice>

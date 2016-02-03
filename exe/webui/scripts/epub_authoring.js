@@ -533,6 +533,13 @@ var eXeEpubAuthoring = (function() {
 			}
 		},
 		
+		setTinyMceEnabledBySelector: function(parentEl, selector, editingEnabled, options) {
+			var editableEls = parentEl.querySelectorAll(selector);
+			for(var i = 0; i < editableEls.length; i++) {
+				eXeEpubAuthoring.setTinyMceEnabledById(editableEls[i].id, editingEnabled, options);
+			}
+		},
+		
 		/**
 		 * Before removing elements from the DOM: if they have tinyMCE 
 		 * attached we should turn it off so as not to confuse tinymce
@@ -568,6 +575,31 @@ var eXeEpubAuthoring = (function() {
 			}
 			
 			return dupNode.innerHTML;
+		},
+		
+		/**
+		 * Turn an array of activities into a selection dropdown element with
+		 * the current value (if any) selected
+		 * 
+		 * @param {Array} Array of activity elements to turn into dropdown
+		 * @param {string} currentVal the currently selected ID
+		 */
+		activitiesArrToSelectEl: function(activitiesArr, currentVal) {
+			var selectEl = document.createElement("select");
+			var optEl;
+			var activityId;
+			for(var i = 0; i < activitiesArr.length; i++) {
+				activityId = activitiesArr[i].getAttribute("id");
+				optEl = document.createElement("option");
+				optEl.setAttribute("value", activityId);
+				if(currentVal === activityId) {
+					optEl.setAttribute("selected", "selected");
+				}
+				optEl.textContent = activitiesArr[i].querySelector("name").textContent;
+				selectEl.appendChild(optEl);
+			}
+			
+			return selectEl;
 		}
 		
 	};
