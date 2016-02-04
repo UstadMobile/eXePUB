@@ -4,6 +4,8 @@
 
 var CheckboxTableIdevice = function(ideviceId) {
 	this.ideviceId = ideviceId;
+	
+	this._checkInputLabels();
 }
 
 CheckboxTableIdevice.prototype = {
@@ -156,7 +158,22 @@ CheckboxTableIdevice.prototype = {
 			'type': 'checkbox',
 			'id' : 'etcbox' + this.ideviceId + "_" + questionId + '_' + colId
 		}));
-		return $tdEl;
+		return $tdEl;_ggetEl()
+	},
+	
+	/**
+	 * Make sure that there is check box label for each checkbox
+	 */
+	_checkInputLabels: function(){
+		var checkboxEls = $(this._getEl()).find("input[type=checkbox]");
+		for(var i = 0; i < checkboxEls.length; i++) {
+			var nextEl = $(checkboxEls.get(i)).next();
+			if(nextEl.length < 1 || nextEl.get(0).nodeName !== "label") {
+				$(checkboxEls.get(i)).after($("<label/>", {
+					'for' : checkboxEls.get(i).id
+				}));
+			}
+		}
 	},
 	
 	_questionRowEditOn: function(questionId) {
@@ -297,6 +314,8 @@ CheckboxTableIdevice.prototype = {
 		var htmlToSave = eXeEpubAuthoring.getSavableHTML(this._getEl());
 		eXeEpubAuthoring.saveIdeviceHTML(this.ideviceId, htmlToSave);
 		
+		this._checkInputLabels();
+		
 		//make a tincan entry for this
 		
 		var checkboxTinCan = this.makeTinCanActivities();
@@ -385,6 +404,22 @@ CheckboxTableIdevice.prototype = {
 
 (function() {
 	var _idevices = {};
+	
+	
+	var _initFn = function() {
+		var allIdevices = document.querySelectorAll("div[data-idevice-type='net.exelearning.checkboxtable']");
+		var deviceId;
+		for(var i = 0; i < allIdevices.length; i++) {
+			deviceId = allIdevices[i].getAttribute("id").substring(2);//idevice id attributes are prefixed by the letters 'id'
+			_idevices = new CheckboxTableIdevice(deviceId);
+		}
+	};
+	
+	if(document.readyState === "interactive" || document.readyState === "complete") {
+		_initFn();
+	}else {
+		document.addEventListener("DOMContentLoaded", _initFn, false);
+	}
 	
 	document.addEventListener("idevicecreate", function(evt) {
 		if(evt.detail.ideviceType === "net.exelearning.checkboxtable") {
