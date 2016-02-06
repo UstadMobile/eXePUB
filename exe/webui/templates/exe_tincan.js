@@ -17,9 +17,16 @@ var eXeTinCan = (function() {
 	
 	/**
 	 * Array of arrays in the form of 
-	 * [key requested, callback function, opts]
+	 * [callback function, opts, key requested]
+	 * key requested is optional
 	 */
-	var _pendingReadyKeys = [];
+	var _pendingReadyCallbacks = [];
+	
+	var _PENDING_IDX_FN = 0;
+	
+	var _PENDING_IDX_OPTS = 1;
+	
+	var _PENDING_IDX_KEY = 2;
 	
 	var _xAPIstateStatus = 0;
 		
@@ -72,23 +79,23 @@ var eXeTinCan = (function() {
 	    	var queryVars = eXeEpubCommon.getQueryVars();
 	    	// Handle Rustici method
 	    	if(queryVars['actor']) {
-	    		debugger;
 	    	 	var queryActorStr = queryVars['actor'];
 		    	var ourActor = TinCan.Agent.fromJSON(queryActorStr);
 		    	this.setActor(ourActor);
 		    	
 				var newLRS = new TinCan.LRS({
 		            "endpoint" : queryVars['endpoint'],
-		            "version" : "1.0.0",
+		            "version" : "1.0.2",
 		            "user" : ourActor,
-		            'auth' : queryVars['auth']
+		            'auth' : queryVars['auth'],
+		            allowFail: false
 		        }); 
 		    	
 				_tinCan.recordStores[0] = newLRS;
 				if(queryVars['registration']) {
 					_currentRegistrationUUID = queryVars['registration'];
 				}
-				//this.loadState();
+				this.loadState();
 	    	}
 	    },
 		
@@ -233,55 +240,106 @@ var eXeTinCan = (function() {
 			if(_xAPIstateStatus === eXeTinCan.STATE_LOADED || _xAPIstateStatus === eXeTinCan.STATE_UNAVAILABLE) {
 				callback.call(opts && opts.context ? opts.context : this, _state[key]);
 			}else {
-				_pendingReadyKeys.push([key,callback, opts]);
+				_pendingReadyCallbacks.push([callback, opts, key]);
 			}
 		},
 		
-		loadState: function() {
-			_xAPIstateStatus = eXeTinCan.STATE_LOADING;
-			this.getPackageTinCanID({}, function(err, pkgId){
-				var params = {
-					agent : this.getActor(),
-					activity: pkgId,
-					callback : this.handleStateLoaded.bind(this)
-				};
-				
-				if(_currentRegistrationUUID !== -1) {
-					params.registration = _currentRegistration; 
-				}
-				
-				_tinCan.getState(KEY_CURRENT_REG, params);
-			}, {context : this})
-		},
-		
-		saveState: function() {
+		setPkgStateValue: function(key, value, callback, opts) {
+			_state[key] = value;
 			
 		},
 		
-		handleStateLoaded: function(state) {
-			if(_state === null) {
+		/**
+		 * Make the parameters required to get/save a state
+		 */
+		_makeStateParams: function(pkgId, callbackFn) {
+			var params = {
+				agent : this.getActor(),
+				activity: new TinCan.Activity({
+					id: pkgId
+				}),
+				callback : callbackFn
+			};
+			
+			if(_currentRegistrationUUID !== -1) {
+				params.registration = _currentRegistration; 
+			}
+			
+			return params;
+		},
+		
+		runAfterStateLoaded: function(opts, callback) {
+			if(_xAPIstateStatus == eXeTinCan.STATE_LOADED || _xAPIstateStatus == eXeTinCan.STATE_UNAVAILABLE) {
+				callback.call(opts.context ? opts.context : this)
+			}else {
+				_pendingReadyCallbacks.push([callback, opts]);
+			}
+		},
+		
+		loadState: function(opts, callback) {
+			_xAPIstateStatus = 1; // eXeTinCan.STATE_LOADING - Object not yet accessible when this runs
+			this.getPackageTinCanID(opts, function(err, pkgId){
+				var cbWrapper = (function(err, result) {
+					this.handleStateLoaded(err, result);
+					if(typeof callback === "function") {
+						callback.call(opts.context ? opts.context : this, 
+								err, result);
+					}
+				}).bind(this);
+				
+				var params = this._makeStateParams(pkgId, cbWrapper);
+				_tinCan.getState(STATE_ID, params);
+			}, {context : this})
+		},
+		
+
+		handleStateLoaded: function(err, result) {
+			if(err === null && result === null) {
+				//State has not been saved yet, it's blank
+				_xAPIstateStatus = eXeTinCan.STATE_LOADED;
+				_state = {};
+			}else if(result) {
+				_xAPIstateStatus = eXeTinCan.STATE_LOADED;
+				_state = result.contents;
+			}else {
 				_xAPIstateStatus = eXeTinCan.STATE_UNAVAILABLE;
 				//not good really... 
 				_state = {};
-			}else {
-				_xAPIstateStatus = eXeTinCan.STATE_LOADED;
-				_state = JSON.parse(state.content);
 			}
 			
 			var keyOpts;
 			var key;
-			for(var i = 0; i < _pendingReadyKeys.length; i++) {
+			var args;
+			for(var i = 0; i < _pendingReadyCallbacks.length; i++) {
 				try {
-					keyOpts = _pendingReadyKeys[i][2] ? _pendingReadyKeys[i][2] : {};
-					key = _pendingReadyKeys[i][0];
-					
-					_pendingReadyKeys[i][1].call(
-						keyOpts.context ? keyOpts.context : this, _state[key]);
+					args = [];
+					keyOpts = _pendingReadyCallbacks[i][_PENDING_IDX_OPTS] ? 
+							_pendingReadyCallbacks[i][_PENDING_IDX_OPTS] : {};
+					key = _pendingReadyCallbacks[i][_PENDING_IDX_KEY];
+					if(key) {
+						args.push(_state[key]);
+					}
+					_pendingReadyCallbacks[i][_PENDING_IDX_FN].apply(
+							keyOpts.context ? keyOpts.context : this, args);
 				}catch(err) {
 					console.log(err);
 				}
 			}
-			_pendingReadyKeys = [];
+			_pendingReadyCallbacks = [];
+		},
+		
+		saveState: function(opts, callback) {
+			this.getPackageTinCanID(opts, function(err, pkgId) {
+				var cbWrapper = (function(err, results) {
+					if(typeof callback === "function") {
+						callback.call(opts.context ? opts.context : this, err, results);
+					}
+				}).bind(this);
+				var params = this._makeStateParams(pkgId,
+						cbWrapper);
+				params.contentType = "application/json";
+				_tinCan.setState(STATE_ID, _state, params);
+			}, {context: this});
 		},
 		
 		/**

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<idevice xmlns="http://www.ustadmobile.com/ns/exelearning-idevice">
+    <id>net.exelearning.reviewcapacity</id>
+    <label>Review Capacity</label>
+    <category>BFW</category>
+    <visible>true</visible>
+    <cssclass>ReviewCapacityIdevice</cssclass>
+    
+    <!--Map to exe-files/common -->
+    <system-resources>
+        <script>exe-epub-common.js</script>
+        <script>exe_jquery.js</script>
+        <script>tincan.js</script>
+        <script>exe_tincan.js</script>
+    </system-resources>
+    
+    <!-- Map to exe-files/idevices/ideviceid -->
+    <idevice-resources>
+        <script>actorsprofile-idevice.js</script>
+        <res>actorsprofile-template.html</res>
+    </idevice-resources>
+    
+</idevice>

@@ -1,0 +1,26 @@
+<tincan xmlns="http://projecttincan.com/tincan.xsd">
+  <activities>
+    <activity id="epub:31dcdab7-617d-402e-a0b0-dba52ef21191" type="http://adlnet.gov/expapi/activities/course">
+      <name>Package</name>
+      <launch lang="en-us">index.html</launch>
+    </activity>
+    <activity id="epub:31dcdab7-617d-402e-a0b0-dba52ef21191/Page_1.xhtml/4_0">
+      <name lang="en">What is 1+1?</name>
+      <description lang="en">What is 1+1?</description>
+      <interactionType>choice</interactionType>
+      <choices>
+        <component>
+          <id>4_1</id>
+          <description lang="en">2</description>
+        </component>
+        <component>
+          <id>4_2</id>
+          <description lang="en">11</description>
+        </component>
+      </choices>
+      <extensions>
+        <extension key="http://ustadmobile.com/ns/tincan-ext-idevice">4</extension>
+      </extensions>
+    </activity>
+  </activities>
+</tincan>

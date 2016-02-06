@@ -1,3 +1,132 @@
+"0.41.0";
+/*
+CryptoJS v3.0.2
+code.google.com/p/crypto-js
+(c) 2009-2012 by Jeff Mott. All rights reserved.
+code.google.com/p/crypto-js/wiki/License
+*/
+var CryptoJS=CryptoJS||function(i,m){var p={},h=p.lib={},n=h.Base=function(){function a(){}return{extend:function(b){a.prototype=this;var c=new a;b&&c.mixIn(b);c.$super=this;return c},create:function(){var a=this.extend();a.init.apply(a,arguments);return a},init:function(){},mixIn:function(a){for(var c in a)a.hasOwnProperty(c)&&(this[c]=a[c]);a.hasOwnProperty("toString")&&(this.toString=a.toString)},clone:function(){return this.$super.extend(this)}}}(),o=h.WordArray=n.extend({init:function(a,b){a=
+this.words=a||[];this.sigBytes=b!=m?b:4*a.length},toString:function(a){return(a||e).stringify(this)},concat:function(a){var b=this.words,c=a.words,d=this.sigBytes,a=a.sigBytes;this.clamp();if(d%4)for(var f=0;f<a;f++)b[d+f>>>2]|=(c[f>>>2]>>>24-8*(f%4)&255)<<24-8*((d+f)%4);else if(65535<c.length)for(f=0;f<a;f+=4)b[d+f>>>2]=c[f>>>2];else b.push.apply(b,c);this.sigBytes+=a;return this},clamp:function(){var a=this.words,b=this.sigBytes;a[b>>>2]&=4294967295<<32-8*(b%4);a.length=i.ceil(b/4)},clone:function(){var a=
+n.clone.call(this);a.words=this.words.slice(0);return a},random:function(a){for(var b=[],c=0;c<a;c+=4)b.push(4294967296*i.random()|0);return o.create(b,a)}}),q=p.enc={},e=q.Hex={stringify:function(a){for(var b=a.words,a=a.sigBytes,c=[],d=0;d<a;d++){var f=b[d>>>2]>>>24-8*(d%4)&255;c.push((f>>>4).toString(16));c.push((f&15).toString(16))}return c.join("")},parse:function(a){for(var b=a.length,c=[],d=0;d<b;d+=2)c[d>>>3]|=parseInt(a.substr(d,2),16)<<24-4*(d%8);return o.create(c,b/2)}},g=q.Latin1={stringify:function(a){for(var b=
+a.words,a=a.sigBytes,c=[],d=0;d<a;d++)c.push(String.fromCharCode(b[d>>>2]>>>24-8*(d%4)&255));return c.join("")},parse:function(a){for(var b=a.length,c=[],d=0;d<b;d++)c[d>>>2]|=(a.charCodeAt(d)&255)<<24-8*(d%4);return o.create(c,b)}},j=q.Utf8={stringify:function(a){try{return decodeURIComponent(escape(g.stringify(a)))}catch(b){throw Error("Malformed UTF-8 data");}},parse:function(a){return g.parse(unescape(encodeURIComponent(a)))}},k=h.BufferedBlockAlgorithm=n.extend({reset:function(){this._data=o.create();
+this._nDataBytes=0},_append:function(a){"string"==typeof a&&(a=j.parse(a));this._data.concat(a);this._nDataBytes+=a.sigBytes},_process:function(a){var b=this._data,c=b.words,d=b.sigBytes,f=this.blockSize,e=d/(4*f),e=a?i.ceil(e):i.max((e|0)-this._minBufferSize,0),a=e*f,d=i.min(4*a,d);if(a){for(var g=0;g<a;g+=f)this._doProcessBlock(c,g);g=c.splice(0,a);b.sigBytes-=d}return o.create(g,d)},clone:function(){var a=n.clone.call(this);a._data=this._data.clone();return a},_minBufferSize:0});h.Hasher=k.extend({init:function(){this.reset()},
+reset:function(){k.reset.call(this);this._doReset()},update:function(a){this._append(a);this._process();return this},finalize:function(a){a&&this._append(a);this._doFinalize();return this._hash},clone:function(){var a=k.clone.call(this);a._hash=this._hash.clone();return a},blockSize:16,_createHelper:function(a){return function(b,c){return a.create(c).finalize(b)}},_createHmacHelper:function(a){return function(b,c){return l.HMAC.create(a,c).finalize(b)}}});var l=p.algo={};return p}(Math);
+(function(){var i=CryptoJS,m=i.lib,p=m.WordArray,m=m.Hasher,h=[],n=i.algo.SHA1=m.extend({_doReset:function(){this._hash=p.create([1732584193,4023233417,2562383102,271733878,3285377520])},_doProcessBlock:function(o,i){for(var e=this._hash.words,g=e[0],j=e[1],k=e[2],l=e[3],a=e[4],b=0;80>b;b++){if(16>b)h[b]=o[i+b]|0;else{var c=h[b-3]^h[b-8]^h[b-14]^h[b-16];h[b]=c<<1|c>>>31}c=(g<<5|g>>>27)+a+h[b];c=20>b?c+((j&k|~j&l)+1518500249):40>b?c+((j^k^l)+1859775393):60>b?c+((j&k|j&l|k&l)-1894007588):c+((j^k^l)-
+899497514);a=l;l=k;k=j<<30|j>>>2;j=g;g=c}e[0]=e[0]+g|0;e[1]=e[1]+j|0;e[2]=e[2]+k|0;e[3]=e[3]+l|0;e[4]=e[4]+a|0},_doFinalize:function(){var i=this._data,h=i.words,e=8*this._nDataBytes,g=8*i.sigBytes;h[g>>>5]|=128<<24-g%32;h[(g+64>>>9<<4)+15]=e;i.sigBytes=4*h.length;this._process()}});i.SHA1=m._createHelper(n);i.HmacSHA1=m._createHmacHelper(n)})();
+
+/*
+CryptoJS v3.0.2
+code.google.com/p/crypto-js
+(c) 2009-2012 by Jeff Mott. All rights reserved.
+code.google.com/p/crypto-js/wiki/License
+*/
+(function () {
+    // Shortcuts
+    var C = CryptoJS;
+    var C_lib = C.lib;
+    var WordArray = C_lib.WordArray;
+    var C_enc = C.enc;
+
+    /**
+     * Base64 encoding strategy.
+     */
+    var Base64 = C_enc.Base64 = {
+        /**
+         * Converts a word array to a Base64 string.
+         *
+         * @param {WordArray} wordArray The word array.
+         *
+         * @return {string} The Base64 string.
+         *
+         * @static
+         *
+         * @example
+         *
+         *     var base64String = CryptoJS.enc.Base64.stringify(wordArray);
+         */
+        stringify: function (wordArray) {
+            // Shortcuts
+            var words = wordArray.words;
+            var sigBytes = wordArray.sigBytes;
+            var map = this._map;
+
+            // Clamp excess bits
+            wordArray.clamp();
+
+            // Convert
+            var base64Chars = [];
+            for (var i = 0; i < sigBytes; i += 3) {
+                var byte1 = (words[i >>> 2]       >>> (24 - (i % 4) * 8))       & 0xff;
+                var byte2 = (words[(i + 1) >>> 2] >>> (24 - ((i + 1) % 4) * 8)) & 0xff;
+                var byte3 = (words[(i + 2) >>> 2] >>> (24 - ((i + 2) % 4) * 8)) & 0xff;
+
+                var triplet = (byte1 << 16) | (byte2 << 8) | byte3;
+
+                for (var j = 0; (j < 4) && (i + j * 0.75 < sigBytes); j++) {
+                    base64Chars.push(map.charAt((triplet >>> (6 * (3 - j))) & 0x3f));
+                }
+            }
+
+            // Add padding
+            var paddingChar = map.charAt(64);
+            if (paddingChar) {
+                while (base64Chars.length % 4) {
+                    base64Chars.push(paddingChar);
+                }
+            }
+
+            return base64Chars.join('');
+        },
+
+        /**
+         * Converts a Base64 string to a word array.
+         *
+         * @param {string} base64Str The Base64 string.
+         *
+         * @return {WordArray} The word array.
+         *
+         * @static
+         *
+         * @example
+         *
+         *     var wordArray = CryptoJS.enc.Base64.parse(base64String);
+         */
+        parse: function (base64Str) {
+            // Ignore whitespaces
+            base64Str = base64Str.replace(/\s/g, '');
+
+            // Shortcuts
+            var base64StrLength = base64Str.length;
+            var map = this._map;
+
+            // Ignore padding
+            var paddingChar = map.charAt(64);
+            if (paddingChar) {
+                var paddingIndex = base64Str.indexOf(paddingChar);
+                if (paddingIndex != -1) {
+                    base64StrLength = paddingIndex;
+                }
+            }
+
+            // Convert
+            var words = [];
+            var nBytes = 0;
+            for (var i = 0; i < base64StrLength; i++) {
+                if (i % 4) {
+                    var bitsHigh = map.indexOf(base64Str.charAt(i - 1)) << ((i % 4) * 2);
+                    var bitsLow  = map.indexOf(base64Str.charAt(i)) >>> (6 - (i % 4) * 2);
+                    words[nBytes >>> 2] |= (bitsHigh | bitsLow) << (24 - (nBytes % 4) * 8);
+                    nBytes++;
+                }
+            }
+
+            return WordArray.create(words, nBytes);
+        },
+
+        _map: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='
+    };
+}());
+
 /*!
     Copyright 2012 Rustici Software
 
@@ -131,10 +260,11 @@ var TinCan;
         @param {String} msg Message to output
         */
         log: function (msg, src) {
+            /* globals console */
             if (TinCan.DEBUG && typeof console !== "undefined" && console.log) {
                 src = src || this.LOG_SRC || "TinCan";
 
-                console.log("TinCan." + src + ': ' + msg);
+                console.log("TinCan." + src + ": " + msg);
             }
         },
 
@@ -199,7 +329,6 @@ var TinCan;
                 qsParams = TinCan.Utils.parseURL(url).params,
                 lrsProps = ["endpoint", "auth"],
                 lrsCfg = {},
-                activityCfg,
                 contextCfg,
                 extended = null
             ;
@@ -225,10 +354,8 @@ var TinCan;
             }
 
             if (
-                qsParams.hasOwnProperty("activity_platform")
-                ||
-                qsParams.hasOwnProperty("registration")
-                ||
+                qsParams.hasOwnProperty("activity_platform") ||
+                qsParams.hasOwnProperty("registration") ||
                 qsParams.hasOwnProperty("grouping")
             ) {
                 contextCfg = {};
@@ -519,7 +646,7 @@ var TinCan;
                 {
                     actor: actor,
                     verb: {
-                       id: "http://adlnet.gov/expapi/verbs/voided"
+                        id: "http://adlnet.gov/expapi/verbs/voided"
                     },
                     target: {
                         objectType: "StatementRef",
@@ -724,7 +851,10 @@ var TinCan;
         @param {Object} [cfg] Configuration for request
             @param {Boolean} [cfg.sendActor] Include default actor in query params
             @param {Boolean} [cfg.sendActivity] Include default activity in query params
-            @param {Object} [cfg.params] Parameters used to filter
+            @param {Object} [cfg.params] Parameters used to filter.
+                            These are the same as those accepted by the
+                            <a href="TinCan.LRS.html#method_queryStatements">LRS.queryStatements</a>
+                            method.
 
             @param {Function} [cfg.callback] Function to run at completion
 
@@ -850,6 +980,7 @@ var TinCan;
                 defaults to 'registration' property if empty
             @param {String} [cfg.lastSHA1] SHA1 of the previously seen existing state
             @param {String} [cfg.contentType] Content-Type to specify in headers
+            @param {Boolean} [cfg.overwriteJSON] If the Content-Type is JSON, should a PUT be used? 
             @param {Function} [cfg.callback] Function to run with state
         */
         setState: function (key, val, cfg) {
@@ -886,6 +1017,9 @@ var TinCan;
                 }
                 if (typeof cfg.contentType !== "undefined") {
                     queryCfg.contentType = cfg.contentType;
+                    if ((typeof cfg.overwriteJSON !== "undefined") && (! cfg.overwriteJSON) && (TinCan.Utils.isApplicationJSON(cfg.contentType))) {
+                        queryCfg.method = "POST";
+                    }
                 }
                 if (typeof cfg.callback !== "undefined") {
                     queryCfg.callback = cfg.callback;
@@ -997,6 +1131,7 @@ var TinCan;
                 defaults to 'activity' property if empty
             @param {String} [cfg.lastSHA1] SHA1 of the previously seen existing profile
             @param {String} [cfg.contentType] Content-Type to specify in headers
+            @param {Boolean} [cfg.overwriteJSON] If the Content-Type is JSON, should a PUT be used?
             @param {Function} [cfg.callback] Function to run with activity profile
         */
         setActivityProfile: function (key, val, cfg) {
@@ -1029,6 +1164,9 @@ var TinCan;
                 }
                 if (typeof cfg.contentType !== "undefined") {
                     queryCfg.contentType = cfg.contentType;
+                    if ((typeof cfg.overwriteJSON !== "undefined") && (! cfg.overwriteJSON) && (TinCan.Utils.isApplicationJSON(cfg.contentType))) {
+                        queryCfg.method = "POST";
+                    }
                 }
 
                 return lrs.saveActivityProfile(key, val, queryCfg);
@@ -1126,6 +1264,7 @@ var TinCan;
                 defaults to 'actor' property if empty
             @param {String} [cfg.lastSHA1] SHA1 of the previously seen existing profile
             @param {String} [cfg.contentType] Content-Type to specify in headers
+            @param {Boolean} [cfg.overwriteJSON] If the Content-Type is JSON, should a PUT be used?
             @param {Function} [cfg.callback] Function to run with agent profile
         */
         setAgentProfile: function (key, val, cfg) {
@@ -1158,6 +1297,9 @@ var TinCan;
                 }
                 if (typeof cfg.contentType !== "undefined") {
                     queryCfg.contentType = cfg.contentType;
+                    if ((typeof cfg.overwriteJSON !== "undefined") && (! cfg.overwriteJSON) && (TinCan.Utils.isApplicationJSON(cfg.contentType))) {
+                        queryCfg.method = "POST";
+                    }
                 }
 
                 return lrs.saveAgentProfile(key, val, queryCfg);
@@ -1242,6 +1384,7 @@ var TinCan;
     TinCan.versions = function () {
         // newest first so we can use the first as the default
         return [
+            "1.0.2",
             "1.0.1",
             "1.0.0",
             "0.95",
@@ -1249,12 +1392,13 @@ var TinCan;
         ];
     };
 
-    /*global exports*/
+    /*global module*/
     // Support the CommonJS method for exporting our single global
     if (typeof module === "object") {
         module.exports = TinCan;
     }
 }());
+
 /*
     Copyright 2012 Rustici Software
 
@@ -1298,11 +1442,11 @@ TinCan client library
         Dual licensed under the MIT and GPL licenses.
         */
         getUUID: function () {
-            /*jslint bitwise: true eqeq: true */
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
+            /*jslint bitwise: true, eqeq: true */
+            return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
                 /[xy]/g,
                 function (c) {
-                    var r = Math.random() * 16|0, v = c == 'x' ? r : (r&0x3|0x8);
+                    var r = Math.random() * 16|0, v = c == "x" ? r : (r&0x3|0x8);
                     return v.toString(16);
                 }
             );
@@ -1328,20 +1472,113 @@ TinCan client library
                 tempVal = val.toString();
 
                 while (val < padder && padder > 1) {
-                    tempVal = '0' + tempVal;
+                    tempVal = "0" + tempVal;
                     padder = padder / 10;
                 }
 
                 return tempVal;
             }
 
-            return d.getUTCFullYear() + '-'
-                + pad(d.getUTCMonth() + 1) + '-'
-                + pad(d.getUTCDate()) + 'T'
-                + pad(d.getUTCHours()) + ':'
-                + pad(d.getUTCMinutes()) + ':'
-                + pad(d.getUTCSeconds()) + '.'
-                + pad(d.getUTCMilliseconds(), 3) + 'Z';
+            return d.getUTCFullYear() + "-" +
+                pad(d.getUTCMonth() + 1) + "-" +
+                pad(d.getUTCDate()) + "T" +
+                pad(d.getUTCHours()) + ":" +
+                pad(d.getUTCMinutes()) + ":" +
+                pad(d.getUTCSeconds()) + "." +
+                pad(d.getUTCMilliseconds(), 3) + "Z";
+        },
+
+        /**
+        @method convertISO8601DurationToMilliseconds
+        @static
+        @param {String} ISO8601Duration Duration in ISO8601 format
+        @return {Int} Duration in milliseconds
+
+        Note: does not handle input strings with years, months and days
+        */
+        convertISO8601DurationToMilliseconds: function (ISO8601Duration) {
+            var isValueNegative = (ISO8601Duration.indexOf("-") >= 0),
+                indexOfT = ISO8601Duration.indexOf("T"),
+                indexOfH = ISO8601Duration.indexOf("H"),
+                indexOfM = ISO8601Duration.indexOf("M"),
+                indexOfS = ISO8601Duration.indexOf("S"),
+                hours,
+                minutes,
+                seconds,
+                durationInMilliseconds;
+
+            if ((indexOfT === -1) || ((indexOfM !== -1) && (indexOfM < indexOfT)) || (ISO8601Duration.indexOf("D") !== -1) || (ISO8601Duration.indexOf("Y") !== -1)) {
+                throw new Error("ISO 8601 timestamps including years, months and/or days are not currently supported");
+            }
+
+            if (indexOfH === -1) {
+                indexOfH = indexOfT;
+                hours = 0;
+            }
+            else {
+                hours = parseInt(ISO8601Duration.slice(indexOfT + 1, indexOfH), 10);
+            }
+
+            if (indexOfM === -1) {
+                indexOfM = indexOfT;
+                minutes = 0;
+            }
+            else {
+                minutes = parseInt(ISO8601Duration.slice(indexOfH + 1, indexOfM), 10);
+            }
+
+            seconds = parseFloat(ISO8601Duration.slice(indexOfM + 1, indexOfS));
+
+            durationInMilliseconds = parseInt((((((hours * 60) + minutes) * 60) + seconds) * 1000), 10);
+            if (isNaN(durationInMilliseconds)){
+                durationInMilliseconds = 0;
+            }
+            if (isValueNegative) {
+                durationInMilliseconds = durationInMilliseconds * -1;
+            }
+
+            return durationInMilliseconds;
+        },
+
+        /**
+        @method convertMillisecondsToISO8601Duration
+        @static
+        @param {Int} inputMilliseconds Duration in milliseconds
+        @return {String} Duration in ISO8601 format
+        */
+        convertMillisecondsToISO8601Duration: function (inputMilliseconds) {
+            var hours,
+                minutes,
+                seconds,
+                i_inputMilliseconds = parseInt(inputMilliseconds, 10),
+                i_inputCentiseconds,
+                inputIsNegative = "",
+                rtnStr = "";
+
+            //round to nearest 0.01 seconds
+            i_inputCentiseconds = Math.round(i_inputMilliseconds / 10);
+
+            if (i_inputCentiseconds < 0) {
+                inputIsNegative = "-";
+                i_inputCentiseconds = i_inputCentiseconds * -1;
+            }
+
+            hours = parseInt(((i_inputCentiseconds) / 360000), 10);
+            minutes = parseInt((((i_inputCentiseconds) % 360000) / 6000), 10);
+            seconds = (((i_inputCentiseconds) % 360000) % 6000) / 100;
+
+            rtnStr = inputIsNegative + "PT";
+            if (hours > 0) {
+                rtnStr += hours + "H";
+            }
+
+            if (minutes > 0) {
+                rtnStr += minutes + "M";
+            }
+
+            rtnStr += seconds + "S";
+
+            return rtnStr;
         },
 
         /**
@@ -1404,30 +1641,113 @@ TinCan client library
         /**
         @method parseURL
         @param {String} url
+        @param {Object} [options]
+            @param {Boolean} [options.allowRelative] Option to allow relative URLs
         @return {Object} Object of values
         @private
         */
-        parseURL: function (url) {
-            var parts = String(url).split('?'),
-                pairs,
-                pair,
-                i,
-                params = {}
-            ;
-            if (parts.length === 2) {
-                pairs = parts[1].split('&');
-                for (i = 0; i < pairs.length; i += 1) {
-                    pair = pairs[i].split('=');
-                    if (pair.length === 2 && pair[0]) {
-                        params[pair[0]] = decodeURIComponent(pair[1]);
-                    }
+        parseURL: function (url, cfg) {
+            //
+            // see http://stackoverflow.com/a/21553982
+            // and http://stackoverflow.com/a/2880929
+            //
+            var isRelative = url.charAt(0) === "/",
+                _reURLInformation = [
+                    "(/[^?#]*)", // pathname
+                    "(\\?[^#]*|)", // search
+                    "(#.*|)$" // hash
+                ],
+                reURLInformation,
+                match,
+                result,
+                paramMatch,
+                pl     = /\+/g,  // Regex for replacing addition symbol with a space
+                search = /([^&=]+)=?([^&]*)/g,
+                decode = function (s) { return decodeURIComponent(s.replace(pl, " ")); };
+
+            cfg = cfg || {};
+
+            //
+            // this method in an earlier version supported relative URLs, mostly to provide
+            // support to the `LRS.moreStatements` method, that functionality was removed and
+            // subsequently restored but with the addition of the option for allowing relative
+            // URLs to be accepted which is the reason for the "helpful" exception message here
+            //
+            if (! isRelative) {
+                //
+                // not relative so make sure they have a scheme, host, etc.
+                //
+                _reURLInformation.unshift(
+                    "^(https?:)//", // scheme
+                    "(([^:/?#]*)(?::([0-9]+))?)" // host (hostname and port)
+                );
+
+                //
+                // our regex requires there to be a '/' for the detection of the start
+                // of the path, we can detect a '/' using indexOf beyond the part of the
+                // scheme, since we've restricted scheme to 'http' or 'https' and because
+                // a hostname is guaranteed to be there we can detect beyond the '://'
+                // based on position, then tack on a trailing '/' because it can't be
+                // part of the path
+                //
+                if (url.indexOf("/", 8) === -1) {
+                    url = url + "/";
+                }
+            }
+            else {
+                //
+                // relative so make sure they allow that explicitly
+                //
+                if (typeof cfg.allowRelative === "undefined" || ! cfg.allowRelative) {
+                    throw new Error("Refusing to parse relative URL without 'allowRelative' option");
                 }
             }
 
-            return {
-                path: parts[0],
-                params: params
-            };
+            reURLInformation = new RegExp(_reURLInformation.join(""));
+            match = url.match(reURLInformation);
+            if (match === null) {
+                throw new Error("Unable to parse URL regular expression did not match: '" + url + "'");
+            }
+
+            // 'path' is for backwards compatibility
+            if (isRelative) {
+                result = {
+                    protocol: null,
+                    host: null,
+                    hostname: null,
+                    port: null,
+                    path: null,
+                    pathname: match[1],
+                    search: match[2],
+                    hash: match[3],
+                    params: {}
+                };
+
+                result.path = result.pathname;
+            }
+            else {
+                result = {
+                    protocol: match[1],
+                    host: match[2],
+                    hostname: match[3],
+                    port: match[4],
+                    pathname: match[5],
+                    search: match[6],
+                    hash: match[7],
+                    params: {}
+                };
+
+                result.path = result.protocol + "//" + result.host + result.pathname;
+            }
+
+            if (result.search !== "") {
+                // extra parens to let jshint know this is an expression
+                while ((paramMatch = search.exec(result.search.substring(1)))) {
+                    result.params[decode(paramMatch[1])] = decode(paramMatch[2]);
+                }
+            }
+
+            return result;
         },
 
         /**
@@ -1462,6 +1782,7 @@ TinCan client library
         }
     };
 }());
+
 /*
     Copyright 2012-2013 Rustici Software
 
@@ -1645,6 +1966,17 @@ TinCan client library
         },
 
         /**
+        Method is overloaded by the browser environment in order to test converting an
+        HTTP request that is greater than a defined length
+
+        @method _IEModeConversion
+        @private
+        */
+        _IEModeConversion: function () {
+            this.log("_IEModeConversion not overloaded - browser environment not loaded.");
+        },
+
+        /**
         Method used to send a request via browser objects to the LRS
 
         @method sendRequest
@@ -1705,23 +2037,98 @@ TinCan client library
         },
 
         /**
+        Method used to determine the LRS version
+
+        @method about
+        @param {Object} cfg Configuration object for the about request
+            @param {Function} [cfg.callback] Callback to execute upon receiving a response
+            @param {Object} [cfg.params] this is needed, but can be empty
+        @return {Object} About which holds the version, or asyncrhonously calls a specified callback
+        */
+        about: function (cfg) {
+            this.log("about");
+            var requestCfg,
+                requestResult,
+                callbackWrapper;
+
+            cfg = cfg || {};
+
+            requestCfg = {
+                url: "about",
+                method: "GET",
+                params: {}
+            };
+            if (typeof cfg.callback !== "undefined") {
+                callbackWrapper = function (err, xhr) {
+                    var result = xhr;
+
+                    if (err === null) {
+                        result = TinCan.About.fromJSON(xhr.responseText);
+                    }
+
+                    cfg.callback(err, result);
+                };
+                requestCfg.callback = callbackWrapper;
+            }
+
+            requestResult = this.sendRequest(requestCfg);
+
+            if (callbackWrapper) {
+                return;
+            }
+
+            if (requestResult.err === null) {
+                requestResult.xhr = TinCan.About.fromJSON(requestResult.xhr.responseText);
+            }
+            return requestResult;
+        },
+
+        /**
         Save a statement, when used from a browser sends to the endpoint using the RESTful interface.
         Use a callback to make the call asynchronous.
 
         @method saveStatement
-        @param {Object} TinCan.Statement to send
+        @param {TinCan.Statement} statement to send
         @param {Object} [cfg] Configuration used when saving
             @param {Function} [cfg.callback] Callback to execute on completion
         */
         saveStatement: function (stmt, cfg) {
             this.log("saveStatement");
-            var requestCfg;
+            var requestCfg,
+                versionedStatement;
 
             cfg = cfg || {};
 
+            try {
+                versionedStatement = stmt.asVersion( this.version );
+            }
+            catch (ex) {
+                if (this.allowFail) {
+                    this.log("[warning] statement could not be serialized in version (" + this.version + "): " + ex);
+                    if (typeof cfg.callback !== "undefined") {
+                        cfg.callback(null, null);
+                        return;
+                    }
+                    return {
+                        err: null,
+                        xhr: null
+                    };
+                }
+
+                this.log("[error] statement could not be serialized in version (" + this.version + "): " + ex);
+                if (typeof cfg.callback !== "undefined") {
+                    cfg.callback(ex, null);
+                    return;
+                }
+                return {
+                    err: ex,
+                    xhr: null
+                };
+            }
+
             requestCfg = {
                 url: "statements",
-                data: JSON.stringify(stmt.asVersion( this.version )),
+                data: JSON.stringify(versionedStatement),
                 headers: {
                     "Content-Type": "application/json"
                 }
@@ -1750,7 +2157,7 @@ TinCan client library
         @param {String} ID of statement to retrieve
         @param {Object} [cfg] Configuration options
             @param {Function} [cfg.callback] Callback to execute on completion
-        @return {Object} TinCan.Statement retrieved
+        @return {TinCan.Statement} Statement retrieved
         */
         retrieveStatement: function (stmtId, cfg) {
             this.log("retrieveStatement");
@@ -1798,7 +2205,7 @@ TinCan client library
         @param {String} ID of voided statement to retrieve
         @param {Object} [cfg] Configuration options
             @param {Function} [cfg.callback] Callback to execute on completion
-        @return {Object} TinCan.Statement retrieved
+        @return {TinCan.Statement} Statement retrieved
         */
         retrieveVoidedStatement: function (stmtId, cfg) {
             this.log("retrieveVoidedStatement");
@@ -1856,6 +2263,7 @@ TinCan client library
         saveStatements: function (stmts, cfg) {
             this.log("saveStatements");
             var requestCfg,
+                versionedStatement,
                 versionedStatements = [],
                 i
             ;
@@ -1864,15 +2272,43 @@ TinCan client library
 
             if (stmts.length === 0) {
                 if (typeof cfg.callback !== "undefined") {
-                    cfg.callback.apply(this, ["no statements"]);
+                    cfg.callback(new Error("no statements"), null);
+                    return;
                 }
-                return;
+                return {
+                    err: new Error("no statements"),
+                    xhr: null
+                };
             }
 
             for (i = 0; i < stmts.length; i += 1) {
-                versionedStatements.push(
-                    stmts[i].asVersion( this.version )
-                );
+                try {
+                    versionedStatement = stmts[i].asVersion( this.version );
+                }
+                catch (ex) {
+                    if (this.allowFail) {
+                        this.log("[warning] statement could not be serialized in version (" + this.version + "): " + ex);
+                        if (typeof cfg.callback !== "undefined") {
+                            cfg.callback(null, null);
+                            return;
+                        }
+                        return {
+                            err: null,
+                            xhr: null
+                        };
+                    }
+
+                    this.log("[error] statement could not be serialized in version (" + this.version + "): " + ex);
+                    if (typeof cfg.callback !== "undefined") {
+                        cfg.callback(ex, null);
+                        return;
+                    }
+                    return {
+                        err: ex,
+                        xhr: null
+                    };
+                }
+                versionedStatements.push(versionedStatement);
             }
 
             requestCfg = {
@@ -2062,6 +2498,7 @@ TinCan client library
                 };
 
             compatibility["0.95"] = compatibility["0.9"];
+            compatibility["1.0.1"] = compatibility["1.0.0"];
 
             if (cfg.params.hasOwnProperty("target")) {
                 cfg.params.object = cfg.params.target;
@@ -2099,7 +2536,7 @@ TinCan client library
             }
 
             for (i = 0; i < valProps.length; i += 1) {
-                if (typeof cfg.params[valProps[i]] !== "undefined") {
+                if (typeof cfg.params[valProps[i]] !== "undefined" && cfg.params[valProps[i]] !== null) {
                     params[valProps[i]] = cfg.params[valProps[i]];
                 }
             }
@@ -2131,25 +2568,24 @@ TinCan client library
 
             // to support our interface (to support IE) we need to break apart
             // the more URL query params so that the request can be made properly later
-            parsedURL = TinCan.Utils.parseURL(cfg.url);
+            parsedURL = TinCan.Utils.parseURL(cfg.url, { allowRelative: true });
 
-            //Respect a more URL that is relative to either the server root 
-            //or endpoint (though only the former is allowed in the spec)
+            // Respect a more URL that is relative to either the server root
+            // or endpoint (though only the former is allowed in the spec)
             serverRoot = TinCan.Utils.getServerRoot(this.endpoint);
             if (parsedURL.path.indexOf("/statements") === 0){
-                parsedURL.path = this.endpoint.replace(serverRoot, '') + parsedURL.path;
+                parsedURL.path = this.endpoint.replace(serverRoot, "") + parsedURL.path;
                 this.log("converting non-standard more URL to " + parsedURL.path);
             }
 
-            //The more relative URL might not start with a slash, add it if not
+            // The more relative URL might not start with a slash, add it if not
             if (parsedURL.path.indexOf("/") !== 0) {
                 parsedURL.path = "/" + parsedURL.path;
             }
 
             requestCfg = {
                 method: "GET",
-                //For arbitrary more URLs to work, 
-                //we need to make the URL absolute here
+                // For arbitrary more URLs to work, we need to make the URL absolute here
                 url: serverRoot + parsedURL.path,
                 params: parsedURL.params
             };
@@ -2185,21 +2621,25 @@ TinCan client library
         @method retrieveState
         @param {String} key Key of state to retrieve
         @param {Object} cfg Configuration options
-            @param {Object} cfg.activity TinCan.Activity
-            @param {Object} cfg.agent TinCan.Agent
+            @param {TinCan.Activity} cfg.activity Activity in document identifier
+            @param {TinCan.Agent} cfg.agent Agent in document identifier
             @param {String} [cfg.registration] Registration
             @param {Function} [cfg.callback] Callback to execute on completion
                 @param {Object|Null} cfg.callback.error
                 @param {TinCan.State|null} cfg.callback.result null if state is 404
-        @return {Object} TinCan.State retrieved when synchronous, or result from sendRequest
+            @param {Object} [cfg.requestHeaders] Object containing additional headers to add to request
+        @return {TinCan.State|Object} TinCan.State retrieved when synchronous, or result from sendRequest
         */
         retrieveState: function (key, cfg) {
             this.log("retrieveState");
             var requestParams = {},
                 requestCfg = {},
                 requestResult,
-                callbackWrapper
-            ;
+                callbackWrapper,
+                requestHeaders,
+                self = this;
+
+            requestHeaders = cfg.requestHeaders || {};
 
             requestParams = {
                 stateId: key,
@@ -2211,7 +2651,7 @@ TinCan client library
             else {
                 requestParams.agent = JSON.stringify(cfg.agent.asVersion(this.version));
             }
-            if (typeof cfg.registration !== "undefined") {
+            if ((typeof cfg.registration !== "undefined") && (cfg.registration !== null)) {
                 if (this.version === "0.9") {
                     requestParams.registrationId = cfg.registration;
                 }
@@ -2224,8 +2664,10 @@ TinCan client library
                 url: "activities/state",
                 method: "GET",
                 params: requestParams,
-                ignore404: true
+                ignore404: true,
+                headers: requestHeaders
             };
+
             if (typeof cfg.callback !== "undefined") {
                 callbackWrapper = function (err, xhr) {
                     var result = xhr;
@@ -2264,7 +2706,7 @@ TinCan client library
                                 try {
                                     result.contents = JSON.parse(result.contents);
                                 } catch (ex) {
-                                    this.log("retrieveState - failed to deserialize JSON: " + ex);
+                                    self.log("retrieveState - failed to deserialize JSON: " + ex);
                                 }
                             }
                         }
@@ -2316,32 +2758,138 @@ TinCan client library
         },
 
         /**
+        Retrieve the list of IDs for a state, when used from a browser sends to the endpoint using the RESTful interface.
+
+        @method retrieveStateIds
+        @param {Object} cfg Configuration options
+            @param {TinCan.Activity} cfg.activity Activity in document identifier
+            @param {TinCan.Agent} cfg.agent Agent in document identifier
+            @param {String} [cfg.registration] Registration
+            @param {Function} [cfg.callback] Callback to execute on completion
+            @param {String} [cfg.since] Match activity profiles saved since given timestamp
+            @param {Object} [cfg.requestHeaders] Optional object containing additional headers to add to request
+        @return {Object} requestResult Request result
+        */
+        retrieveStateIds: function (cfg) {
+            this.log("retrieveStateIds");
+            var requestParams = {},
+                requestCfg,
+                requestHeaders,
+                requestResult,
+                callbackWrapper;
+
+            cfg = cfg || {};
+            requestHeaders = cfg.requestHeaders || {};
+
+            requestParams.activityId = cfg.activity.id;
+            if (this.version === "0.9") {
+                requestParams.actor = JSON.stringify(cfg.agent.asVersion(this.version));
+            }
+            else {
+                requestParams.agent = JSON.stringify(cfg.agent.asVersion(this.version));
+            }
+            if ((typeof cfg.registration !== "undefined") && (cfg.registration !== null)) {
+                if (this.version === "0.9") {
+                    requestParams.registrationId = cfg.registration;
+                }
+                else {
+                    requestParams.registration = cfg.registration;
+                }
+            }
+
+            requestCfg = {
+                url: "activities/state",
+                method: "GET",
+                params: requestParams,
+                headers: requestHeaders,
+                ignore404: true
+            };
+            if (typeof cfg.callback !== "undefined") {
+                callbackWrapper = function (err, xhr) {
+                    var result = xhr;
+
+                    if (err !== null) {
+                        cfg.callback(err, result);
+                        return;
+                    }
+
+                    if (xhr.status === 404) {
+                        result = [];
+                    }
+                    else {
+                        try {
+                            result = JSON.parse(xhr.responseText);
+                        }
+                        catch (ex) {
+                            err = "Response JSON parse error: " + ex;
+                        }
+                    }
+
+                    cfg.callback(err, result);
+                };
+                requestCfg.callback = callbackWrapper;
+            }
+            if (typeof cfg.since !== "undefined") {
+                requestCfg.params.since = cfg.since;
+            }
+
+            requestResult = this.sendRequest(requestCfg);
+            if (! callbackWrapper) {
+                requestResult.profileIds = null;
+                if (requestResult.err !== null) {
+                    return requestResult;
+                }
+
+                if (requestResult.xhr.status === 404) {
+                    requestResult.profileIds = [];
+                }
+                else {
+                    try {
+                        requestResult.profileIds = JSON.parse(requestResult.xhr.responseText);
+                    }
+                    catch (ex) {
+                        requestResult.err = "retrieveStateIds - JSON parse error: " + ex;
+                    }
+                }
+            }
+            return requestResult;
+        },
+
+        /**
         Save a state value, when used from a browser sends to the endpoint using the RESTful interface.
 
         @method saveState
         @param {String} key Key of state to save
         @param val Value to be stored
         @param {Object} cfg Configuration options
-            @param {Object} cfg.activity TinCan.Activity
-            @param {Object} cfg.agent TinCan.Agent
+            @param {TinCan.Activity} cfg.activity Activity in document identifier
+            @param {TinCan.Agent} cfg.agent Agent in document identifier
             @param {String} [cfg.registration] Registration
             @param {String} [cfg.lastSHA1] SHA1 of the previously seen existing state
             @param {String} [cfg.contentType] Content-Type to specify in headers (defaults to 'application/octet-stream')
+            @param {String} [cfg.method] Method to use. Default: PUT
             @param {Function} [cfg.callback] Callback to execute on completion
+            @param {Object} [cfg.requestHeaders] Optional object containing additional headers to add to request
         */
         saveState: function (key, val, cfg) {
             this.log("saveState");
             var requestParams,
                 requestCfg,
-                requestResult
-            ;
+                requestHeaders;
+
+            requestHeaders = cfg.requestHeaders || {};
 
             if (typeof cfg.contentType === "undefined") {
                 cfg.contentType = "application/octet-stream";
             }
+            requestHeaders["Content-Type"] = cfg.contentType;
 
             if (typeof val === "object" && TinCan.Utils.isApplicationJSON(cfg.contentType)) {
                 val = JSON.stringify(val);
+            }
+
+            if (typeof cfg.method === "undefined" || cfg.method !== "POST") {
+                cfg.method = "PUT";
             }
 
             requestParams = {
@@ -2354,7 +2902,7 @@ TinCan client library
             else {
                 requestParams.agent = JSON.stringify(cfg.agent.asVersion(this.version));
             }
-            if (typeof cfg.registration !== "undefined") {
+            if ((typeof cfg.registration !== "undefined") && (cfg.registration !== null)) {
                 if (this.version === "0.9") {
                     requestParams.registrationId = cfg.registration;
                 }
@@ -2365,13 +2913,12 @@ TinCan client library
 
             requestCfg = {
                 url: "activities/state",
-                method: "PUT",
+                method: cfg.method,
                 params: requestParams,
                 data: val,
-                headers: {
-                    "Content-Type": cfg.contentType
-                }
+                headers: requestHeaders
             };
+
             if (typeof cfg.callback !== "undefined") {
                 requestCfg.callback = cfg.callback;
             }
@@ -2388,16 +2935,19 @@ TinCan client library
         @method dropState
         @param {String|null} key Key of state to delete, or null for all
         @param {Object} cfg Configuration options
-            @param {Object} [cfg.activity] TinCan.Activity
-            @param {Object} [cfg.agent] TinCan.Agent
+            @param {TinCan.Activity} cfg.activity Activity in document identifier
+            @param {TinCan.Agent} cfg.agent Agent in document identifier
             @param {String} [cfg.registration] Registration
             @param {Function} [cfg.callback] Callback to execute on completion
+            @param {Object} [cfg.requestHeaders] Optional object containing additional headers to add to request
         */
         dropState: function (key, cfg) {
             this.log("dropState");
             var requestParams,
-                requestCfg
-            ;
+                requestCfg,
+                requestHeaders;
+
+            requestHeaders = cfg.requestHeaders || {};
 
             requestParams = {
                 activityId: cfg.activity.id
@@ -2411,7 +2961,7 @@ TinCan client library
             if (key !== null) {
                 requestParams.stateId = key;
             }
-            if (typeof cfg.registration !== "undefined") {
+            if ((typeof cfg.registration !== "undefined") && (cfg.registration !== null)) {
                 if (this.version === "0.9") {
                     requestParams.registrationId = cfg.registration;
                 }
@@ -2423,8 +2973,10 @@ TinCan client library
             requestCfg = {
                 url: "activities/state",
                 method: "DELETE",
-                params: requestParams
+                params: requestParams,
+                headers: requestHeaders
             };
+
             if (typeof cfg.callback !== "undefined") {
                 requestCfg.callback = cfg.callback;
             }
@@ -2433,21 +2985,102 @@ TinCan client library
         },
 
         /**
+        Retrieve an activity, when used from a browser sends to the endpoint using the RESTful interface.
+
+        @method retrieveActivity
+        @param {String} activityId id of the Activity to retrieve
+        @param {Object} cfg Configuration options
+            @param {Function} [cfg.callback] Callback to execute on completion
+            @param {Object} [cfg.requestHeaders] Optional object containing additional headers to add to request
+        @return {Object} Value retrieved
+        */
+        retrieveActivity: function (activityId, cfg) {
+            this.log("retrieveActivity");
+            var requestCfg = {},
+                requestResult,
+                callbackWrapper,
+                requestHeaders;
+
+            requestHeaders = cfg.requestHeaders || {};
+
+            requestCfg = {
+                url: "activities",
+                method: "GET",
+                params: {
+                    activityId: activityId
+                },
+                ignore404: true,
+                headers: requestHeaders
+            };
+
+            if (typeof cfg.callback !== "undefined") {
+                callbackWrapper = function (err, xhr) {
+                    var result = xhr;
+
+                    if (err === null) {
+                        //
+                        // a 404 really shouldn't happen because the LRS can dynamically
+                        // build the response based on what has been passed to it, but
+                        // don't have the client fail in the condition that it does, because
+                        // we can do the same thing
+                        //
+                        if (xhr.status === 404) {
+                            result = new TinCan.Activity(
+                                {
+                                    id: activityId
+                                }
+                            );
+                        }
+                        else {
+                            result = TinCan.Activity.fromJSON(xhr.responseText);
+                        }
+                    }
+
+                    cfg.callback(err, result);
+                };
+                requestCfg.callback = callbackWrapper;
+            }
+
+            requestResult = this.sendRequest(requestCfg);
+            if (! callbackWrapper) {
+                requestResult.activity = null;
+                if (requestResult.err === null) {
+                    if (requestResult.xhr.status === 404) {
+                        requestResult.activity = new TinCan.Activity(
+                            {
+                                id: activityId
+                            }
+                        );
+                    }
+                    else {
+                        requestResult.activity = TinCan.Activity.fromJSON(requestResult.xhr.responseText);
+                    }
+                }
+            }
+
+            return requestResult;
+        },
+
+        /**
         Retrieve an activity profile value, when used from a browser sends to the endpoint using the RESTful interface.
 
         @method retrieveActivityProfile
         @param {String} key Key of activity profile to retrieve
         @param {Object} cfg Configuration options
-            @param {Object} cfg.activity TinCan.Activity
+            @param {TinCan.Activity} cfg.activity Activity in document identifier
             @param {Function} [cfg.callback] Callback to execute on completion
+            @param {Object} [cfg.requestHeaders] Optional object containing additional headers to add to request
         @return {Object} Value retrieved
         */
         retrieveActivityProfile: function (key, cfg) {
             this.log("retrieveActivityProfile");
             var requestCfg = {},
                 requestResult,
-                callbackWrapper
-            ;
+                callbackWrapper,
+                requestHeaders,
+                self = this;
+
+            requestHeaders = cfg.requestHeaders || {};
 
             requestCfg = {
                 url: "activities/profile",
@@ -2456,8 +3089,10 @@ TinCan client library
                     profileId: key,
                     activityId: cfg.activity.id
                 },
-                ignore404: true
+                ignore404: true,
+                headers: requestHeaders
             };
+
             if (typeof cfg.callback !== "undefined") {
                 callbackWrapper = function (err, xhr) {
                     var result = xhr;
@@ -2495,7 +3130,7 @@ TinCan client library
                                 try {
                                     result.contents = JSON.parse(result.contents);
                                 } catch (ex) {
-                                    this.log("retrieveActivityProfile - failed to deserialize JSON: " + ex);
+                                    self.log("retrieveActivityProfile - failed to deserialize JSON: " + ex);
                                 }
                             }
                         }
@@ -2548,23 +3183,114 @@ TinCan client library
         },
 
         /**
+        Retrieve the list of IDs for an activity profile, when used from a browser sends to the endpoint using the RESTful interface.
+
+        @method retrieveActivityProfileIds
+        @param {Object} cfg Configuration options
+            @param {TinCan.Activity} cfg.activity Activity in document identifier
+            @param {Function} [cfg.callback] Callback to execute on completion
+            @param {String} [cfg.since] Match activity profiles saved since given timestamp
+            @param {Object} [cfg.requestHeaders] Optional object containing additional headers to add to request
+        @return {Array} List of ids for this Activity profile
+        */
+        retrieveActivityProfileIds: function (cfg) {
+            this.log("retrieveActivityProfileIds");
+            var requestCfg,
+                requestHeaders,
+                requestResult,
+                callbackWrapper;
+
+            cfg = cfg || {};
+            requestHeaders = cfg.requestHeaders || {};
+
+            requestCfg = {
+                url: "activities/profile",
+                method: "GET",
+                params: {
+                    activityId: cfg.activity.id
+                },
+                headers: requestHeaders,
+                ignore404: true
+            };
+            if (typeof cfg.callback !== "undefined") {
+                callbackWrapper = function (err, xhr) {
+                    var result = xhr;
+
+                    if (err !== null) {
+                        cfg.callback(err, result);
+                        return;
+                    }
+
+                    if (xhr.status === 404) {
+                        result = [];
+                    }
+                    else {
+                        try {
+                            result = JSON.parse(xhr.responseText);
+                        }
+                        catch (ex) {
+                            err = "Response JSON parse error: " + ex;
+                        }
+                    }
+
+                    cfg.callback(err, result);
+                };
+                requestCfg.callback = callbackWrapper;
+            }
+            if (typeof cfg.since !== "undefined") {
+                requestCfg.params.since = cfg.since;
+            }
+
+            requestResult = this.sendRequest(requestCfg);
+            if (! callbackWrapper) {
+                requestResult.profileIds = null;
+                if (requestResult.err !== null) {
+                    return requestResult;
+                }
+
+                if (requestResult.xhr.status === 404) {
+                    requestResult.profileIds = [];
+                }
+                else {
+                    try {
+                        requestResult.profileIds = JSON.parse(requestResult.xhr.responseText);
+                    }
+                    catch (ex) {
+                        requestResult.err = "retrieveActivityProfileIds - JSON parse error: " + ex;
+                    }
+                }
+            }
+            return requestResult;
+        },
+
+        /**
         Save an activity profile value, when used from a browser sends to the endpoint using the RESTful interface.
 
         @method saveActivityProfile
         @param {String} key Key of activity profile to retrieve
         @param val Value to be stored
         @param {Object} cfg Configuration options
-            @param {Object} cfg.activity TinCan.Activity
+            @param {TinCan.Activity} cfg.activity Activity in document identifier
             @param {String} [cfg.lastSHA1] SHA1 of the previously seen existing profile
             @param {String} [cfg.contentType] Content-Type to specify in headers (defaults to 'application/octet-stream')
+            @param {String} [cfg.method] Method to use. Default: PUT
             @param {Function} [cfg.callback] Callback to execute on completion
+            @param {Object} [cfg.requestHeaders] Optional object containing additional headers to add to request
         */
         saveActivityProfile: function (key, val, cfg) {
             this.log("saveActivityProfile");
-            var requestCfg;
+            var requestCfg,
+                requestHeaders;
+
+            requestHeaders = cfg.requestHeaders || {};
 
             if (typeof cfg.contentType === "undefined") {
                 cfg.contentType = "application/octet-stream";
+            }
+            requestHeaders["Content-Type"] = cfg.contentType;
+
+            if (typeof cfg.method === "undefined" || cfg.method !== "POST") {
+                cfg.method = "PUT";
             }
 
             if (typeof val === "object" && TinCan.Utils.isApplicationJSON(cfg.contentType)) {
@@ -2573,16 +3299,15 @@ TinCan client library
 
             requestCfg = {
                 url: "activities/profile",
-                method: "PUT",
+                method: cfg.method,
                 params: {
                     profileId: key,
                     activityId: cfg.activity.id
                 },
                 data: val,
-                headers: {
-                    "Content-Type": cfg.contentType
-                }
+                headers: requestHeaders
             };
+
             if (typeof cfg.callback !== "undefined") {
                 requestCfg.callback = cfg.callback;
             }
@@ -2597,19 +3322,23 @@ TinCan client library
         },
 
         /**
-        Drop an activity profile value or all of the activity profile, when used from a browser sends to the endpoint using the RESTful interface.
+        Drop an activity profile value, when used from a browser sends to the endpoint using the RESTful interface. Full activity profile
+        delete is not supported by the spec.
 
         @method dropActivityProfile
-        @param {String|null} key Key of activity profile to delete, or null for all
+        @param {String|null} key Key of activity profile to delete
         @param {Object} cfg Configuration options
-            @param {Object} cfg.activity TinCan.Activity
+            @param {TinCan.Activity} cfg.activity Activity in document identifier
             @param {Function} [cfg.callback] Callback to execute on completion
+            @param {Object} [cfg.requestHeaders] Optional object containing additional headers to add to request
         */
         dropActivityProfile: function (key, cfg) {
             this.log("dropActivityProfile");
             var requestParams,
-                requestCfg
-            ;
+                requestCfg,
+                requestHeaders;
+
+            requestHeaders = cfg.requestHeaders || {};
 
             requestParams = {
                 profileId: key,
@@ -2619,8 +3348,10 @@ TinCan client library
             requestCfg = {
                 url: "activities/profile",
                 method: "DELETE",
-                params: requestParams
+                params: requestParams,
+                headers: requestHeaders
             };
+
             if (typeof cfg.callback !== "undefined") {
                 requestCfg.callback = cfg.callback;
             }
@@ -2634,24 +3365,30 @@ TinCan client library
         @method retrieveAgentProfile
         @param {String} key Key of agent profile to retrieve
         @param {Object} cfg Configuration options
-            @param {Object} cfg.agent TinCan.Agent
+            @param {TinCan.Agent} cfg.agent Agent in document identifier
             @param {Function} [cfg.callback] Callback to execute on completion
+            @param {Object} [cfg.requestHeaders] Optional object containing additional headers to add to request
         @return {Object} Value retrieved
         */
         retrieveAgentProfile: function (key, cfg) {
             this.log("retrieveAgentProfile");
             var requestCfg = {},
                 requestResult,
-                callbackWrapper
-            ;
+                callbackWrapper,
+                requestHeaders,
+                self = this;
+
+            requestHeaders = cfg.requestHeaders || {};
 
             requestCfg = {
                 method: "GET",
                 params: {
                     profileId: key
                 },
-                ignore404: true
+                ignore404: true,
+                headers: requestHeaders
             };
+
             if (this.version === "0.9") {
                 requestCfg.url = "actors/profile";
                 requestCfg.params.actor = JSON.stringify(cfg.agent.asVersion(this.version));
@@ -2697,7 +3434,7 @@ TinCan client library
                                 try {
                                     result.contents = JSON.parse(result.contents);
                                 } catch (ex) {
-                                    this.log("retrieveAgentProfile - failed to deserialize JSON: " + ex);
+                                    self.log("retrieveAgentProfile - failed to deserialize JSON: " + ex);
                                 }
                             }
                         }
@@ -2750,23 +3487,122 @@ TinCan client library
         },
 
         /**
+        Retrieve the list of profileIds for an agent profile, when used from a browser sends to the endpoint using the RESTful interface.
+
+        @method retrieveAgentProfileIds
+        @param {Object} cfg Configuration options
+            @param {TinCan.Agent} cfg.agent Agent in document identifier
+            @param {Function} [cfg.callback] Callback to execute on completion
+            @param {String} [cfg.since] Match activity profiles saved since given timestamp
+            @param {Object} [cfg.requestHeaders] Optional object containing additional headers to add to request
+        @return {Array} List of profileIds for this Agent
+
+        */
+        retrieveAgentProfileIds: function (cfg) {
+            this.log("retrieveAgentProfileIds");
+            var requestParams = {},
+                requestCfg,
+                requestHeaders,
+                requestResult,
+                callbackWrapper;
+
+            cfg = cfg || {};
+            requestHeaders = cfg.requestHeaders || {};
+
+            requestCfg = {
+                method: "GET",
+                params: requestParams,
+                headers: requestHeaders,
+                ignore404: true
+            };
+
+            if (this.version === "0.9") {
+                requestCfg.url = "actors/profile";
+                requestParams.actor = JSON.stringify(cfg.agent.asVersion(this.version));
+            }
+            else {
+                requestCfg.url = "agents/profile";
+                requestParams.agent = JSON.stringify(cfg.agent.asVersion(this.version));
+            }
+            if (typeof cfg.callback !== "undefined") {
+                callbackWrapper = function (err, xhr) {
+                    var result = xhr;
+
+                    if (err !== null) {
+                        cfg.callback(err, result);
+                        return;
+                    }
+
+                    if (xhr.status === 404) {
+                        result = [];
+                    }
+                    else {
+                        try {
+                            result = JSON.parse(xhr.responseText);
+                        }
+                        catch (ex) {
+                            err = "Response JSON parse error: " + ex;
+                        }
+                    }
+
+                    cfg.callback(err, result);
+                };
+                requestCfg.callback = callbackWrapper;
+            }
+            if (typeof cfg.since !== "undefined") {
+                requestCfg.params.since = cfg.since;
+            }
+
+            requestResult = this.sendRequest(requestCfg);
+            if (! callbackWrapper) {
+                requestResult.profileIds = null;
+                if (requestResult.err !== null) {
+                    return requestResult;
+                }
+
+                if (requestResult.xhr.status === 404) {
+                    requestResult.profileIds = [];
+                }
+                else {
+                    try {
+                        requestResult.profileIds = JSON.parse(requestResult.xhr.responseText);
+                    }
+                    catch (ex) {
+                        requestResult.err = "retrieveAgentProfileIds - JSON parse error: " + ex;
+                    }
+                }
+            }
+            return requestResult;
+        },
+
+        /**
         Save an agent profile value, when used from a browser sends to the endpoint using the RESTful interface.
 
         @method saveAgentProfile
         @param {String} key Key of agent profile to retrieve
         @param val Value to be stored
         @param {Object} cfg Configuration options
-            @param {Object} cfg.agent TinCan.Agent
+            @param {TinCan.Agent} cfg.agent Agent in document identifier
             @param {String} [cfg.lastSHA1] SHA1 of the previously seen existing profile
             @param {String} [cfg.contentType] Content-Type to specify in headers (defaults to 'application/octet-stream')
+            @param {String} [cfg.method] Method to use. Default: PUT
             @param {Function} [cfg.callback] Callback to execute on completion
+            @param {Object} [cfg.requestHeaders] Optional object containing additional headers to add to request
         */
         saveAgentProfile: function (key, val, cfg) {
             this.log("saveAgentProfile");
-            var requestCfg;
+            var requestCfg,
+                requestHeaders;
+
+            requestHeaders = cfg.requestHeaders || {};
 
             if (typeof cfg.contentType === "undefined") {
                 cfg.contentType = "application/octet-stream";
+            }
+            requestHeaders["Content-Type"] = cfg.contentType;
+
+            if (typeof cfg.method === "undefined" || cfg.method !== "POST") {
+                cfg.method = "PUT";
             }
 
             if (typeof val === "object" && TinCan.Utils.isApplicationJSON(cfg.contentType)) {
@@ -2774,15 +3610,14 @@ TinCan client library
             }
 
             requestCfg = {
-                method: "PUT",
+                method: cfg.method,
                 params: {
                     profileId: key
                 },
                 data: val,
-                headers: {
-                    "Content-Type": cfg.contentType
-                }
+                headers: requestHeaders
             };
+
             if (this.version === "0.9") {
                 requestCfg.url = "actors/profile";
                 requestCfg.params.actor = JSON.stringify(cfg.agent.asVersion(this.version));
@@ -2805,27 +3640,33 @@ TinCan client library
         },
 
         /**
-        Drop an agent profile value or all of the agent profile, when used from a browser sends to the endpoint using the RESTful interface.
+        Drop an agent profile value, when used from a browser sends to the endpoint using the RESTful interface. Full agent profile
+        delete is not supported by the spec.
 
         @method dropAgentProfile
-        @param {String|null} key Key of agent profile to delete, or null for all
+        @param {String|null} key Key of agent profile to delete
         @param {Object} cfg Configuration options
-            @param {Object} cfg.agent TinCan.Agent
+            @param {TinCan.Agent} cfg.agent Agent in document identifier
             @param {Function} [cfg.callback] Callback to execute on completion
+            @param {Object} [cfg.requestHeaders] Optional object containing additional headers to add to request
         */
         dropAgentProfile: function (key, cfg) {
             this.log("dropAgentProfile");
             var requestParams,
-                requestCfg
-            ;
+                requestCfg,
+                requestHeaders;
+
+            requestHeaders = cfg.requestHeaders || {};
 
             requestParams = {
                 profileId: key
             };
             requestCfg = {
                 method: "DELETE",
-                params: requestParams
+                params: requestParams,
+                headers: requestHeaders
             };
+
             if (this.version === "0.9") {
                 requestCfg.url = "actors/profile";
                 requestParams.actor = JSON.stringify(cfg.agent.asVersion(this.version));
@@ -2841,7 +3682,14 @@ TinCan client library
             return this.sendRequest(requestCfg);
         }
     };
+
+    /**
+    Allows client code to determine whether their environment supports synchronous xhr handling
+    @static this is a static property, set by the environment
+    */
+    LRS.syncEnabled = null;
 }());
+
 /*
     Copyright 2012 Rustici Software
 
@@ -2892,7 +3740,7 @@ TinCan client library
         /**
         @property LOG_SRC
         */
-        LOG_SRC: 'AgentAccount',
+        LOG_SRC: "AgentAccount",
 
         /**
         @method log
@@ -2909,9 +3757,7 @@ TinCan client library
                 directProps = [
                     "name",
                     "homePage"
-                ],
-                val
-            ;
+                ];
 
             cfg = cfg || {};
 
@@ -2930,7 +3776,7 @@ TinCan client library
             }
         },
 
-        toString: function (lang) {
+        toString: function () {
             this.log("toString");
             var result = "";
 
@@ -2980,6 +3826,7 @@ TinCan client library
         return new AgentAccount(_acct);
     };
 }());
+
 /*
     Copyright 2012 Rustici Software
 
@@ -3184,7 +4031,7 @@ TinCan client library
             }
         },
 
-        toString: function (lang) {
+        toString: function () {
             this.log("toString");
 
             if (this.name !== null) {
@@ -3274,6 +4121,7 @@ TinCan client library
         return new Agent(_agent);
     };
 }());
+
 /*
     Copyright 2012 Rustici Software
 
@@ -3435,6 +4283,7 @@ TinCan client library
         return new Group(_group);
     };
 }());
+
 /*
     Copyright 2012 Rustici Software
 
@@ -3623,6 +4472,7 @@ TinCan client library
         return new Verb(_verb);
     };
 }());
+
 /*
     Copyright 2012 Rustici Software
 
@@ -3697,7 +4547,7 @@ TinCan client library
         /**
         @property LOG_SRC
         */
-        LOG_SRC: 'Result',
+        LOG_SRC: "Result",
 
         /**
         @method log
@@ -3760,8 +4610,7 @@ TinCan client library
                 optionalObjProps = [
                     "score"
                 ],
-                i,
-                prop;
+                i;
 
             version = version || TinCan.versions()[0];
 
@@ -3802,6 +4651,7 @@ TinCan client library
         return new Result(_result);
     };
 }());
+
 /*
     Copyright 2012 Rustici Software
 
@@ -3864,7 +4714,7 @@ TinCan client library
         /**
         @property LOG_SRC
         */
-        LOG_SRC: 'Score',
+        LOG_SRC: "Score",
 
         /**
         @method log
@@ -3909,8 +4759,7 @@ TinCan client library
                     "min",
                     "max"
                 ],
-                i,
-                prop;
+                i;
 
             version = version || TinCan.versions()[0];
 
@@ -3936,6 +4785,7 @@ TinCan client library
         return new Score(_score);
     };
 }());
+
 /*
     Copyright 2012 Rustici Software
 
@@ -3986,7 +4836,7 @@ TinCan client library
         /**
         @property LOG_SRC
         */
-        LOG_SRC: 'InteractionComponent',
+        LOG_SRC: "InteractionComponent",
 
         /**
         @method log
@@ -4062,6 +4912,7 @@ TinCan client library
         return new InteractionComponent(_ic);
     };
 }());
+
 /*
     Copyright 2012 Rustici Software
 
@@ -4384,6 +5235,7 @@ TinCan client library
         return new ActivityDefinition(_definition);
     };
 }());
+
 /*
     Copyright 2012 Rustici Software
 
@@ -4441,7 +5293,7 @@ TinCan client library
         /**
         @property LOG_SRC
         */
-        LOG_SRC: 'Activity',
+        LOG_SRC: "Activity",
 
         /**
         @method log
@@ -4533,6 +5385,7 @@ TinCan client library
         return new Activity(_activity);
     };
 }());
+
 /*
     Copyright 2013 Rustici Software
 
@@ -4566,6 +5419,12 @@ TinCan client library
         this.log("constructor");
 
         /**
+        @property category
+        @type Array
+        */
+        this.category = null;
+
+        /**
         @property parent
         @type Array
         */
@@ -4589,7 +5448,7 @@ TinCan client library
         /**
         @property LOG_SRC
         */
-        LOG_SRC: 'ContextActivities',
+        LOG_SRC: "ContextActivities",
 
         /**
         @method log
@@ -4606,6 +5465,7 @@ TinCan client library
             var i,
                 j,
                 objProps = [
+                    "category",
                     "parent",
                     "grouping",
                     "other"
@@ -4635,11 +5495,11 @@ TinCan client library
 
         /**
         @method add
-        @param String key Property to add value to one of "parent", "grouping", "other"
+        @param String key Property to add value to one of "category", "parent", "grouping", "other"
         @return Number index where the value was added
         */
         add: function (key, val) {
-            if (key !== "parent" && key !== "grouping" && key !== "other") {
+            if (key !== "category" && key !== "parent" && key !== "grouping" && key !== "other") {
                 return;
             }
 
@@ -4648,7 +5508,7 @@ TinCan client library
             }
 
             if (! (val instanceof TinCan.Activity)) {
-                val = typeof val === 'string' ? { id: val } : val;
+                val = typeof val === "string" ? { id: val } : val;
                 val = new TinCan.Activity (val);
             }
 
@@ -4670,8 +5530,7 @@ TinCan client library
                     "other"
                 ],
                 i,
-                j,
-                prop;
+                j;
 
             version = version || TinCan.versions()[0];
 
@@ -4680,7 +5539,7 @@ TinCan client library
                     if (version === "0.9" || version === "0.95") {
                         if (this[optionalObjProps[i]].length > 1) {
                             // TODO: exception?
-                            this.log("[WARNING] version does not support multiple values in: " + optionalObjProps[i]);
+                            this.log("[warning] version does not support multiple values in: " + optionalObjProps[i]);
                         }
 
                         result[optionalObjProps[i]] = this[optionalObjProps[i]][0].asVersion(version);
@@ -4692,6 +5551,18 @@ TinCan client library
                                 this[optionalObjProps[i]][j].asVersion(version)
                             );
                         }
+                    }
+                }
+            }
+            if (this.category !== null && this.category.length > 0) {
+                if (version === "0.9" || version === "0.95") {
+                    this.log("[error] version does not support the 'category' property: " + version);
+                    throw new Error(version + " does not support the 'category' property");
+                }
+                else {
+                    result.category = [];
+                    for (i = 0; i < this.category.length; i += 1) {
+                        result.category.push(this.category[i].asVersion(version));
                     }
                 }
             }
@@ -4712,6 +5583,7 @@ TinCan client library
         return new ContextActivities(_contextActivities);
     };
 }());
+
 /*
     Copyright 2012 Rustici Software
 
@@ -4788,7 +5660,7 @@ TinCan client library
 
         /**
         @property statement
-        @type SubStatement|StatementRef|null
+        @type StatementRef|null
         */
         this.statement = null;
 
@@ -4804,7 +5676,7 @@ TinCan client library
         /**
         @property LOG_SRC
         */
-        LOG_SRC: 'Context',
+        LOG_SRC: "Context",
 
         /**
         @method log
@@ -4824,7 +5696,6 @@ TinCan client library
                     "revision",
                     "platform",
                     "language",
-                    "statement",
                     "extensions"
                 ],
                 agentGroupProps = [
@@ -4870,6 +5741,24 @@ TinCan client library
                     this.contextActivities = new TinCan.ContextActivities(cfg.contextActivities);
                 }
             }
+
+            if (cfg.hasOwnProperty("statement") && cfg.statement !== null) {
+                if (cfg.statement instanceof TinCan.StatementRef) {
+                    this.statement = cfg.statement;
+                }
+                else if (cfg.statement instanceof TinCan.SubStatement) {
+                    this.statement = cfg.statement;
+                }
+                else if (cfg.statement.objectType === "StatementRef") {
+                    this.statement = new TinCan.StatementRef(cfg.statement);
+                }
+                else if (cfg.statement.objectType === "SubStatement") {
+                    this.statement = new TinCan.SubStatement(cfg.statement);
+                }
+                else {
+                    this.log("Unable to parse statement.context.statement property.");
+                }
+            }
         },
 
         /**
@@ -4892,10 +5781,14 @@ TinCan client library
                     "contextActivities",
                     "statement"
                 ],
-                i,
-                prop;
+                i;
 
             version = version || TinCan.versions()[0];
+
+            if (this.statement instanceof TinCan.SubStatement && version !== "0.9" && version !== "0.95") {
+                this.log("[error] version does not support SubStatements in the 'statement' property: " + version);
+                throw new Error(version + " does not support SubStatements in the 'statement' property");
+            }
 
             for (i = 0; i < optionalDirectProps.length; i += 1) {
                 if (this[optionalDirectProps[i]] !== null) {
@@ -4924,6 +5817,7 @@ TinCan client library
         return new Context(_context);
     };
 }());
+
 /*
     Copyright 2012 Rustici Software
 
@@ -4994,9 +5888,7 @@ TinCan client library
             var i,
                 directProps = [
                     "id"
-                ],
-                val
-            ;
+                ];
 
             cfg = cfg || {};
 
@@ -5011,7 +5903,7 @@ TinCan client library
         @method toString
         @return {String} String representation of the statement
         */
-        toString: function (lang) {
+        toString: function () {
             this.log("toString");
             return this.id;
         },
@@ -5047,6 +5939,7 @@ TinCan client library
         return new StatementRef(_stRef);
     };
 }());
+
 /*
     Copyright 2012 Rustici Software
 
@@ -5152,9 +6045,7 @@ TinCan client library
             var i,
                 directProps = [
                     "timestamp"
-                ],
-                val
-            ;
+                ];
 
             cfg = cfg || {};
 
@@ -5189,14 +6080,10 @@ TinCan client library
                 }
             }
             if (cfg.hasOwnProperty("target")) {
-                if (cfg.target instanceof TinCan.Activity
-                    ||
-                    cfg.target instanceof TinCan.Agent
-                    ||
-                    cfg.target instanceof TinCan.Group
-                    ||
-                    cfg.target instanceof TinCan.SubStatement
-                    ||
+                if (cfg.target instanceof TinCan.Activity ||
+                    cfg.target instanceof TinCan.Agent ||
+                    cfg.target instanceof TinCan.Group ||
+                    cfg.target instanceof TinCan.SubStatement ||
                     cfg.target instanceof TinCan.StatementRef
                 ) {
                     this.target = cfg.target;
@@ -5266,19 +6153,18 @@ TinCan client library
                     "timestamp"
                 ],
                 optionalObjProps = [
+                    "actor",
+                    "verb",
                     "result",
                     "context"
                 ],
                 i;
 
+            result = {
+                objectType: this.objectType
+            };
             version = version || TinCan.versions()[0];
 
-            result = {
-                objectType: this.objectType,
-                actor: this.actor.asVersion(version),
-                verb: this.verb.asVersion(version),
-                object: this.target.asVersion(version)
-            };
             for (i = 0; i < optionalDirectProps.length; i += 1) {
                 if (this[optionalDirectProps[i]] !== null) {
                     result[optionalDirectProps[i]] = this[optionalDirectProps[i]];
@@ -5288,6 +6174,13 @@ TinCan client library
                 if (this[optionalObjProps[i]] !== null) {
                     result[optionalObjProps[i]] = this[optionalObjProps[i]].asVersion(version);
                 }
+            }
+            if (this.target !== null) {
+                result.object = this.target.asVersion(version);
+            }
+
+            if (version === "0.9") {
+                result.objectType = "Statement";
             }
 
             return result;
@@ -5306,6 +6199,7 @@ TinCan client library
         return new SubStatement(_subSt);
     };
 }());
+
 /*
     Copyright 2012-3 Rustici Software
 
@@ -5465,7 +6359,7 @@ TinCan client library
         /**
         @property LOG_SRC
         */
-        LOG_SRC: 'Statement',
+        LOG_SRC: "Statement",
 
         /**
         @method log
@@ -5487,9 +6381,7 @@ TinCan client library
                     "version",
                     "inProgress",
                     "voided"
-                ],
-                val
-            ;
+                ];
 
             cfg = cfg || {};
 
@@ -5547,14 +6439,10 @@ TinCan client library
                 }
             }
             if (cfg.hasOwnProperty("target")) {
-                if (cfg.target instanceof TinCan.Activity
-                    ||
-                    cfg.target instanceof TinCan.Agent
-                    ||
-                    cfg.target instanceof TinCan.Group
-                    ||
-                    cfg.target instanceof TinCan.SubStatement
-                    ||
+                if (cfg.target instanceof TinCan.Activity ||
+                    cfg.target instanceof TinCan.Agent ||
+                    cfg.target instanceof TinCan.Group ||
+                    cfg.target instanceof TinCan.SubStatement ||
                     cfg.target instanceof TinCan.StatementRef
                 ) {
                     this.target = cfg.target;
@@ -5693,6 +6581,7 @@ TinCan client library
         return new Statement(_st);
     };
 }());
+
 /*
     Copyright 2012 Rustici Software
 
@@ -5747,7 +6636,7 @@ TinCan client library
         /**
         @property LOG_SRC
         */
-        LOG_SRC: 'StatementsResult',
+        LOG_SRC: "StatementsResult",
 
         /**
         @method log
@@ -5814,6 +6703,7 @@ TinCan client library
         return new StatementsResult (_result);
     };
 }());
+
 /*
     Copyright 2012 Rustici Software
 
@@ -5882,7 +6772,7 @@ TinCan client library
         /**
         @property LOG_SRC
         */
-        LOG_SRC: 'State',
+        LOG_SRC: "State",
 
         /**
         @method log
@@ -5901,9 +6791,7 @@ TinCan client library
                     "contents",
                     "etag",
                     "contentType"
-                ],
-                val
-            ;
+                ];
 
             cfg = cfg || {};
 
@@ -5929,6 +6817,7 @@ TinCan client library
         return new State(_state);
     };
 }());
+
 /*
     Copyright 2012 Rustici Software
 
@@ -6006,7 +6895,7 @@ TinCan client library
         /**
         @property LOG_SRC
         */
-        LOG_SRC: 'ActivityProfile',
+        LOG_SRC: "ActivityProfile",
 
         /**
         @method log
@@ -6025,9 +6914,7 @@ TinCan client library
                     "contents",
                     "etag",
                     "contentType"
-                ],
-                val
-            ;
+                ];
 
             cfg = cfg || {};
 
@@ -6062,6 +6949,7 @@ TinCan client library
         return new ActivityProfile(_state);
     };
 }());
+
 /*
     Copyright 2013 Rustici Software
 
@@ -6139,7 +7027,7 @@ TinCan client library
         /**
         @property LOG_SRC
         */
-        LOG_SRC: 'AgentProfile',
+        LOG_SRC: "AgentProfile",
 
         /**
         @method log
@@ -6158,9 +7046,7 @@ TinCan client library
                     "contents",
                     "etag",
                     "contentType"
-                ],
-                val
-            ;
+                ];
 
             cfg = cfg || {};
 
@@ -6195,6 +7081,92 @@ TinCan client library
         return new AgentProfile(_state);
     };
 }());
+
+/*
+    Copyright 2014 Rustici Software
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+
+/**
+TinCan client library
+
+@module TinCan
+@submodule TinCan.About
+**/
+(function () {
+    "use strict";
+
+    /**
+    @class TinCan.About
+    @constructor
+    */
+    var About = TinCan.About = function (cfg) {
+        this.log("constructor");
+
+        /**
+        @property version
+        @type {String[]}
+        */
+        this.version = null;
+
+        this.init(cfg);
+    };
+    About.prototype = {
+        /**
+        @property LOG_SRC
+        */
+        LOG_SRC: "About",
+
+        /**
+        @method log
+        */
+        log: TinCan.prototype.log,
+
+        /**
+        @method init
+        @param {Object} [options] Configuration used to initialize
+        */
+        init: function (cfg) {
+            this.log("init");
+            var i,
+                directProps = [
+                    "version"
+                ];
+
+            cfg = cfg || {};
+
+            for (i = 0; i < directProps.length; i += 1) {
+                if (cfg.hasOwnProperty(directProps[i]) && cfg[directProps[i]] !== null) {
+                    this[directProps[i]] = cfg[directProps[i]];
+                }
+            }
+        }
+    };
+
+    /**
+    @method fromJSON
+    @return {Object} About
+    @static
+    */
+    About.fromJSON = function (aboutJSON) {
+        About.prototype.log("fromJSON");
+        var _about = JSON.parse(aboutJSON);
+
+        return new About(_about);
+    };
+}());
+
 /*
     Copyright 2012-2013 Rustici Software
 
@@ -6218,12 +7190,14 @@ TinCan client library
 @submodule TinCan.Environment.Browser
 **/
 (function () {
+    /* globals window, XMLHttpRequest, XDomainRequest */
     "use strict";
     var LOG_SRC = "Environment.Browser",
         nativeRequest,
         xdrRequest,
         requestComplete,
         __delay,
+        __IEModeConversion,
         env = {},
         log = TinCan.prototype.log;
 
@@ -6361,6 +7335,37 @@ TinCan client library
     };
 
     //
+    // Converts an HTTP request cfg of above a set length (//MAX_REQUEST_LENGTH) to a post
+    // request cfg, with the original request as the form data.
+    //
+    __IEModeConversion = function (fullUrl, headers, pairs, cfg) {
+        var prop;
+
+        // 'pairs' already holds the original cfg params, now needs headers and data
+        // from the original cfg to add as the form data to the POST request
+        for (prop in headers) {
+            if (headers.hasOwnProperty(prop)) {
+                pairs.push(prop + "=" + encodeURIComponent(headers[prop]));
+            }
+        }
+
+        if (typeof cfg.data !== "undefined") {
+            pairs.push("content=" + encodeURIComponent(cfg.data));
+        }
+
+        // the Authorization and xAPI version headers need to still be present, but
+        // the content type must exist and be of type application/x-www-form-urlencoded
+        headers["Content-Type"] = "application/x-www-form-urlencoded";
+        fullUrl += "?method=" + cfg.method;
+        cfg.method = "POST";
+        cfg.params = {};
+        if (pairs.length > 0) {
+            cfg.data = pairs.join("&");
+        }
+        return fullUrl;
+    };
+
+    //
     // one of the two of these is stuffed into the LRS' instance
     // as ._makeRequest
     //
@@ -6376,7 +7381,10 @@ TinCan client library
                 finished: false,
                 fakeStatus: null
             },
-            async = typeof cfg.callback !== "undefined"
+            async = typeof cfg.callback !== "undefined",
+            fullRequest = fullUrl,
+            err,
+            MAX_REQUEST_LENGTH = 2048
         ;
         log("sendRequest using XMLHttpRequest - async: " + async, LOG_SRC);
 
@@ -6385,8 +7393,39 @@ TinCan client library
                 pairs.push(prop + "=" + encodeURIComponent(cfg.params[prop]));
             }
         }
+
         if (pairs.length > 0) {
-            fullUrl += "?" + pairs.join("&");
+            fullRequest += "?" + pairs.join("&");
+        }
+
+        if (fullRequest.length >= MAX_REQUEST_LENGTH) {
+            // This may change based upon what content is supported in IE Mode
+            if (typeof headers["Content-Type"] !== "undefined" && headers["Content-Type"] !== "application/json") {
+                err = new Error("Unsupported content type for IE Mode request");
+                if (typeof cfg.callback !== "undefined") {
+                    cfg.callback(err, null);
+                }
+                return {
+                    err: err,
+                    xhr: null
+                };
+            }
+
+            if (typeof cfg.method === "undefined") {
+                err = new Error("method must not be undefined for an IE Mode Request conversion");
+                if (typeof cfg.callback !== "undefined") {
+                    cfg.callback(err, null);
+                }
+                return {
+                    err: err,
+                    xhr: null
+                };
+            }
+
+            fullUrl = __IEModeConversion(fullUrl, headers, pairs, cfg);
+        }
+        else {
+            fullUrl = fullRequest;
         }
 
         if (typeof XMLHttpRequest !== "undefined") {
@@ -6457,7 +7496,20 @@ TinCan client library
             control = {
                 finished: false,
                 fakeStatus: null
+            },
+            err;
+
+        if (typeof headers["Content-Type"] !== "undefined" && headers["Content-Type"] !== "application/json") {
+            err = new Error("Unsupported content type for IE Mode request");
+            if (cfg.callback) {
+                cfg.callback(err, null);
+                return null;
+            }
+            return {
+                err: err,
+                xhr: null
             };
+        }
 
         // method has to go on querystring, and nothing else,
         // and the actual method is then always POST
@@ -6478,7 +7530,7 @@ TinCan client library
         }
 
         // the original data is repackaged as "content" form var
-        if (cfg.data !== null) {
+        if (typeof cfg.data !== "undefined") {
             pairs.push("content=" + encodeURIComponent(cfg.data));
         }
 
@@ -6561,7 +7613,8 @@ TinCan client library
     // capabilities
     //
     TinCan.LRS.prototype._initByEnvironment = function (cfg) {
-        /*jslint regexp: true */
+        /*jslint regexp: true, laxbreak: true */
+        /* globals location */
         log("_initByEnvironment", LOG_SRC);
         var urlParts,
             schemeMatches,
@@ -6575,6 +7628,12 @@ TinCan client library
         // default to native request mode
         //
         this._makeRequest = nativeRequest;
+
+        //
+        // overload LRS ._IEModeConversion to be able to test this method,
+        // which only applies in a browser setting
+        //
+        this._IEModeConversion = __IEModeConversion;
 
         urlParts = this.endpoint.toLowerCase().match(/([A-Za-z]+:)\/\/([^:\/]+):?(\d+)?(\/.*)?$/);
         if (urlParts === null) {
@@ -6670,130 +7729,9 @@ TinCan client library
         xhr.open("GET", url, false);
         xhr.send(null);
     };
-}());
-/*
-CryptoJS v3.0.2
-code.google.com/p/crypto-js
-(c) 2009-2012 by Jeff Mott. All rights reserved.
-code.google.com/p/crypto-js/wiki/License
-*/
-var CryptoJS=CryptoJS||function(i,m){var p={},h=p.lib={},n=h.Base=function(){function a(){}return{extend:function(b){a.prototype=this;var c=new a;b&&c.mixIn(b);c.$super=this;return c},create:function(){var a=this.extend();a.init.apply(a,arguments);return a},init:function(){},mixIn:function(a){for(var c in a)a.hasOwnProperty(c)&&(this[c]=a[c]);a.hasOwnProperty("toString")&&(this.toString=a.toString)},clone:function(){return this.$super.extend(this)}}}(),o=h.WordArray=n.extend({init:function(a,b){a=
-this.words=a||[];this.sigBytes=b!=m?b:4*a.length},toString:function(a){return(a||e).stringify(this)},concat:function(a){var b=this.words,c=a.words,d=this.sigBytes,a=a.sigBytes;this.clamp();if(d%4)for(var f=0;f<a;f++)b[d+f>>>2]|=(c[f>>>2]>>>24-8*(f%4)&255)<<24-8*((d+f)%4);else if(65535<c.length)for(f=0;f<a;f+=4)b[d+f>>>2]=c[f>>>2];else b.push.apply(b,c);this.sigBytes+=a;return this},clamp:function(){var a=this.words,b=this.sigBytes;a[b>>>2]&=4294967295<<32-8*(b%4);a.length=i.ceil(b/4)},clone:function(){var a=
-n.clone.call(this);a.words=this.words.slice(0);return a},random:function(a){for(var b=[],c=0;c<a;c+=4)b.push(4294967296*i.random()|0);return o.create(b,a)}}),q=p.enc={},e=q.Hex={stringify:function(a){for(var b=a.words,a=a.sigBytes,c=[],d=0;d<a;d++){var f=b[d>>>2]>>>24-8*(d%4)&255;c.push((f>>>4).toString(16));c.push((f&15).toString(16))}return c.join("")},parse:function(a){for(var b=a.length,c=[],d=0;d<b;d+=2)c[d>>>3]|=parseInt(a.substr(d,2),16)<<24-4*(d%8);return o.create(c,b/2)}},g=q.Latin1={stringify:function(a){for(var b=
-a.words,a=a.sigBytes,c=[],d=0;d<a;d++)c.push(String.fromCharCode(b[d>>>2]>>>24-8*(d%4)&255));return c.join("")},parse:function(a){for(var b=a.length,c=[],d=0;d<b;d++)c[d>>>2]|=(a.charCodeAt(d)&255)<<24-8*(d%4);return o.create(c,b)}},j=q.Utf8={stringify:function(a){try{return decodeURIComponent(escape(g.stringify(a)))}catch(b){throw Error("Malformed UTF-8 data");}},parse:function(a){return g.parse(unescape(encodeURIComponent(a)))}},k=h.BufferedBlockAlgorithm=n.extend({reset:function(){this._data=o.create();
-this._nDataBytes=0},_append:function(a){"string"==typeof a&&(a=j.parse(a));this._data.concat(a);this._nDataBytes+=a.sigBytes},_process:function(a){var b=this._data,c=b.words,d=b.sigBytes,f=this.blockSize,e=d/(4*f),e=a?i.ceil(e):i.max((e|0)-this._minBufferSize,0),a=e*f,d=i.min(4*a,d);if(a){for(var g=0;g<a;g+=f)this._doProcessBlock(c,g);g=c.splice(0,a);b.sigBytes-=d}return o.create(g,d)},clone:function(){var a=n.clone.call(this);a._data=this._data.clone();return a},_minBufferSize:0});h.Hasher=k.extend({init:function(){this.reset()},
-reset:function(){k.reset.call(this);this._doReset()},update:function(a){this._append(a);this._process();return this},finalize:function(a){a&&this._append(a);this._doFinalize();return this._hash},clone:function(){var a=k.clone.call(this);a._hash=this._hash.clone();return a},blockSize:16,_createHelper:function(a){return function(b,c){return a.create(c).finalize(b)}},_createHmacHelper:function(a){return function(b,c){return l.HMAC.create(a,c).finalize(b)}}});var l=p.algo={};return p}(Math);
-(function(){var i=CryptoJS,m=i.lib,p=m.WordArray,m=m.Hasher,h=[],n=i.algo.SHA1=m.extend({_doReset:function(){this._hash=p.create([1732584193,4023233417,2562383102,271733878,3285377520])},_doProcessBlock:function(o,i){for(var e=this._hash.words,g=e[0],j=e[1],k=e[2],l=e[3],a=e[4],b=0;80>b;b++){if(16>b)h[b]=o[i+b]|0;else{var c=h[b-3]^h[b-8]^h[b-14]^h[b-16];h[b]=c<<1|c>>>31}c=(g<<5|g>>>27)+a+h[b];c=20>b?c+((j&k|~j&l)+1518500249):40>b?c+((j^k^l)+1859775393):60>b?c+((j&k|j&l|k&l)-1894007588):c+((j^k^l)-
-899497514);a=l;l=k;k=j<<30|j>>>2;j=g;g=c}e[0]=e[0]+g|0;e[1]=e[1]+j|0;e[2]=e[2]+k|0;e[3]=e[3]+l|0;e[4]=e[4]+a|0},_doFinalize:function(){var i=this._data,h=i.words,e=8*this._nDataBytes,g=8*i.sigBytes;h[g>>>5]|=128<<24-g%32;h[(g+64>>>9<<4)+15]=e;i.sigBytes=4*h.length;this._process()}});i.SHA1=m._createHelper(n);i.HmacSHA1=m._createHmacHelper(n)})();
-/*
-CryptoJS v3.0.2
-code.google.com/p/crypto-js
-(c) 2009-2012 by Jeff Mott. All rights reserved.
-code.google.com/p/crypto-js/wiki/License
-*/
-(function () {
-    // Shortcuts
-    var C = CryptoJS;
-    var C_lib = C.lib;
-    var WordArray = C_lib.WordArray;
-    var C_enc = C.enc;
 
-    /**
-     * Base64 encoding strategy.
-     */
-    var Base64 = C_enc.Base64 = {
-        /**
-         * Converts a word array to a Base64 string.
-         *
-         * @param {WordArray} wordArray The word array.
-         *
-         * @return {string} The Base64 string.
-         *
-         * @static
-         *
-         * @example
-         *
-         *     var base64String = CryptoJS.enc.Base64.stringify(wordArray);
-         */
-        stringify: function (wordArray) {
-            // Shortcuts
-            var words = wordArray.words;
-            var sigBytes = wordArray.sigBytes;
-            var map = this._map;
-
-            // Clamp excess bits
-            wordArray.clamp();
-
-            // Convert
-            var base64Chars = [];
-            for (var i = 0; i < sigBytes; i += 3) {
-                var byte1 = (words[i >>> 2]       >>> (24 - (i % 4) * 8))       & 0xff;
-                var byte2 = (words[(i + 1) >>> 2] >>> (24 - ((i + 1) % 4) * 8)) & 0xff;
-                var byte3 = (words[(i + 2) >>> 2] >>> (24 - ((i + 2) % 4) * 8)) & 0xff;
-
-                var triplet = (byte1 << 16) | (byte2 << 8) | byte3;
-
-                for (var j = 0; (j < 4) && (i + j * 0.75 < sigBytes); j++) {
-                    base64Chars.push(map.charAt((triplet >>> (6 * (3 - j))) & 0x3f));
-                }
-            }
-
-            // Add padding
-            var paddingChar = map.charAt(64);
-            if (paddingChar) {
-                while (base64Chars.length % 4) {
-                    base64Chars.push(paddingChar);
-                }
-            }
-
-            return base64Chars.join('');
-        },
-
-        /**
-         * Converts a Base64 string to a word array.
-         *
-         * @param {string} base64Str The Base64 string.
-         *
-         * @return {WordArray} The word array.
-         *
-         * @static
-         *
-         * @example
-         *
-         *     var wordArray = CryptoJS.enc.Base64.parse(base64String);
-         */
-        parse: function (base64Str) {
-            // Ignore whitespaces
-            base64Str = base64Str.replace(/\s/g, '');
-
-            // Shortcuts
-            var base64StrLength = base64Str.length;
-            var map = this._map;
-
-            // Ignore padding
-            var paddingChar = map.charAt(64);
-            if (paddingChar) {
-                var paddingIndex = base64Str.indexOf(paddingChar);
-                if (paddingIndex != -1) {
-                    base64StrLength = paddingIndex;
-                }
-            }
-
-            // Convert
-            var words = [];
-            var nBytes = 0;
-            for (var i = 0; i < base64StrLength; i++) {
-                if (i % 4) {
-                    var bitsHigh = map.indexOf(base64Str.charAt(i - 1)) << ((i % 4) * 2);
-                    var bitsLow  = map.indexOf(base64Str.charAt(i)) >>> (6 - (i % 4) * 2);
-                    words[nBytes >>> 2] |= (bitsHigh | bitsLow) << (24 - (nBytes % 4) * 8);
-                    nBytes++;
-                }
-            }
-
-            return WordArray.create(words, nBytes);
-        },
-
-        _map: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='
-    };
+    //
+    // Synchronous xhr handling is accepted in the browser environment
+    //
+    TinCan.LRS.syncEnabled = true;
 }());
