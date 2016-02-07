@@ -1,4 +1,12 @@
-
+/**
+ * eXeTinCan provides wrapper functions to make it straightforward
+ * to use the xAPI and save/restore key/value pairs using the xAPI
+ * State API where available and falling back to local storage when
+ * this is not available.
+ * 
+ * The State API always uses the main activity ID (e.g. the activity
+ * in tincan.xml where there is a launch element).
+ */
 var eXeTinCan = (function() {
 	
 	var _currentActor = null;
@@ -29,6 +37,8 @@ var eXeTinCan = (function() {
 	var _PENDING_IDX_KEY = 2;
 	
 	var _xAPIstateStatus = 0;
+	
+	var _lrsActive = false;
 		
 	var mod = {
 		
@@ -61,28 +71,41 @@ var eXeTinCan = (function() {
 		init: function() {
 			_tinCan = new TinCan();
 			this.setLRSParamsFromLaunchURL();
-			
 		},
 		
 		/**
-		 * Set how we are working based on parameters in URL
+		 * Check and see if we are active communicating with an LRS or not
 		 * 
-		 * If exetincanproxy is set all statements will be sent to the proxy without
-		 * authentication (e.g. Ustad Mobile) to a local server
+		 * @return {boolean} true if there is an active LRS; false otherwise
+		 */
+		isLRSActive: function() {
+			return _lrsActive;
+		},
+		
+		/**
+		 * Handle the Rustici launch method to set parameters - endpoint, actor, etc. 
 		 * 
-		 * Otherwise the statement will be serialized and sent to the LRS if Rustici
-		 * launch method parameters are in the URL
+		 * We'll allow setting only the actor and/or registration and not the endpoint 
+		 * for testing purposes.
 		 * 
 		 * @method setLRSParamsFromLaunchURL
 		 */
 	    setLRSParamsFromLaunchURL : function() {
 	    	var queryVars = eXeEpubCommon.getQueryVars();
-	    	// Handle Rustici method
+
+	    	// Handle Rustici launch method
 	    	if(queryVars['actor']) {
 	    	 	var queryActorStr = queryVars['actor'];
 		    	var ourActor = TinCan.Agent.fromJSON(queryActorStr);
 		    	this.setActor(ourActor);
-		    	
+	    	}
+	    	
+	    	if(queryVars['registration']) {
+				_currentRegistrationUUID = queryVars['registration'];
+			}
+	    	
+	    	if(queryVars['endpoint']) {
+	    		_lrsActive = true;
 				var newLRS = new TinCan.LRS({
 		            "endpoint" : queryVars['endpoint'],
 		            "version" : "1.0.2",
@@ -92,11 +115,9 @@ var eXeTinCan = (function() {
 		        }); 
 		    	
 				_tinCan.recordStores[0] = newLRS;
-				if(queryVars['registration']) {
-					_currentRegistrationUUID = queryVars['registration'];
-				}
-				this.loadState();
 	    	}
+	    	
+	    	this.loadState();
 	    },
 		
 		/**
@@ -288,13 +309,42 @@ var eXeTinCan = (function() {
 				}).bind(this);
 				
 				var params = this._makeStateParams(pkgId, cbWrapper);
-				_tinCan.getState(STATE_ID, params);
+				
+				if(this.isLRSActive()) {
+					_tinCan.getState(STATE_ID, params);
+				}else {
+					this.getStateFromLocalStorage(STATE_ID, params);
+				}
 			}, {context : this})
 		},
 		
-
+		_getCurrentLocalStorageKey: function(cfg) {
+			var regId = cfg.registration ? cfg.registration : "";
+			return "exe-tincan-" + encodeURIComponent(cfg.agent.toString()) + "-"
+				cfg.activity.id + "-" + regId;
+		},
+		
+		/**
+		 * 
+		 */
+		getStateFromLocalStorage: function(stateId, cfg) {
+			var stateVal = localStorage.getItem(this._getCurrentLocalStorageKey(cfg));
+			if(typeof cfg.callback === "function") {
+				stateVal = stateVal ? JSON.parse(stateVal) : {};
+				var state = new TinCan.State({
+					id: stateId,
+					contents: stateVal,
+					contentType: "application/json"
+				});
+				cfg.callback(null, state);
+			}
+		},
+		
 		handleStateLoaded: function(err, result) {
-			if(err === null && result === null) {
+			if(!this.isLRSActive()) {
+				_xAPIstateStatus = eXeTinCan.STATE_UNAVAILABLE;
+				_state = this.loadStateFromLocalStorage();
+			}else if(err === null && result === null) {
 				//State has not been saved yet, it's blank
 				_xAPIstateStatus = eXeTinCan.STATE_LOADED;
 				_state = {};
@@ -302,8 +352,8 @@ var eXeTinCan = (function() {
 				_xAPIstateStatus = eXeTinCan.STATE_LOADED;
 				_state = result.contents;
 			}else {
+				//not good really - XAPI was enabled but it didn't load
 				_xAPIstateStatus = eXeTinCan.STATE_UNAVAILABLE;
-				//not good really... 
 				_state = {};
 			}
 			
@@ -338,8 +388,32 @@ var eXeTinCan = (function() {
 				var params = this._makeStateParams(pkgId,
 						cbWrapper);
 				params.contentType = "application/json";
-				_tinCan.setState(STATE_ID, _state, params);
+				if(this.isLRSActive()) {
+					_tinCan.setState(STATE_ID, _state, params);
+				}else {
+					this.setStateToLocalStorage(STATE_ID, _state, params);
+				}
 			}, {context: this});
+		},
+		
+		setStateToLocalStorage: function(stateId, state, cfg) {
+			var storageKey = this._getCurrentLocalStorageKey(cfg);
+			var currentVal = localStorage.getItem(storageKey);
+			currentVal = currentVal ? JSON.parse(currentVal) : {};
+			for(var prop in state) {
+				if(state.hasOwnProperty(prop)) {
+					currentVal[prop] = state[prop];
+				}
+			}
+			
+			localStorage.setItem(storageKey, JSON.stringify(currentVal));
+			if(typeof cfg.callback === "function") {
+				cfg.callback(null, new TinCan.State({
+					id : stateId,
+					contents: currentVal,
+					contentType: "application/json"
+				}));
+			}
 		},
 		
 		/**

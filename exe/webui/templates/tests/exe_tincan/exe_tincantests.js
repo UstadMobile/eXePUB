@@ -32,4 +32,31 @@ QUnit.test("Save value to state and retrieve it", function(assert) {
 	});
 });
 
+//Test saving and restoring using local storage
+QUnit.test("Save and restore value using local storage state API substitution", function(assert) {
+	assert.expect(2);
+	var done = assert.async();
+	
+	var testKeyName = "testkey";
+	var testKeyValue = "TheAnswerIs42";
+	var activityIdLocal = "epub:123456789012345678901234567890";
+	
+	var stateParams = eXeTinCan._makeStateParams(activityIdLocal, function(err, result) {
+		var localState = result.contents;
+		assert.ok(localState, "Loaded local state not null");
+		localState[testKeyName] = testKeyValue;
+		
+		var stateParams2 = eXeTinCan._makeStateParams(activityIdLocal, function(err, result){
+			var stateParams3 = eXeTinCan._makeStateParams(activityIdLocal, function(err, result) {
+				assert.ok(result.contents[testKeyName] === testKeyValue, 
+						"Key retrieved as it was saved to local storage");
+				done();
+			});
+			eXeTinCan.getStateFromLocalStorage("exe_pkg_state", stateParams3);
+		});
+		eXeTinCan.setStateToLocalStorage("exe_pkg_state", localState, stateParams2);
+	});
+	eXeTinCan.getStateFromLocalStorage("exe_pkg_state", stateParams);
+});
+
 
