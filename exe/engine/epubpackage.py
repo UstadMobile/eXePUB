@@ -10,6 +10,7 @@ from exe.engine.epubopf import EPUBOPF
 from exe.engine.tincanxmlmanager import TinCanXMLManager
 from exe.engine.path           import Path, TempDirPath, toUnicode
 import zipfile
+import time
 from lxml import etree
 
 class EPUBPackage(object):
@@ -56,7 +57,23 @@ class EPUBPackage(object):
         
         #TODO: inspect filenames for untrusted entries e.g. .. and /
         zippedFile = zipfile.ZipFile(filename, "r")
-        zippedFile.extractall(self.resourceDir)
+        for fn in zippedFile.namelist():
+            #check if it's a directory
+            if fn[-1:] == '/':
+                #dir = fn[:fn.index("/")]
+                Dir = Path(self.resourceDir/fn)
+                if not Dir.exists():
+                    Dir.makedirs()
+            Fn = Path(self.resourceDir/fn)
+            if not Fn.isdir():
+                outFile = open(self.resourceDir/fn, "wb")
+                outFile.write(zippedFile.read(fn))
+                outFile.flush()
+                outFile.close()
+                file_info = zippedFile.getinfo(fn)
+                mod_time =time.mktime(file_info.date_time+(0,0,-1))
+                os.utime(self.resourceDir/fn, (time.time(), mod_time))
+        
         
         ocf_str = open(self.resourceDir/"META-INF/container.xml", 'r').read()
         self.ocf = EPUBOCF(ocf_doc = ocf_str)
