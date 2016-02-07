@@ -297,10 +297,6 @@ class EPUBOPF(object):
         idevice_el.getparent().remove(idevice_el)
         self._save_page_html(page_id, page_html_el)
         
-        
-        
-         
-    
 
 class EPUBOPFItem(object):
     

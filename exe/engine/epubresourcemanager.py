@@ -63,21 +63,25 @@ class EPUBResourceManager(object):
             if int(id) > max_id:
                 max_id = int(id)
         
-        return max_id + 1
+        next_id = max_id + 1
         
-    def _get_page_itemref_el(self, page_id, auto_create = True):
-        itemref_el = self.root_el.find("./{%(ns)s}idevices/{%(ns)s}itemref[@idref='%(id)s']" % \
-                                       {"ns" : EPUBResourceManager.NS_EXERES, "id" : page_id})
-        if itemref_el is None and auto_create:
-            itemref_el = etree.SubElement(self.root_el.find("./{%s}idevices" % \
-                            EPUBResourceManager.NS_EXERES), "{%s}itemref" % EPUBResourceManager.NS_EXERES)
-            itemref_el.set("idref", page_id)
+        idevices_el = self.root_el.find("./{%s}idevices" % EPUBResourceManager.NS_EXERES)
+        next_id_attr = idevices_el.get("nextid")
+        
+        if next_id_attr is not None:
+            next_id_attr = int(next_id_attr)
+            if next_id_attr < next_id:
+                idevices_el.set('nextid', str(max_id+1))
             
-        return itemref_el
-    
-    def add_idevice_to_page(self, idevice_type, page_id, auto_save = True):
-        page_el = self._get_page_itemref_el(page_id)
+            if next_id_attr > next_id:
+                next_id = next_id_attr
         
+        
+        idevices_el.set("nextid", str(next_id + 1))
+        
+        return next_id
+    
+    def add_idevice_to_page(self, idevice_type, page_id, auto_save = True):        
         idevice_info = self.get_idevice_el(idevice_type)
         
         if idevice_info is None:
@@ -89,9 +93,6 @@ class EPUBResourceManager(object):
         
         
         pg_idevice_id = self.get_next_idevice_id()
-        pg_idevice_el = etree.SubElement(page_el, "{%s}idevice" % EPUBResourceManager.NS_EXERES)
-        pg_idevice_el.set("id", str(pg_idevice_id))
-        pg_idevice_el.set("type", idevice_type) 
         
         required_files = self.get_idevice_required_files(idevice_el)
         self.add_required_files_to_package(required_files)
@@ -101,17 +102,15 @@ class EPUBResourceManager(object):
                          new_idevice_cssclass="Idevice %s" % idevice_css_class,
                          new_idevice_type = idevice_type)
         
-        
-        
+                
         if auto_save:
             self.save()
         
         return pg_idevice_id
     
     def handle_idevice_deleted(self, page_id, idevice_id):
-        pg_idevice_el = self.root_el.find(".//{%s}idevice[@id='%s']" % (EPUBResourceManager.NS_EXERES, idevice_id))
-        if pg_idevice_el is not None:
-            pg_idevice_el.getparent().remove(pg_idevice_el)
+        #TODO: Handle user added resources that are linked to this idevice
+        self.update_page(page_id)
                                           
     
     
@@ -238,17 +237,14 @@ class EPUBResourceManager(object):
         
         #According to the epub spec: contents MUST be XHTML not just HTML
         page_html_el = etree.parse(page_path).getroot()
+        ns_xhtml = page_html_el.nsmap.get(None)
         
-        #find idevices in this page
-        page_resources_el = self.root_el.find(".//{%s}itemref[@idref='%s']" % (EPUBResourceManager.NS_EXERES, page_id))
-        
-        #TODO: Ha
-        page_idevice_els = page_resources_el.findall("./{%s}idevice" % EPUBResourceManager.NS_EXERES)
+        page_idevice_els = page_html_el.findall(".//{%s}*[@data-idevice-type]" % ns_xhtml)
         
         required_css = []
         required_js = []
         for idevice in page_idevice_els:
-            idevice_type = idevice.get("type")
+            idevice_type = idevice.get("data-idevice-type")
             idevice_def_el = self.get_idevice_el(idevice_type)[1]
             
             self.get_idevice_required_files(idevice_def_el, res_types=["css"], required_files = required_css)
@@ -256,7 +252,7 @@ class EPUBResourceManager(object):
         
         
         #now build the resource list, remove any existing generated script and  link elements, add ones we need
-        ns_xhtml = page_html_el.nsmap.get(None)
+        
         page_head_el = page_html_el.find("./{%s}head" % ns_xhtml)
         for auto_item in page_head_el.findall(".//{%s}*[@data-exeres='true']" % ns_xhtml):
             auto_item.getparent().remove(auto_item)
