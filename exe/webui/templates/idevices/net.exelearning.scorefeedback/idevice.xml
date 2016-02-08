@@ -10,6 +10,7 @@
     <!--Map to exe-files/common -->
     <system-resources>
         <script>exe_jquery.js</script>
+        <script>exe-epub-common.js</script>
         <script>tincan.js</script>
         <script>exe_tincan.js</script>
     </system-resources>
