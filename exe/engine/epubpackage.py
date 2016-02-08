@@ -58,13 +58,19 @@ class EPUBPackage(object):
         #TODO: inspect filenames for untrusted entries e.g. .. and /
         zippedFile = zipfile.ZipFile(filename, "r")
         for fn in zippedFile.namelist():
-            #check if it's a directory
+            #check to make sure that we have the required directories
+            Dir = None
             if fn[-1:] == '/':
-                #dir = fn[:fn.index("/")]
                 Dir = Path(self.resourceDir/fn)
-                if not Dir.exists():
-                    Dir.makedirs()
+            else:
+                Dir = Path(self.resourceDir/os.path.dirname(fn))
+            
+            if not Dir.exists():
+                Dir.makedirs()
+                
+                
             Fn = Path(self.resourceDir/fn)
+            
             if not Fn.isdir():
                 outFile = open(self.resourceDir/fn, "wb")
                 outFile.write(zippedFile.read(fn))
@@ -74,6 +80,7 @@ class EPUBPackage(object):
                 mod_time =time.mktime(file_info.date_time+(0,0,-1))
                 os.utime(self.resourceDir/fn, (time.time(), mod_time))
         
+        #update files here...
         
         ocf_str = open(self.resourceDir/"META-INF/container.xml", 'r').read()
         self.ocf = EPUBOCF(ocf_doc = ocf_str)
@@ -94,8 +101,6 @@ class EPUBPackage(object):
         self.tincan_manager = TinCanXMLManager(self)
         self.isChanged = False
     
-    
-        
         
     
     def save(self, filename=None, tempFile=False):

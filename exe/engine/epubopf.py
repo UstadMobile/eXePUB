@@ -118,11 +118,14 @@ class EPUBOPF(object):
         
         return new_item_el
     
-    def add_file(self, src_file, path_in_package, media_type = None, auto_save = True):
+    def add_file(self, src_file, path_in_package, auto_update = False, media_type = None, auto_save = True):
         """
         Adds an external file to the manifest in the given location
         
         path_in_package _MAY_ be adjusted in case such a file already exists
+        auto_update - If true and the package already contains a file of the same name: 
+            then we will overwrite it, otherwise we should look for a new name within
+            the package
         
         Returns a tuple containing the manifest item id and the path in package 
         """
@@ -131,9 +134,19 @@ class EPUBOPF(object):
             os.makedirs(dst_dir)
         
         shutil.copy2(src_file, os.path.join(os.path.dirname(self.href), path_in_package))
-        manifest_id = self.get_id_for_href(path_in_package)
-        self.add_item_to_manifest(manifest_id, 
+        new_file = True
+        if auto_update:
+            if self.contains_href(path_in_package):
+                new_file = False
+        
+        manifest_id = None
+        if new_file:
+            manifest_id = self.get_id_for_href(path_in_package)
+            self.add_item_to_manifest(manifest_id, 
                       mimetypes.guess_type(path_in_package)[0], path_in_package)
+        else:
+            manifest_id = self.get_item_by_href(path_in_package)
+        
         return (manifest_id, path_in_package)
         
     

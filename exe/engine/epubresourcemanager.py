@@ -46,6 +46,8 @@ class EPUBResourceManager(object):
         
         if os.path.exists(self._xml_file_path):
             self.root_el = etree.parse(self._xml_file_path).getroot()
+            self.update_idevice_files()
+            
         else:
             ns = EPUBResourceManager.NS_EXERES
             self.root_el = etree.Element("{%s}exe-resources" % ns, nsmap = {None: ns})
@@ -111,26 +113,47 @@ class EPUBResourceManager(object):
     def handle_idevice_deleted(self, page_id, idevice_id):
         #TODO: Handle user added resources that are linked to this idevice
         self.update_page(page_id)
-                                          
-    
+        
+                                      
+    def update_idevice_files(self):
+        """
+        Update the files stores in exe-files that are associated with 
+        idevices with those that come from eXe's own directories.
+        """
+        idevices_dir = os.path.join(os.path.dirname(self._xml_file_path), "exe-files/idevices")
+        idevices_list = []
+        if os.path.exists(idevices_dir):
+            for idevice_dir in os.listdir(idevices_dir):
+                idevice_path = os.path.join(idevice_dir, idevices_dir)
+                if os.path.isdir(idevice_path):
+                    idevices_list.append(idevice_dir)
+        
+        required_files = []
+        for idevice_id in idevices_list:
+            idevice_info = self.get_idevice_el(idevice_id)
+            if idevice_info is not None:
+                #make sure that we have this idevice on our system...
+                required_files = self.get_idevice_required_files(idevice_info[1], 
+                                                     required_files = required_files)
+        
+        self.add_required_files_to_package(required_files)
     
     def add_required_files_to_package(self, required_files):
         for file in required_files:
             src_path = None
-            
-            if not self.opf.contains_href(file):
-                if file[:len(EPUBResourceManager.PREFIX_COMMON_FILES)] == EPUBResourceManager.PREFIX_COMMON_FILES:
-                    rel_path = file[len(EPUBResourceManager.PREFIX_COMMON_FILES)+1:]
-                    src_path = os.path.join(G.application.config.webDir, "templates", rel_path)
-                elif file[:len(EPUBResourceManager.PREFIX_IDEVICE_FILES)] == EPUBResourceManager.PREFIX_IDEVICE_FILES:
-                    idevice_trimmed = file[len(EPUBResourceManager.PREFIX_IDEVICE_FILES)+1:]
-                    sep_index = idevice_trimmed.index('/')
-                    idevice_type = idevice_trimmed[:sep_index]
-                    rel_path = idevice_trimmed[sep_index+1:]
-                    src_path = os.path.join(self.find_idevice_dir(idevice_type), rel_path)
-                    
-                self.opf.add_file(src_path, file)
-    
+                        
+            if file[:len(EPUBResourceManager.PREFIX_COMMON_FILES)] == EPUBResourceManager.PREFIX_COMMON_FILES:
+                rel_path = file[len(EPUBResourceManager.PREFIX_COMMON_FILES)+1:]
+                src_path = os.path.join(G.application.config.webDir, "templates", rel_path)
+            elif file[:len(EPUBResourceManager.PREFIX_IDEVICE_FILES)] == EPUBResourceManager.PREFIX_IDEVICE_FILES:
+                idevice_trimmed = file[len(EPUBResourceManager.PREFIX_IDEVICE_FILES)+1:]
+                sep_index = idevice_trimmed.index('/')
+                idevice_type = idevice_trimmed[:sep_index]
+                rel_path = idevice_trimmed[sep_index+1:]
+                src_path = os.path.join(self.find_idevice_dir(idevice_type), rel_path)
+                
+            self.opf.add_file(src_path, file, auto_update = True)
+
     def add_user_file_to_idevice(self, idevice_id, user_file_path, new_basename = None):
         """
         Adds a file that was put in place by the user (e.g. user
