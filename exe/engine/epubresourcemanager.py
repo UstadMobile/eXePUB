@@ -34,6 +34,13 @@ class EPUBResourceManager(object):
     PREFIX_IDEVICE_FILES = "exe-files/idevices"
     
     PREFIX_USER_FILES = "exe-files/user-added"
+    
+    """ 
+    Elements that cannot use xml style closures  
+    e.g. <script ... /> erronously makes most browsers think that 
+    everything until </script> is a script...
+    """
+    TEXT_REQUIRED_ELEMENTS = ["script", "style"]
 
     def __init__(self, package, opf):
         '''
@@ -262,6 +269,17 @@ class EPUBResourceManager(object):
         page_html_el = etree.parse(page_path).getroot()
         ns_xhtml = page_html_el.nsmap.get(None)
         
+        #check and see if we need to add the div dom element for the new idevice
+        if new_idevice_id is not None:
+            from exe.engine.epubpackage import EPUBPackage
+            idevice_container_el = EPUBPackage.get_idevice_container_el(page_html_el)
+            idevice_div_el = etree.SubElement(idevice_container_el, "{%s}div" % ns_xhtml)
+            idevice_div_el.set("id", "id%s" % new_idevice_id)
+            idevice_div_el.set("class", new_idevice_cssclass)
+            idevice_div_el.set("data-idevice-type", new_idevice_type)
+            idevice_div_el.text = " "
+        
+        
         page_idevice_els = page_html_el.findall(".//{%s}*[@data-idevice-type]" % ns_xhtml)
         
         required_css = []
@@ -295,16 +313,7 @@ class EPUBResourceManager(object):
             script_el.text = "\n"
             
         
-        #check and see if we need to add the div dom element for the new idevice
-        if new_idevice_id is not None:
-            from exe.engine.epubpackage import EPUBPackage
-            idevice_container_el = EPUBPackage.get_idevice_container_el(page_html_el)
-            idevice_div_el = etree.SubElement(idevice_container_el, "{%s}div" % ns_xhtml)
-            idevice_div_el.set("id", "id%s" % new_idevice_id)
-            idevice_div_el.set("class", new_idevice_cssclass)
-            idevice_div_el.set("data-idevice-type", new_idevice_type)
-            idevice_div_el.text = " "
-            
+        EPUBResourceManager.clean_html_el(page_html_el)    
         updated_src = etree.tostring(page_html_el, encoding="UTF-8", pretty_print = True)
         
         page_fd = open(page_path, "w")
@@ -312,6 +321,21 @@ class EPUBResourceManager(object):
         page_fd.flush()
         page_fd.close()
                 
+    @classmethod
+    def clean_html_el(cls, html_el):
+        """
+        Filter out weirdness: mainly when the XML formatter makes
+        <script/> and <style/> tags that confuse all browsers unless
+        content-type is set to application/xhtml+xml (which doesn't 
+        always happen)
+        """
+        ns = html_el.nsmap.get(None)
+        for el_name in EPUBResourceManager.TEXT_REQUIRED_ELEMENTS:
+            for element in html_el.findall(".//{%s}%s" % (ns, el_name)):
+                if element.text is None:
+                    element.text = " "
+        
+        return html_el
     
     def save(self):
         fd = open(self._xml_file_path, "w")

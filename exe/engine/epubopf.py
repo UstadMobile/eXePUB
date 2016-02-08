@@ -267,6 +267,7 @@ class EPUBOPF(object):
     
     def _save_page_html(self, page_id, html_el):
         page_fd = open(self._get_item_path(page_id), "w")
+        EPUBResourceManager.clean_html_el(html_el)  
         page_fd.write(etree.tostring(html_el, encoding = "UTF-8", pretty_print = True))
         page_fd.flush()
         page_fd.close()
