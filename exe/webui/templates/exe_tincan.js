@@ -315,17 +315,19 @@ var eXeTinCan = (function() {
 				}else {
 					this.getStateFromLocalStorage(STATE_ID, params);
 				}
-			}, {context : this})
+			}, {context : this});
 		},
 		
 		_getCurrentLocalStorageKey: function(cfg) {
 			var regId = cfg.registration ? cfg.registration : "";
-			return "exe-tincan-" + encodeURIComponent(cfg.agent.toString()) + "-"
+			var agentStr = cfg.agent ? cfg.agent.toString() : "NOAGENT";
+			return "exe-tincan-" + encodeURIComponent(agentStr) + "-"
 				cfg.activity.id + "-" + regId;
 		},
 		
 		/**
-		 * 
+		 * Filler to handle loading the state from the localStorage instead 
+		 * of the xAPI server using the same parameters
 		 */
 		getStateFromLocalStorage: function(stateId, cfg) {
 			var stateVal = localStorage.getItem(this._getCurrentLocalStorageKey(cfg));
@@ -341,10 +343,7 @@ var eXeTinCan = (function() {
 		},
 		
 		handleStateLoaded: function(err, result) {
-			if(!this.isLRSActive()) {
-				_xAPIstateStatus = eXeTinCan.STATE_UNAVAILABLE;
-				_state = this.loadStateFromLocalStorage();
-			}else if(err === null && result === null) {
+			if(err === null && result === null) {
 				//State has not been saved yet, it's blank
 				_xAPIstateStatus = eXeTinCan.STATE_LOADED;
 				_state = {};

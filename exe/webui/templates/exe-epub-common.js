@@ -98,6 +98,18 @@ Idevice.prototype = {
 					id.replace("__IDEVICEID__", this.ideviceId));
 			}
 		}
+	},
+	
+	/**
+	 * Delete a part of this idevice : this part should have a data-block-id 
+	 * attribute
+	 */
+	deleteBlockId: function(blockId) {
+		var el = this._getEl().querySelector("[data-block-id='" + blockId+"']")
+		if(eXeEpubAuthoring) {
+			eXeEpubAuthoring.removeAllTinyMceInstances(el);
+		}
+		el.parentNode.removeChild(el);
 	}
 	
 };

@@ -130,6 +130,7 @@ class EPUBNavItem(object):
             #nothing points here anymore - should be removed
             self.opf.delete_item_by_href(my_href)
         
+        self.opf.update_spine()
         self.opf.set_package_changed()
             
         if auto_save:
@@ -318,8 +319,11 @@ class EPUBNavItem(object):
         if auto_save:
             self.opf.get_navigation().save()
         
+        self.opf.update_spine()
         self.opf.set_package_changed()
+        
         return EPUBNavItem(self.opf, new_li_item)
+    
     
             
     
@@ -360,5 +364,6 @@ class EPUBNavDocument(EPUBNavItem):
             navdoc_file.close()
         
     
-    
+        
+        
         

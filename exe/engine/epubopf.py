@@ -310,6 +310,25 @@ class EPUBOPF(object):
         idevice_el = page_html_el.find('.//{%s}*[@id="id%s"]' % (ns_xhtml, idevice_id))
         idevice_el.getparent().remove(idevice_el)
         self._save_page_html(page_id, page_html_el)
+    
+    def update_spine(self, auto_save = True):
+        spine_el = self.package_el.find(".//{%s}spine" % EPUBOPF.NAMESPACE_OPF)
+        for itemref in spine_el:
+            spine_el.remove(itemref)
+        
+        self.add_navitem_to_spine(spine_el, self.get_navigation(), children_only=True)
+        
+        if auto_save:
+            self.save()
+    
+    def add_navitem_to_spine(self, spine_el, nav_item, children_only = False):
+        if not children_only:
+            itemref_el = etree.SubElement(spine_el, "{%s}itemref" % EPUBOPF.NAMESPACE_OPF)
+            itemref_el.set("idref", nav_item.epub_item.id)
+        
+        if nav_item.children is not None:
+            for child in nav_item.children:
+                self.add_navitem_to_spine(spine_el, child)
         
 
 class EPUBOPFItem(object):

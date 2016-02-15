@@ -17,8 +17,8 @@
     
     <!-- Map to exe-files/idevices/ideviceid -->
     <idevice-resources>
-        <script>actorsprofile-idevice.js</script>
-        <res>actorsprofile-template.html</res>
+        <script>reviewcapacity-idevice.js</script>
+        <res>reviewcapacity-template.html</res>
     </idevice-resources>
     
 </idevice>
