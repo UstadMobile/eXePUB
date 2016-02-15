@@ -61,6 +61,12 @@ CheckboxTableIdevice.prototype = {
 	
 		
 	create: function() {
+		var headerEl = $("<h2/>", {
+			'class' : 'checkbox-table-header',
+			'id' : 'ecth_' + this.ideviceId
+		});
+		headerEl.text("Checkbox Table Title");
+		
 		var $table = $("<table/>", {
 			'class' : "exe-checkbox-table",
 			'id' : 'ect' + this.ideviceId
@@ -70,6 +76,7 @@ CheckboxTableIdevice.prototype = {
 			'class' : 'exe-checkbox-table-header-tr'
 		});
 		
+		$(this._getEl()).append(headerEl);
 		$(this._getEl()).append($table);
 		
 		
@@ -279,6 +286,18 @@ CheckboxTableIdevice.prototype = {
 	
 	
 	editOn: function() {
+		//add title if it's not already there
+		if(!$("#ecth_" + this.ideviceId).length) {
+			var headerEl = $("<h2/>", {
+				'class' : 'checkbox-table-header',
+				'id' : 'ecth_' + this.ideviceId
+			});
+			headerEl.text("Checkbox Table Title");
+			$(this._getEl()).prepend(headerEl);
+		}
+		
+		eXeEpubAuthoring.setTinyMceEnabledById('ecth_' + this.ideviceId, true);
+		
 		var addRowButton = $("<button/>", {
 			"class" : "exe-editing-only"
 		});
@@ -305,6 +324,7 @@ CheckboxTableIdevice.prototype = {
 	},
 	
 	editOff: function() {
+		eXeEpubAuthoring.setTinyMceEnabledById('ecth_' + this.ideviceId, false);
 		var questionIds = this._getQuestionIds();
 		for(var i = 0; i < questionIds.length; i++) {
 			this._questionRowEditOff(questionIds[i]);
@@ -331,16 +351,13 @@ CheckboxTableIdevice.prototype = {
 		//parent activity that can be used for all subquestions
 		var parentActivity = xmlDoc.createElementNS(ns, "activity");
 		parentActivity.setAttribute("id", this.ideviceId + ".0");
-		var pgTitle = eXeEpubAuthoring.getQueryVars()['exe-authoring-page-nav-title'];
-		if(!pgTitle) {
-			pgTitle = "Checkbox Table: " + this.ideviceId;
-		}
+		var titleStr = $('#ecth_' + this.ideviceId).text();
 		
 		var questionTextEls = ["name", "description"];
 		for(var q = 0; q < questionTextEls.length; q++) {
 			var questionTextEl = xmlDoc.createElementNS(ns, questionTextEls[q]);
 			questionTextEl.setAttribute("lang", "en");
-			questionTextEl.textContent = pgTitle;
+			questionTextEl.textContent = titleStr;
 			parentActivity.appendChild(questionTextEl);
 		}
 		
