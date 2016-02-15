@@ -1,6 +1,3 @@
-/**
- * 
- */
 
 var ReviewCapacityIdevice = function(ideviceId) {
 	this.ideviceId = ideviceId;
@@ -150,6 +147,7 @@ ReviewCapacityIdevice.prototype = Object.create(Idevice.prototype, {
 					'class' : 'review-capacity-side-table'
 				});
 				
+				rightTable.append("<tr><td>&#160;</td><td>Yes</td><td>No</td></tr>");
 				for(j = 0; j < textboxes.length; j++) {
 					var tr = $("<tr/>", {
 						'class' : "review-capacity-side-tr-lead"
