@@ -6,9 +6,74 @@ var CheckboxTableIdevice = function(ideviceId) {
 	this.ideviceId = ideviceId;
 	
 	this._checkInputLabels();
+	
+	this._handleClickInputElBound = this.handleClickInputEl.bind(this);
+	
+	this.bindEvents();
 };
 
 CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
+	
+	bindEvents: {
+		value: function() {
+			if(this._getTable()) {
+				$(this._getTable()).find("input[type='checkbox']").off("click", this._handleClickInputElBound);
+				$(this._getTable()).find("input[type='checkbox']").on("click", this._handleClickInputElBound);
+			}
+		}
+	},
+	
+	handleClickInputEl: {
+		value: function(evt) {
+			var inputEl = evt.target;
+			var inputId = inputEl.getAttribute("id");
+			var firstSep = inputId.indexOf("_");
+			var questionId = inputId.substring(firstSep+1, 
+					inputId.indexOf("_", firstSep+1));
+			this._updateQuestionTextInput(questionId);
+		}
+	},
+	
+	_updateQuestionTextInput: {
+		value: function(questionId) {
+			var questionDiv = document.getElementById("etcqdiv" + 
+					this.ideviceId + "_" + questionId);
+			var textPrompt = questionDiv.getAttribute("data-textprompt");
+			var colSelected = this._getQuestionSelectedInputEl(questionId);
+			var questionTextInputId = "etcqti_" +this.ideviceId + "_" + questionId;
+			if(textPrompt === colSelected) {
+				//we need to show a textinput area
+				if(!$("#" + questionTextInputId).length) {
+					$(questionDiv).after($("<textarea/>", {
+						'rows' : 1,
+						'cols' : 72,
+						'class' : 'exe-checkbox-table-question-textarea',
+						'id' : questionTextInputId
+					}));
+				}
+			}else {
+				//we need to hide text input area
+				$("#" + questionTextInputId).remove();
+			}
+			
+			
+		}
+	},
+	
+	_getQuestionSelectedInputEl: {
+		value: function(questionId) {
+			var colIds = this._getColIds();
+			var inputEl
+			for(var i = 0; i < colIds.length; i++) {
+				inputEl = document.getElementById('etcbox' + 
+						this.ideviceId + "_" + questionId + '_' + colIds[i]);
+				if(inputEl.checked) {
+					return colIds[i];
+				}
+			}
+		}
+	},
+	
 	_getTable: {
 		value: function() {
 			return document.getElementById('ect' + this.ideviceId);
@@ -292,6 +357,13 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 		}
 	},
 	
+	setupTextAreaForEl: {
+		value: function() {
+			
+		}
+	},
+	
+	
 	handleClickAddCol: {
 		value: function() {
 			var newColId = this._addColumn();
@@ -370,7 +442,7 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 			eXeEpubAuthoring.saveIdeviceHTML(this.ideviceId, htmlToSave);
 			
 			this._checkInputLabels();
-			
+			this.bindEvents();
 			//make a tincan entry for this
 			
 			var checkboxTinCan = this.makeTinCanActivities();
