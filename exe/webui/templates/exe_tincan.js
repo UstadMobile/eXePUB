@@ -119,8 +119,8 @@ var eXeTinCan = (function() {
 	    	
 	    	this.loadState();
 	    },
-		
-		/**
+	    
+	    /**
 		 * The package's TinCan ID is the Activity ID with the launch
 		 * element
 		 * 
@@ -129,11 +129,22 @@ var eXeTinCan = (function() {
 		 * @param {Object} [opts.context] callback context to use
 		 */
 		getPackageTinCanID: function(opts, callback) {
-			this.getPackageTinCanXML(opts, (function(tcXmlDoc) {
+			var processFn = (function(tcXmlDoc) {
 				var launchEl = tcXmlDoc.querySelector("launch");
 				var packageId = launchEl.parentNode.getAttribute("id");
-				callback.call(opts && opts.context ? opts.context : this, null, packageId);
-			}).bind(this));
+				
+				if(callback) {
+					callback.call(opts && opts.context ? opts.context : this, null, packageId);
+				}else {
+					return packageId;
+				}
+			}).bind(this);
+			
+			if(callback) {
+				this.getPackageTinCanXML(opts, processFn);
+			}else {
+				return processFn(this.getPackageTinCanXML(opts));
+			}
 		},
 		
 		getTinCanAndPageIds: function(opts, callback) {
@@ -149,19 +160,29 @@ var eXeTinCan = (function() {
 			var pathToXML = "../tincan.xml";
 			var xmlHTTP = new XMLHttpRequest();
 			
-			xmlHTTP.onreadystatechange = function() {
+			var processFn = function() {
 				if(xmlHTTP.readyState === 4 && xmlHTTP.status === 200) {
 					var tcXmlDoc = xmlHTTP.responseXML;
 					if(typeof callback === "function") {
 						var cbContext = options && options.context ? 
 								options.context : this;
 						callback.apply(cbContext, [tcXmlDoc]);
+					}else {
+						return tcXmlDoc;
 					}
 				}
 			};
 			
-			xmlHTTP.open("get", pathToXML, true);
+			if(callback) {
+				xmlHTTP.onreadystatechange = processFn;
+			}
+			
+			xmlHTTP.open("get", pathToXML, callback ? true : false);
 			xmlHTTP.send();
+			
+			if(!callback) {
+				return processFn();
+			}
 		},
 		
 		getActivitiesByInteractionType: function(interactionTypes, options, callback) {
@@ -265,9 +286,8 @@ var eXeTinCan = (function() {
 			}
 		},
 		
-		setPkgStateValue: function(key, value, callback, opts) {
+		setPkgStateValue: function(key, value) {
 			_state[key] = value;
-			
 		},
 		
 		/**
@@ -278,9 +298,12 @@ var eXeTinCan = (function() {
 				agent : this.getActor(),
 				activity: new TinCan.Activity({
 					id: pkgId
-				}),
-				callback : callbackFn
+				})
 			};
+			
+			if(callbackFn) {
+				params.callback = callbackFn;
+			}
 			
 			if(_currentRegistrationUUID !== -1) {
 				params.registration = _currentRegistration; 
@@ -343,7 +366,8 @@ var eXeTinCan = (function() {
 		},
 		
 		handleStateLoaded: function(err, result) {
-			if(err === null && result === null) {
+			if(err === null && (result === null || result.contents === null)) {
+				//results.content is very weird
 				//State has not been saved yet, it's blank
 				_xAPIstateStatus = eXeTinCan.STATE_LOADED;
 				_state = {};
@@ -378,21 +402,27 @@ var eXeTinCan = (function() {
 		},
 		
 		saveState: function(opts, callback) {
-			this.getPackageTinCanID(opts, function(err, pkgId) {
-				var cbWrapper = (function(err, results) {
-					if(typeof callback === "function") {
-						callback.call(opts.context ? opts.context : this, err, results);
-					}
-				}).bind(this);
-				var params = this._makeStateParams(pkgId,
-						cbWrapper);
+			var processPkgIdFn = (function(err, pkgId) {
+				var callbackFn = null;
+				if(callback) {
+					callbackFn = opts.context ? callback.bind(opts.context) : callback;
+				}
+				
+				var params = this._makeStateParams(pkgId, callbackFn);
 				params.contentType = "application/json";
 				if(this.isLRSActive()) {
-					_tinCan.setState(STATE_ID, _state, params);
+					return _tinCan.setState(STATE_ID, _state, params);
 				}else {
-					this.setStateToLocalStorage(STATE_ID, _state, params);
+					return this.setStateToLocalStorage(STATE_ID, _state, params);
 				}
-			}, {context: this});
+					
+			}).bind(this);
+			
+			if(callback) {
+				this.getPackageTinCanID(opts, processPkgIdFn);
+			}else {
+				return processPkgIdFn(null, this.getPackageTinCanID(opts));
+			}
 		},
 		
 		setStateToLocalStorage: function(stateId, state, cfg) {
@@ -406,12 +436,16 @@ var eXeTinCan = (function() {
 			}
 			
 			localStorage.setItem(storageKey, JSON.stringify(currentVal));
+			var result = new TinCan.State({
+				id : stateId,
+				contents: currentVal,
+				contentType: "application/json"
+			});
+			
 			if(typeof cfg.callback === "function") {
-				cfg.callback(null, new TinCan.State({
-					id : stateId,
-					contents: currentVal,
-					contentType: "application/json"
-				}));
+				cfg.callback(null, result);
+			}else {
+				return result;
 			}
 		},
 		

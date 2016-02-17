@@ -116,6 +116,25 @@ Idevice.prototype = {
 
 Idevice._registeredDevices = {};
 
+Idevice.handleBeforeUnload = function(evt) {
+	console.log("Idevice: beforeunload");
+	for(ideviceId in Idevice._registeredDevices) {
+		if(Idevice._registeredDevices.hasOwnProperty(ideviceId)) {
+			if(typeof Idevice._registeredDevices[ideviceId].saveState === "function") {
+				Idevice._registeredDevices[ideviceId].saveState();
+			}
+		}
+	}
+	
+	if(eXeTinCan) {
+		eXeTinCan.saveState({});
+	}
+};
+
+window.addEventListener("beforeunload", Idevice.handleBeforeUnload.bind(Idevice), false);
+
+
+
 Idevice.registerType = function(typeId, cls) {
 	document.addEventListener("idevicecreate", function(evt) {
 		if(evt.detail.ideviceType === typeId) {
@@ -148,7 +167,7 @@ Idevice.registerType = function(typeId, cls) {
 		var deviceId;
 		for(var i = 0; i < allIdevices.length; i++) {
 			deviceId = allIdevices[i].getAttribute("id").substring(2);//idevice id attributes are prefixed by the letters 'id'
-			Idevice._registeredDevices = new cls(deviceId);
+			Idevice._registeredDevices[deviceId] = new cls(deviceId);
 		}
 	};
 	

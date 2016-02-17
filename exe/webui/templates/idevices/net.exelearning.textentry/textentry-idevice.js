@@ -5,15 +5,24 @@ var TextEntryIdevice = function(ideviceId) {
 	this.ideviceId = ideviceId;
 	
 	var textArea = this.getTextArea();
+	
 	if(textArea) {
+		textArea.value = textArea.value.trim();
+		
 		//make it readonly when shown in eXeLearning authoring page before editing mode goes on
-		textArea.setAttribute("readonly", "readonly");
-		if(textArea.hasAttribute("placeholder")) {
-			textArea.innerHTML = "";
+		var authoringMode = eXeEpubCommon.getQueryVars()['exe-authoring-mode'];
+		if(typeof authoringMode === "string" && authoringMode === "true") {
+			textArea.setAttribute("readonly", "readonly");
 		}else {
-			textArea.value = textArea.value.trim();
+			eXeTinCan.getPkgStateValue("id" + this.ideviceId, function(keyVal) {
+				if(keyVal) {
+					textArea.value = keyVal.response;
+				}
+			}, {});
 		}
 	}
+	
+	
 };
 
 TextEntryIdevice.prototype = Object.create(Idevice.prototype, {
@@ -118,8 +127,10 @@ TextEntryIdevice.prototype = Object.create(Idevice.prototype, {
 			
 			eXeEpubAuthoring.setTinyMceEnabledById('exe_tei_int' + this.ideviceId, false);
 			
-			
+			//readonly should be removed for saving purposes
+			textArea.removeAttr("readonly");
 			var htmlToSave = eXeEpubAuthoring.getSavableHTML(this._getEl());
+			
 			textArea.attr("readonly", "readonly");
 			eXeEpubAuthoring.saveIdeviceHTML(this.ideviceId, htmlToSave);
 			this.saveTinCan(this.makeTinCanActivities());
@@ -138,6 +149,15 @@ TextEntryIdevice.prototype = Object.create(Idevice.prototype, {
 			eXeTinCan.appendInteractionType(activityEl, "fill-in");
 			xmlDoc.documentElement.appendChild(activityEl);
 			return xmlDoc;
+		}
+	},
+	
+	saveState: {
+		value: function() {
+			console.log("textentry: savestate");
+			eXeTinCan.setPkgStateValue("id" + this.ideviceId, {
+				'response' : $(this.getTextArea()).val()
+			});
 		}
 	}
 });

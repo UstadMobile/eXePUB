@@ -59,4 +59,32 @@ QUnit.test("Save and restore value using local storage state API substitution", 
 	eXeTinCan.getStateFromLocalStorage("exe_pkg_state", stateParams);
 });
 
+//Test Synchronous fetching of package ID
+QUnit.test("Get package xml and value synchronously", function(assert) {
+	assert.expect(2);
+	var tcXML = eXeTinCan.getPackageTinCanXML({});
+	assert.ok(tcXML, "Got package xml:" + tcXML);
+	var pkgId = eXeTinCan.getPackageTinCanID({});
+	assert.ok(pkgId, "Got package tincan id base: " + pkgId);
+});
+
+
+//Test Synchronous setting of state
+
+QUnit.test("Save package state synchronously", function(assert) {
+	assert.expect(1);
+	
+	var testKeyName = "testkey";
+	var testKeyValue = "TheAnswerIs42";
+	
+	//slightly changed here to be a new ID
+	var activityIdLocal = "epub:S1234567890123456789012345678980";
+	var stateParams = eXeTinCan._makeStateParams(activityIdLocal);
+	
+	var result = eXeTinCan.saveState(stateParams);
+	assert.ok(result, "Saved result");	
+});
+
+
+
 

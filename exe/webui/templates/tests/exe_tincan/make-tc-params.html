@@ -1,0 +1,59 @@
+<html>
+    <head>
+        <script src="base64.js" type="text/javascript"></script>
+        <script type="text/javascript">
+            function makeParams(endpoint, username, password) {
+            	var queryStr = "endpoint=" + encodeURIComponent(endpoint) + "&";
+            	var actorStr = JSON.stringify({
+            		"account" : {
+            		    "homePage" : endpoint,
+            		    "name" : username
+            		},
+            		"objectType": "Agent"
+        		});
+            	queryStr += "actor=" + encodeURIComponent(actorStr) + "&";
+            	
+            	var authStr = "Basic " + Base64.encode(username + ":" + password);
+            	queryStr += "auth=" + encodeURIComponent(authStr);
+            	
+            	return queryStr;
+            } 
+            
+            function showParams() {
+                document.forms.tcparams.params.value = makeParams(
+                    document.forms.tcparams.endpoint.value,
+                    document.forms.tcparams.username.value,
+                    document.forms.tcparams.password.value);
+                return false;
+            }
+        </script>
+    </head>
+    <body>
+        <form name="tcparams" onsubmit="return showParams()">
+            <table>
+                <tr>
+                    <td>Endpoint</td>
+                    <td><input type='text' name='endpoint'/></td>
+                </tr>
+                
+                <tr>
+                    <td>Username</td>
+                    <td><input type="text" name="username"/></td>
+                </tr>
+                
+                <tr>
+                    <td>Password</td>
+                    <td><input type="password" name="password"/></td>
+                </tr>
+            </table>
+            
+            <input type="button" value="Submit" onclick="showParams()"/>
+            
+            <textarea name="params"> </textarea>
+        </form>        
+        
+        
+    
+    </body>
+</html>
+
