@@ -155,15 +155,17 @@ TextEntryIdevice.prototype = Object.create(Idevice.prototype, {
 	
 	getState: {
 		value: function() {
-			return {
-				'response' : $(this.getTextArea()).val()
+			var state = {};
+			state['id' + this.ideviceId] = {
+					'response' : $(this.getTextArea()).val()
 			};
+			return state;
 		}
 	},
 	
 	setState: {
 		value: function(state) {
-			this.getTextArea().value = state.response;
+			this.getTextArea().value = state['id' + this.ideviceId].response;
 		}
 	}
 	

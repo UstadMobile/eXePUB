@@ -152,7 +152,12 @@ Idevice.prototype = {
 	 */
 	saveState: function() {
 		if(this.isStateSupported()) {
-			eXeTinCan.setPkgStateValue("id" + this.ideviceId, this.getState());
+			var stateVals = this.getState();
+			for(key in stateVals) {
+				if(stateVals.hasOwnProperty(key)) {
+					eXeTinCan.setPkgStateValue(key, stateVals[key]);
+				}
+			}
 		}
 	},
 	
@@ -162,11 +167,11 @@ Idevice.prototype = {
 	 */
 	loadState: function() {
 		if(this.isStateSupported()) {
-			eXeTinCan.getPkgStateValue("id" + this.ideviceId, (function(keyVal) {
-				if(typeof keyVal !== "undefined") {
-					this.setState(keyVal);
+			eXeTinCan.getPkgStateValue("id" + this.ideviceId, (function(keyVals) {
+				if(typeof keyVals !== "undefined") {
+					this.setState(keyVals);
 				}
-			}).bind(this), {});
+			}).bind(this), {prefix : true});
 		}
 	}
 	

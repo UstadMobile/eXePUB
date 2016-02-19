@@ -278,11 +278,40 @@ var eXeTinCan = (function() {
 			}
 		},
 		
+		/**
+		 * Get the value of the state for the given key.  Also supports
+		 * looking through all keys by prefix which returns an object 
+		 * of all matching key ids and values.
+		 * 
+		 * @param {string} key the key id being requested
+		 * @param {function} callback callback function to run once loaded
+		 * @param {Object} opts
+		 * @param {boolean} [opts.prefix] set to true to return all key values which start with key
+		 */
 		getPkgStateValue: function(key, callback, opts) {
 			if(_xAPIstateStatus === eXeTinCan.STATE_LOADED || _xAPIstateStatus === eXeTinCan.STATE_UNAVAILABLE) {
-				callback.call(opts && opts.context ? opts.context : this, _state[key]);
+				callback.call(opts && opts.context ? opts.context : this, this._getPkgStateValue(key));
 			}else {
 				_pendingReadyCallbacks.push([callback, opts, key]);
+			}
+		},
+		
+		/**
+		 * Returns the value of a given key, or in prefix mode, all key 
+		 * id and value pairs that start with key as a prefix
+		 */
+		_getPkgStateValue: function(key, opts) {
+			if(!(opts && opts.prefix)) {
+				return _state[key];
+			}else {
+				var keyValues = {};
+				for(keyId in _state) {
+					if(_state.hasOwnProperty(keyId) && keyId.substring(0, key.length) === key) {
+						keyValues[keyId] = _state[keyId];
+					}
+				}
+				
+				return keyValues;
 			}
 		},
 		
@@ -390,7 +419,7 @@ var eXeTinCan = (function() {
 							_pendingReadyCallbacks[i][_PENDING_IDX_OPTS] : {};
 					key = _pendingReadyCallbacks[i][_PENDING_IDX_KEY];
 					if(key) {
-						args.push(_state[key]);
+						args.push(this._getPkgStateValue(key, keyOpts));
 					}
 					_pendingReadyCallbacks[i][_PENDING_IDX_FN].apply(
 							keyOpts.context ? keyOpts.context : this, args);
