@@ -14,16 +14,6 @@ var TextEntryIdevice = function(ideviceId) {
 		if(typeof authoringMode === "string" && authoringMode === "true") {
 			textArea.setAttribute("readonly", "readonly");
 		}
-		
-		/*
-		else {
-			eXeTinCan.getPkgStateValue("id" + this.ideviceId, function(keyVal) {
-				if(keyVal) {
-					textArea.value = keyVal.response;
-				}
-			}, {});
-		}
-		*/
 	}
 	
 	
@@ -175,18 +165,8 @@ TextEntryIdevice.prototype = Object.create(Idevice.prototype, {
 		value: function(state) {
 			this.getTextArea().value = state.response;
 		}
-	},
-	
-	/*
-	saveState: {
-		value: function() {
-			console.log("textentry: savestate");
-			eXeTinCan.setPkgStateValue("id" + this.ideviceId, {
-				'response' : $(this.getTextArea()).val()
-			});
-		}
 	}
-	*/
+	
 });
 
 TextEntryIdevice.prototype.constructor = TextEntryIdevice;
