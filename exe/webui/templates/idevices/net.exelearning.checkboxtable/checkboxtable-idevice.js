@@ -41,6 +41,8 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 			var textPrompt = questionDiv.getAttribute("data-textprompt");
 			var colSelected = this._getQuestionSelectedInputEl(questionId);
 			var questionTextInputId = "etcqti_" +this.ideviceId + "_" + questionId;
+			var promptElId = "etctpi_" + this.ideviceId + "_" + questionId;
+			var inputGuidanceId = 'etcigd_'  +this.ideviceId + "_" + questionId;
 			if(textPrompt === colSelected) {
 				//we need to show a textinput area
 				if(!$("#" + questionTextInputId).length) {
@@ -50,10 +52,15 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 						'class' : 'exe-checkbox-table-question-textarea',
 						'id' : questionTextInputId
 					}));
+					var inputGuidance = $("<div/>", {
+						'id' : inputGuidanceId
+					}).html($("#"+promptElId).html());
+					$(questionDiv).after(inputGuidance);
 				}
 			}else {
 				//we need to hide text input area
 				$("#" + questionTextInputId).remove();
+				$("#" + inputGuidanceId).remove();
 			}
 			
 			
@@ -283,11 +290,12 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 			
 			var textPrompt = $("#" + textDivId).attr("data-textprompt");
 			var $textPromptDiv = $("<div/>", {
-				"class": "exe-editing-only"
+				'id' : 'ecttpd_' + this.ideviceId + "_" + questionId,
+				"class": "exe-editing-only textprompt-container"
 			});
 			$textPromptDiv.text("Text Entry on");
 			var $promptSelectEl = $("<select/>", {
-				'id' : 'ectsp' + this.ideviceId + "_" + questionId,
+				'id' : 'ectsp_' + this.ideviceId + "_" + questionId,
 				'class' : 'exe-checkbox-table-selectprompt exe-editing-only'
 			});
 			var colIds = this._getColIds();
@@ -297,15 +305,33 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 			}
 			$textPromptDiv.append($promptSelectEl);
 			
+			var $promptTextEl = $("#etctd" + this.ideviceId + "_" + questionId).find(".exe-checkbox-table-textpompt-instructions");
+			var promptElId = "etctpi_" + this.ideviceId + "_" + questionId
+			if(!$promptTextEl.length) {
+				$("#" + textDivId).after($("<div/>", {
+					'class' : 'exe-checkbox-table-textpompt-instructions exe-editable',
+					'id' : promptElId
+				}).text("-"));
+			}
+			$textPromptDiv.append("<div class='exe-editing-only'>Text fill in guidance (optional):</div>");
+			$("#" + promptElId).detach().appendTo($textPromptDiv).css("display", "block");
 			$("#"+textDivId).after($textPromptDiv);
+			
+			eXeEpubAuthoring.setTinyMceEnabledById(promptElId, true);
 		},
 	},
 	
 	_questionRowEditOff: {
 		value: function(questionId) {
-			var promptFor = $('#ectsp' + this.ideviceId + "_" + questionId).val(); 
+			var promptFor = $('#ectsp_' + this.ideviceId + "_" + questionId).val(); 
 			$('#etcqdiv' + this.ideviceId + "_" + questionId).attr(
 				"data-textprompt", promptFor);
+			var promptElId = "etctpi_" + this.ideviceId + "_" + questionId;
+			var promptTextEl = $("#" + promptElId).css("display", "none");
+			eXeEpubAuthoring.setTinyMceEnabledById(promptElId, false);
+			eXeEpubAuthoring.removeAllTinyMceInstances(document.getElementById("ectsp_"+ 
+					this.ideviceId + "_" + questionId));
+			$('#etcqdiv' + this.ideviceId + "_" + questionId).after(promptTextEl.detach());
 		},
 	},
 	
