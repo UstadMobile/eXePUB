@@ -110,7 +110,66 @@ Idevice.prototype = {
 			eXeEpubAuthoring.removeAllTinyMceInstances(el);
 		}
 		el.parentNode.removeChild(el);
+	},
+	
+	/**
+	 * Answers whether or not this iDevice supports saving/restore it's
+	 * state.  If so the idevice must implement getState and setState, 
+	 * which should return an object (json array style) that will be 
+	 * persisted by the xAPI state API or in local storage as a string
+	 * 
+	 * @method
+	 */
+	isStateSupported: function() {
+		return false;
+	},
+	
+	/**
+	 * Returns the state of the idevice as a JSON array (e.g. the text 
+	 * of the answer last given etc).  These values when passed
+	 * to setState should set the idevice up to appear as it was when 
+	 * getState was called
+	 * 
+	 * @return {Object} State of this idevice as a json style object
+	 */
+	getState: function() {
+		return null;
+	},
+	
+	/**
+	 * Set the state of this idevice from a given object to set it 
+	 * up as it was before (e.g. answer selected, etc).  The blank
+	 * 
+	 * @param {Object} state Object as was given by getState
+	 */
+	setState: function(state) {
+		
+	},
+	
+	/**
+	 * If state support is enabled for this idevice this method will 
+	 * save the value of getState to the exe package state
+	 */
+	saveState: function() {
+		if(this.isStateSupported()) {
+			eXeTinCan.setPkgStateValue("id" + this.ideviceId, this.getState());
+		}
+	},
+	
+	/**
+	 * Checks to see if the package state has a value for the current 
+	 * idevice, if so it will call setState with the loaded state value
+	 */
+	loadState: function() {
+		if(this.isStateSupported()) {
+			eXeTinCan.getPkgStateValue("id" + this.ideviceId, (function(keyVal) {
+				if(typeof keyVal !== "undefined") {
+					this.setState(keyVal);
+				}
+			}).bind(this), {});
+		}
 	}
+	
 	
 };
 
@@ -120,7 +179,7 @@ Idevice.handleBeforeUnload = function(evt) {
 	console.log("Idevice: beforeunload");
 	for(ideviceId in Idevice._registeredDevices) {
 		if(Idevice._registeredDevices.hasOwnProperty(ideviceId)) {
-			if(typeof Idevice._registeredDevices[ideviceId].saveState === "function") {
+			if(Idevice._registeredDevices[ideviceId].isStateSupported()) {
 				Idevice._registeredDevices[ideviceId].saveState();
 			}
 		}
@@ -168,6 +227,7 @@ Idevice.registerType = function(typeId, cls) {
 		for(var i = 0; i < allIdevices.length; i++) {
 			deviceId = allIdevices[i].getAttribute("id").substring(2);//idevice id attributes are prefixed by the letters 'id'
 			Idevice._registeredDevices[deviceId] = new cls(deviceId);
+			Idevice._registeredDevices[deviceId].loadState();
 		}
 	};
 	

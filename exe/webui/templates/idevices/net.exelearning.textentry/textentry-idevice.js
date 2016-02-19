@@ -13,13 +13,17 @@ var TextEntryIdevice = function(ideviceId) {
 		var authoringMode = eXeEpubCommon.getQueryVars()['exe-authoring-mode'];
 		if(typeof authoringMode === "string" && authoringMode === "true") {
 			textArea.setAttribute("readonly", "readonly");
-		}else {
+		}
+		
+		/*
+		else {
 			eXeTinCan.getPkgStateValue("id" + this.ideviceId, function(keyVal) {
 				if(keyVal) {
 					textArea.value = keyVal.response;
 				}
 			}, {});
 		}
+		*/
 	}
 	
 	
@@ -29,6 +33,13 @@ TextEntryIdevice.prototype = Object.create(Idevice.prototype, {
 	getTextArea: {
 		value: function() {
 			return this._getEl().querySelector("textarea");
+		}
+	},
+	
+	isStateSupported: {
+		value: function() {
+			//states are supported but not in authoring mode
+			return !eXeEpubCommon.getQueryVars()['exe-authoring-mode'];
 		}
 	},
 	
@@ -152,6 +163,21 @@ TextEntryIdevice.prototype = Object.create(Idevice.prototype, {
 		}
 	},
 	
+	getState: {
+		value: function() {
+			return {
+				'response' : $(this.getTextArea()).val()
+			};
+		}
+	},
+	
+	setState: {
+		value: function(state) {
+			this.getTextArea().value = state.response;
+		}
+	},
+	
+	/*
 	saveState: {
 		value: function() {
 			console.log("textentry: savestate");
@@ -160,6 +186,7 @@ TextEntryIdevice.prototype = Object.create(Idevice.prototype, {
 			});
 		}
 	}
+	*/
 });
 
 TextEntryIdevice.prototype.constructor = TextEntryIdevice;
