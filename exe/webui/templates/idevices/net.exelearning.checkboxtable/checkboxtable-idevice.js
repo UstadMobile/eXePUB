@@ -81,6 +81,26 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 		}
 	},
 	
+	/**
+	 * For the given question set the column which is to be selected
+	 * 
+	 * @param questionId {string} block id of the question element
+	 * @param selectColId {string} block id of the column to select for this question
+	 */
+	_setQuestionSelectedInputEl: {
+		value: function(questionId, selectColId) {
+			var colIds = this._getColIds();
+			var inputEl
+			for(var i = 0; i < colIds.length; i++) {
+				inputEl = document.getElementById('etcbox' + 
+						this.ideviceId + "_" + questionId + '_' + colIds[i]);
+				inputEl.checked = (colIds[i] === selectColId);
+			}
+			
+			this._updateQuestionTextInput(questionId);
+		}
+	},
+	
 	_getTable: {
 		value: function() {
 			return document.getElementById('ect' + this.ideviceId);
@@ -549,6 +569,67 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 			}
 			
 			return xmlDoc;
+		}
+	},
+	
+	isStateSupported: {
+		value: function() {
+			return true;
+		}
+	},
+	
+	/**
+	 * Generate a json array in the form of:
+	 *  {
+	 *  	questionId: {
+	 *  		checkedItem: columnId | null
+	 *  		text: "Textbox contents" | null
+	 *  	}
+	 *  }
+	 * 
+	 */
+	getState: {
+		value: function() {
+			var questionIds = this._getQuestionIds();
+			var idPrefix = "id" + this.ideviceId + "_";
+			var state = {};
+			var selectedValue, questionStateId, questionTextAreaId, textAreaEl;
+			for(var i = 0; i < questionIds.length; i++) {
+				questionStateId = idPrefix + questionIds[i];
+				questionTextAreaId = "etcqti_" +this.ideviceId + "_" + questionIds[i];
+				textAreaEl = document.getElementById(questionTextAreaId);
+				
+				state[questionStateId] = {
+					'checkedItem' : this._getQuestionSelectedInputEl(questionIds[i])
+				};
+				
+				if(textAreaEl) {
+					state[questionStateId].response = textAreaEl.value;
+				}
+			}
+			
+			return state;
+		}
+	},
+	
+	setState: {
+		value: function(state) {
+			var questionIds = this._getQuestionIds();
+			var idPrefix = "id" + this.ideviceId + "_";
+			var questionState, questionTextAreaEl;
+			for(var i = 0; i < questionIds.length; i++) {
+				questionTextAreaEl = null;
+				questionState = state[idPrefix + questionIds[i]];
+				this._setQuestionSelectedInputEl(questionIds[i],
+						questionState.checkedItem);
+				if(questionState.response) {
+					questionTextArea = document.getElementById("etcqti_" 
+							+this.ideviceId + "_" + questionIds[i]);
+					if(questionTextArea) {
+						questionTextArea.value = questionState.response;
+					}
+				}
+			}
 		}
 	}
 	
