@@ -259,12 +259,13 @@ Ext.define('eXe.controller.Outline', {
     		if(node && node.data.epubhref) {
     			var authoringHREF = document.location.href + "/authoring";
     			var epubPageHREF = document.location.href + "/resources/" + node.data.epubhref;
-    			epubPageHREF += "?exe-authoring-mode=true&exe-page-id=" + 
+    			var authoringHREF = epubPageHREF + "?exe-authoring-mode=true&exe-page-id=" + 
     				encodeURIComponent(node.id) + "&exe-authoring-save-to=" +
     				encodeURIComponent(authoringHREF) + "&exe-authoring-page-nav-title=" +
     				encodeURIComponent(node.data.text);
     				
-    			Ext.ComponentQuery.query('#authoring')[0].getDoc().location.href = epubPageHREF;
+    			Ext.ComponentQuery.query('#authoring')[0].getDoc().location.href = authoringHREF;
+    			Ext.ComponentQuery.query("#authoring_preview")[0].getDoc().location.href = epubPageHREF;
     		}else if(!node && store.isLoading()) {
     			//this is a node just added; wait for the store to load
     			setTimeout((function() {
