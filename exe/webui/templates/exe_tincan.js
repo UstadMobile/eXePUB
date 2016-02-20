@@ -290,7 +290,7 @@ var eXeTinCan = (function() {
 		 */
 		getPkgStateValue: function(key, callback, opts) {
 			if(_xAPIstateStatus === eXeTinCan.STATE_LOADED || _xAPIstateStatus === eXeTinCan.STATE_UNAVAILABLE) {
-				callback.call(opts && opts.context ? opts.context : this, this._getPkgStateValue(key));
+				callback.call(opts && opts.context ? opts.context : this, this._getPkgStateValue(key, opts));
 			}else {
 				_pendingReadyCallbacks.push([callback, opts, key]);
 			}
