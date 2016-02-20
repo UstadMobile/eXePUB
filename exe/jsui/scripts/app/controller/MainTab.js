@@ -392,7 +392,7 @@ Ext.define('eXe.controller.MainTab', {
             }
         }
     },
-
+        
     sourcesDownload: function() {
         nevow_clientToServerEvent('sourcesDownload', this, '');
     },
@@ -407,6 +407,15 @@ Ext.define('eXe.controller.MainTab', {
 
         if (newformpanel) {
             this.loadForm(newformpanel);
+        }
+        
+        if(newCard.itemId === "authoring_preview") {
+        	var authoringCmp = Ext.ComponentQuery.query('#authoring')[0];
+        	if(authoringCmp.getDoc() && authoringCmp.getDoc().location.href) {
+        		var authoringHref = authoringCmp.getDoc().location.href;
+            	var previewHref = authoringHref.substring(0, authoringHref.indexOf('?'));
+            	Ext.ComponentQuery.query('#authoring_preview')[0].getDoc().location.href = previewHref;
+        	}
         }
     },
 

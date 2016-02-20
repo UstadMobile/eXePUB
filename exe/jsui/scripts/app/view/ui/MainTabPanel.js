@@ -45,6 +45,15 @@ Ext.define('eXe.view.ui.MainTabPanel', {
                     padding: "0 2"
                 },
                 {
+                	xtype: 'uxiframe',
+                    itemId: 'authoring_preview',
+                    src: eXe.app.config.authoringIFrameSrc,
+                    id: 'authoringPreviewIFrame1',
+                    title: _('Preview'),
+                    margin: "0 4",
+                    padding: "0 2"
+                },
+                {
                     xtype: 'tabpanel',
                     title: _('Properties'),
                     itemId: 'properties_tab',
