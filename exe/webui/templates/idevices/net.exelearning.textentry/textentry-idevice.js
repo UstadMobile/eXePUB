@@ -29,7 +29,7 @@ TextEntryIdevice.prototype = Object.create(Idevice.prototype, {
 	isStateSupported: {
 		value: function() {
 			//states are supported but not in authoring mode
-			return !eXeEpubCommon.getQueryVars()['exe-authoring-mode'];
+			return !eXeEpubCommon.isAuthoringMode();
 		}
 	},
 	
@@ -165,7 +165,9 @@ TextEntryIdevice.prototype = Object.create(Idevice.prototype, {
 	
 	setState: {
 		value: function(state) {
-			this.getTextArea().value = state['id' + this.ideviceId].response;
+			if(state && state['id'+ this.ideviceId]) {
+				this.getTextArea().value = state['id' + this.ideviceId].response;
+			}
 		}
 	}
 	

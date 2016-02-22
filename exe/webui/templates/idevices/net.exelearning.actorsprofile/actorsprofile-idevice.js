@@ -15,6 +15,7 @@ ActorsProfileIdevice.prototype = Object.create(Idevice.prototype, {
 		}
 	},
 	
+	
 	onCreate2: {
 		value: function(){
 			this.setIdeviceIdAttrs(this._getEl());
@@ -45,6 +46,12 @@ ActorsProfileIdevice.prototype = Object.create(Idevice.prototype, {
 			
 			
 			$("#id" + this.ideviceId).find(".actors-profile-template tr").last().after(newRow);
+		}
+	},
+	
+	_getSrcRows: {
+		value: function() {
+			return $("#id" + this.ideviceId).find(".actors-profile-template tr.exe-actorsprofile-tr");
 		}
 	},
 	
@@ -193,6 +200,91 @@ ActorsProfileIdevice.prototype = Object.create(Idevice.prototype, {
 					".exe-editable", false);
 			var htmlToSave = eXeEpubAuthoring.getSavableHTML(this._getEl());
 			eXeEpubAuthoring.saveIdeviceHTML(this.ideviceId, htmlToSave);
+		}
+	},
+	
+	isStateSupported: {
+		value: function() {
+			return !eXeEpubCommon.isAuthoringMode();
+		}
+	},
+	
+	loadActorsFromLines: {
+		value: function(blockId, text) {
+			
+		}
+	},
+	
+	setState: {
+		value: function(state) {
+			var rows = this._getSrcRows();
+			var labelTd, srcId, textLines, srcIdeviceId;
+			
+			
+			for(var i = 0; i < rows.length; i++) {
+				labelTd = $(rows.get(i)).find(".exe-actorsprofile-labeltd");
+				srcId = labelTd.attr('data-text-src');
+				srcId = srcId.substring(srcId.lastIndexOf("/") + 1);
+				eXeTinCan.getPkgStateValue(["id"+srcId, "id" + this.ideviceId], (function(state){
+					//TODO: check this - values should be coming with id prefix...
+					if(state['id'+srcId] && state['id'+srcId].response) {
+						var lines = state['id'+srcId].response.split('\n');
+						var lastRow = rows.get(i);
+						$(rows.get(i)).css('display', 'none');
+						for(var j = 0; j < lines.length; j++) {
+							var dataRowId = this.ideviceId + "_" +
+								$(rows.get(i)).attr("data-block-id") +"_" +
+								srcId + "_" + j;
+								
+							var newTr = $("<tr/>", {
+								'class': "exe-actorsprofile-data-row",
+								'data-row-id' : dataRowId
+							});
+							
+							var actorNameTd = $("<td/>", {
+								'class' : 'exe-actorsprofile-actor-name-td'
+							}).text(lines[j]);
+							newTr.append(actorNameTd);
+							
+							var actorRoleTd = $("<td/>", {
+								'class' : 'exe-actorsprofile-actor-role-td'
+							});
+							var actorRoleInput = $("<input/>", {
+								'id' : 'apdri_' + dataRowId,
+								'class' : 'exe-actorsprofile-actor-role-input'
+							});
+							
+							if(state['id'+dataRowId]) {
+								//responses are available
+								actorRoleInput.val(state['id'+dataRowId].response);
+							}
+							
+							actorRoleTd.append(actorRoleInput);
+							newTr.append(actorRoleTd);
+							
+							$(lastRow).after(newTr);
+							lastRow = newTr;
+						}
+					}
+					
+					
+				}).bind(this), {prefix : true});
+			}
+		}
+	},
+	
+	getState: {
+		value: function() {
+			var rows = $("#id" + this.ideviceId).find("tr.exe-actorsprofile-data-row");
+			var stateVal = {};
+			for(var i = 0; i < rows.length; i++) {
+				var dataRowId = $(rows.get(i)).attr('data-row-id');
+				stateVal["id" + dataRowId] = {
+					'response' : $('#apdri_' + dataRowId).val()
+				};
+			}
+			
+			return stateVal;
 		}
 	}
 	

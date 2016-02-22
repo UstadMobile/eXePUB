@@ -265,7 +265,10 @@ Ext.define('eXe.controller.Outline', {
     				encodeURIComponent(node.data.text);
     				
     			Ext.ComponentQuery.query('#authoring')[0].getDoc().location.href = authoringHREF;
-    			Ext.ComponentQuery.query("#authoring_preview")[0].getDoc().location.href = epubPageHREF;
+    			var authoringPreviewDoc = Ext.ComponentQuery.query("#authoring_preview")[0].getDoc();
+    			if(authoringPreviewDoc) {
+    				authoringPreviewDoc.location.href = epubPageHREF
+    			}
     		}else if(!node && store.isLoading()) {
     			//this is a node just added; wait for the store to load
     			setTimeout((function() {

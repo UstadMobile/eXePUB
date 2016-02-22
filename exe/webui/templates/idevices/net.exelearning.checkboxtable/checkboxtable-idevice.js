@@ -614,6 +614,10 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 	
 	setState: {
 		value: function(state) {
+			if(!state) {
+				return;//nothing was saved...
+			}
+			
 			var questionIds = this._getQuestionIds();
 			var idPrefix = "id" + this.ideviceId + "_";
 			var questionState, questionTextAreaEl;
