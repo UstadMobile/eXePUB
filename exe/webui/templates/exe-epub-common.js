@@ -72,7 +72,7 @@ Idevice.prototype = {
 	 */
 	getNextBlockId: function() {
 		var maxId = 0;
-		var currentBlocks = this._getEl().querySelectorAll("[data-block-id");
+		var currentBlocks = this._getEl().querySelectorAll("[data-block-id]");
 		for(var i = 0; i < currentBlocks.length; i++) {
 			try {
 				maxId = Math.max(maxId, 
@@ -168,9 +168,8 @@ Idevice.prototype = {
 	loadState: function() {
 		if(this.isStateSupported()) {
 			eXeTinCan.getPkgStateValue("id" + this.ideviceId, (function(keyVals) {
-				if(typeof keyVals !== "undefined") {
-					this.setState(keyVals);
-				}
+				keyVals = keyVals || null;
+				this.setState(keyVals);
 			}).bind(this), {prefix : true});
 		}
 	}
@@ -318,6 +317,19 @@ var eXeEpubCommon = (function() {
         		return itemEl.getAttribute("id");
         	}else {
         		return null;
+        	}
+        },
+        
+        /**
+         * Checks to see if the page is in the authoring frame
+         * 
+         * @return {boolean} true if authoring mode is enabled, false otherwise
+         */
+        isAuthoringMode: function() {
+        	if(eXeEpubCommon.getQueryVars()['exe-authoring-mode']) {
+        		return true;
+        	}else {
+        		return false;
         	}
         }
         

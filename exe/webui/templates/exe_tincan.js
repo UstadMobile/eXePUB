@@ -301,13 +301,28 @@ var eXeTinCan = (function() {
 		 * id and value pairs that start with key as a prefix
 		 */
 		_getPkgStateValue: function(key, opts) {
-			if(!(opts && opts.prefix)) {
+			if(!(opts && opts.prefix) && typeof key === "string") {
 				return _state[key];
 			}else {
 				var keyValues = {};
+				var keysToMatch = key;
+				var matchByPrefix = (opts && opts.prefix);
+				var keyToCheck, i;
+				
+				if(typeof key === "string") {
+					keysToMatch = [key];
+				}
+				
 				for(keyId in _state) {
-					if(_state.hasOwnProperty(keyId) && keyId.substring(0, key.length) === key) {
-						keyValues[keyId] = _state[keyId];
+					if(_state.hasOwnProperty(keyId)) {
+						for(i = 0; i < keysToMatch.length; i++) {
+							keyToCheck = keysToMatch[i];
+							if(matchByPrefix && keyId.substring(0, keyToCheck.length) === keyToCheck) {
+								keyValues[keyId] = _state[keyId];
+							}else if(!matchByPrefix && keyId === keyToCheck) {
+								keyValues[keyId] = _state[keyId];
+							}
+						}
 					}
 				}
 				
@@ -373,7 +388,7 @@ var eXeTinCan = (function() {
 		_getCurrentLocalStorageKey: function(cfg) {
 			var regId = cfg.registration ? cfg.registration : "";
 			var agentStr = cfg.agent ? cfg.agent.toString() : "NOAGENT";
-			return "exe-tincan-" + encodeURIComponent(agentStr) + "-"
+			return "exe-tincan-" + encodeURIComponent(agentStr) + "-" +
 				cfg.activity.id + "-" + regId;
 		},
 		
