@@ -124,13 +124,21 @@ InstitutionalProfileIdevice.prototype = Object.create(Idevice.prototype, {
 		}
 	},
 	
-	addTextboxes: {
+	getTextInputLabels: {
 		value: function() {
 			var srcRows = $(this._getEl()).find("tr.inst-profile-srcrow");
 			var textboxes = $(this._getEl()).find("table").attr("data-textboxes").split(",");
 			for(var i = 0; i < textboxes.length; i++) {
 				textboxes[i] = textboxes[i].trim();
 			}
+			return textboxes;
+		}
+	},
+	
+	addTextboxes: {
+		value: function() {
+			var srcRows = $(this._getEl()).find("tr.inst-profile-srcrow");
+			var textboxes = this.getTextInputLabels();
 			
 			for(var i = 0; i < srcRows.length; i++) {
 				var nextRow = $(srcRows.get(i)).next();
@@ -176,6 +184,142 @@ InstitutionalProfileIdevice.prototype = Object.create(Idevice.prototype, {
 	handleClickDeleteRow: {
 		value: function(evt) {
 			$(this._getEl()).find("[data-block-id=" + evt.data.blockId+"]").remove();
+		}
+	},
+	
+	isStateSupported: {
+		value: function() {
+			return !eXeEpubCommon.isAuthoringMode();
+		}
+	},
+	
+	setState: {
+		value: function(state){
+			var srcRows = $(this._getEl()).find(".inst-profile-srcrow");
+			for(var i = 0; i < srcRows.length; i++) {
+				this.setRowState(srcRows.get(i), state);
+			}
+		}
+	},
+	
+	setRowState: {
+		value: function(row, state) {
+			var srcId = $(row).attr('data-checkbox-src');
+			var textboxInputLabels = this.getTextInputLabels();
+			
+			CheckboxUtils.getCheckedItemsByCheckedIndex(srcId, 0, (function(checkedItems) {
+				var srcIdeviceId = CheckboxUtils.getIdeviceIdFromActivityId(srcId);
+				for(var i = 0; i < 2; i++) {
+					var next = $(row).next();
+					if(next.is(".inst-profile-textbox-tr")) {
+						next.remove();
+					}else {
+						break;
+					}
+				}
+				
+				var headerTr = $("<tr/>", {
+					'class' : 'inst-profile-data-header'
+				});
+				$(row).after(headerTr);
+				
+				var headerTd = $("<td/>", {
+					'class' : 'inst-profile-data-header-td'
+				}).text($(row).find("td").first().text()).css("font-weight", "bold");
+				headerTr.append(headerTd);
+				
+				
+				var dataRow, dataTd, levelTd, levelWidgetId;
+				var lastRow = headerTr;
+				var baseId = this.ideviceId + "_" + srcIdeviceId;
+				
+				for(var i = 0; i < checkedItems.length; i++) {
+					var labelRow = $("<tr/>", {
+						'class' : 'inst-profile-data-label-tr'
+					});
+					$(lastRow).after(labelRow);
+					
+					var descTd = $("<td/>", {
+						'class' : 'inst-profile-data-label-td'
+					}).text(checkedItems[i].desc);
+					labelRow.append(descTd);
+					for(var j = 0; j < 2; j++) {
+						levelWidgetId = baseId + "_" + checkedItems[i].id + "_level_" + j;
+						levelTd = $("<td/>");
+						labelRow.append(levelTd);
+						LevelBoxWidget.initLevelBox(levelWidgetId, {
+							container : levelTd.get(0)
+						});
+						
+						if(typeof state["id" + levelWidgetId] !== "undefined") {
+							LevelBoxWidget.getBoxById(levelWidgetId).setLevel(state["id" + levelWidgetId]);
+						}
+					}
+					
+					lastRow = labelRow;
+					
+					var textTr, textLabelTd, textInputTd, textAreaEl, textElId;
+					for(var j = 0; j < textboxInputLabels.length; j++) {
+						textTr = $("<tr/>", {
+							"class": "inst-profile-data-text-tr"
+						});
+						lastRow.after(textTr);
+						
+						textLabelTd = $("<td/>", {
+							'class' : 'inst-profile-data-text-label-td'
+						}).text(textboxInputLabels[j]);
+						textTr.append(textLabelTd);
+						
+						textInputTd = $("<td/>", {
+							'class': 'inst-profile-data-textarea-label-td',
+							'colspan' : 2
+						});
+						textElId = baseId + "_" + checkedItems[i].id + "_text_" + j;
+						textAreaEl = $("<textarea/>", {
+							cols: 60,
+							'class' : 'inst-profile-data-textarea',
+							id :  'id' + textElId
+						});
+						
+						if(typeof state["id" + textElId] !== "undefined") {
+							textAreaEl.val(state["id" + textElId]);
+						}
+						
+						textInputTd.append(textAreaEl);
+						textTr.append(textInputTd);
+						
+						lastRow = textTr;
+					}
+					
+					//lastRow = labelRow;
+				}
+				
+				
+				$(row).css("display", "none");
+				
+				
+			}).bind(this));
+		}
+	},
+	
+	getState : {
+		value: function() {
+			var stateVal = {};
+			var levelItems = $(this._getEl()).find(".cordaid-level-box-widget");
+			var itemId, elId;
+			for(var i = 0; i < levelItems.length; i++) {
+				elId = $(levelItems.get(i)).attr("id");
+				itemId = elId.substring(2);//chop off id prefix
+				stateVal[elId] = LevelBoxWidget.getBoxById(itemId).getLevel();
+			}
+			
+			var textItems = $(this._getEl()).find(".inst-profile-data-textarea");
+			for(var i = 0; i < textItems.length; i++) {
+				elId = $(textItems.get(i)).attr("id");
+				stateVal[elId] = $(textItems.get(i)).val(); 
+			}
+			
+			return stateVal;
 		}
 	}
 	
