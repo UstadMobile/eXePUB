@@ -593,7 +593,18 @@ var eXeTinCan = (function() {
 					eXeEpubAuthoring.NS_TINCAN, "interactionType");
 			iTypeEl.textContent = interactionType;
 			element.appendChild(iTypeEl);
+		},
+		
+		getActivityByIdFromArr: function(arr, activityId) {
+			for(var i = 0; i < arr.length; i++) {
+				if(arr[i].getAttribute("id") === activityId) {
+					return arr[i];
+				}
+			}
+			
+			return null;
 		}
+		
 	};
 	mod.init();
 	return mod;

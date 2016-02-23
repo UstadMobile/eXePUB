@@ -148,7 +148,28 @@ LevelsTableIdevice.prototype = Object.create(Idevice.prototype, {
 			var htmlToSave = eXeEpubAuthoring.getSavableHTML(document.getElementById("id" + this.ideviceId));
 			eXeEpubAuthoring.saveIdeviceHTML(this.ideviceId, htmlToSave);
 		}
+	},
+	
+
+	isStateSupported: {
+		value: function() {
+			return !eXeEpubCommon.isAuthoringMode();
+		}
+	},
+	
+	setState: {
+		value: function(state) {
+			//find out what we are looking for
+			var levelRows = $("#id" + this.ideviceId).find(".levels-table-sourcerow");
+			for(var i = 0; i < levelRows.length; i++) {
+				var srcId = $(levelRows[i]).attr("data-src-checkbox-table");
+				CheckboxUtils.getCheckedItemsByCheckedIndex(srcId, 0, function(checkedItems) {
+					debugger;
+				});
+			}
+		}
 	}
+	
 		
 	
 });
