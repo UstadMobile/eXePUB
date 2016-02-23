@@ -14,6 +14,7 @@
         <script>tincan.js</script>
         <script>exe_tincan.js</script>
         <script>checkboxtable-utils.js</script>
+        <script>cordaid-level-box.js</script>
     </system-resources>
     
     <!-- Map to exe-files/idevices/ideviceid -->

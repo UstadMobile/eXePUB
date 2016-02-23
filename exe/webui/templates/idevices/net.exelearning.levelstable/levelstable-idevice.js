@@ -162,13 +162,77 @@ LevelsTableIdevice.prototype = Object.create(Idevice.prototype, {
 			//find out what we are looking for
 			var levelRows = $("#id" + this.ideviceId).find(".levels-table-sourcerow");
 			for(var i = 0; i < levelRows.length; i++) {
-				var srcId = $(levelRows[i]).attr("data-src-checkbox-table");
-				CheckboxUtils.getCheckedItemsByCheckedIndex(srcId, 0, function(checkedItems) {
-					debugger;
-				});
+				this.setRowState(levelRows.get(i), state);
 			}
 		}
+	},
+	
+	setRowState: {
+		value: function(srcRow, state) {
+			var srcId = $(srcRow).attr("data-src-checkbox-table");
+			var srcRowTr = $(srcRow).parent();
+			CheckboxUtils.getCheckedItemsByCheckedIndex(srcId, 0, (function(checkedItems) {
+				var srcIdeviceId = CheckboxUtils.getIdeviceIdFromActivityId(srcId);
+				var headerTr = $("<tr/>", {
+					"class" : "levels-table-datarow-header-tr"
+				});
+				$(srcRowTr).after(headerTr);
+				var headerTd = $("<td/>", {
+					'class' : 'levels-table-datarow-header-td'
+				}).text($(srcRow).text()).css("font-weight", "bold");
+				headerTr.append(headerTd);
+				
+				var dataRow, dataTd, levelTd, levelWidgetId;
+				var lastRow = headerTr;
+				var baseId = this.ideviceId + "_" + srcIdeviceId;
+				
+				for(var i = 0; i < checkedItems.length; i++) {
+					dataRow = $("<tr/>", {
+						"class" : "levels-table-datarow-tr"
+					});
+					lastRow.after(dataRow);
+					dataTd = $("<td/>", {
+						"class" : "levels-table-datarow-td"
+					}).text(checkedItems[i].desc);
+					dataRow.append(dataTd);
+					
+					for(var j = 0; j < 6; j++) {
+						levelTd = $("<td/>");
+						dataRow.append(levelTd);
+						
+						levelWidgetId = baseId + "_" + checkedItems[i].id + "_" + j;
+						LevelBoxWidget.initLevelBox(levelWidgetId, {
+							container : levelTd.get(0)
+						});
+						
+						if(typeof state["id" + levelWidgetId] !== "undefined") {
+							LevelBoxWidget.getBoxById(levelWidgetId).setLevel(state["id" + levelWidgetId]);
+						}
+					}
+					
+					lastRow = dataRow;
+				}
+				$(srcRowTr).css("display", "none");
+				
+			}).bind(this));
+		}
+	},
+	
+	getState: {
+		value: function() {
+			var stateVal = {};
+			var stateItems = $(this._getEl()).find(".cordaid-level-box-widget");
+			var itemId, elId;
+			for(var i = 0; i < stateItems.length; i++) {
+				elId = $(stateItems.get(i)).attr("id");
+				itemId = elId.substring(2);//chop off id prefix
+				stateVal[elId] = LevelBoxWidget.getBoxById(itemId).getLevel();
+			}
+			
+			return stateVal;
+		}
 	}
+	
 	
 		
 	

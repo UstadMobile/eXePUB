@@ -39,9 +39,16 @@ CheckboxUtils.getChoicesByActivityId = function(activityId, callback) {
 		}).bind(this));
 };
 
-CheckboxUtils.getCheckedItemsByCheckedId = function(activityId, checkedId, ideviceActivities, callback) {
+CheckboxUtils.getIdeviceIdFromActivityId = function(activityId) {
 	var ideviceId = activityId.substring(activityId.lastIndexOf("/")+1);
 	ideviceId = ideviceId.substring(0, ideviceId.indexOf("."));
+	return ideviceId;
+}
+
+CheckboxUtils.getCheckedItemsByCheckedId = function(activityId, checkedId, ideviceActivities, callback) {
+	//var ideviceId = activityId.substring(activityId.lastIndexOf("/")+1);
+	//ideviceId = ideviceId.substring(0, ideviceId.indexOf("."));
+	var ideviceId = CheckboxUtils.getIdeviceIdFromActivityId(activityId);
 	
 	eXeTinCan.getPkgStateValue("id"+ideviceId, function(state){
 		var checkedItems = [];
