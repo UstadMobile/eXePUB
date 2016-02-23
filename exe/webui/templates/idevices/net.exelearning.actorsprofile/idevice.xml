@@ -13,6 +13,10 @@
         <script>exe_jquery.js</script>
         <script>tincan.js</script>
         <script>exe_tincan.js</script>
+        <script>cordaid-level-box.js</script>
+        <res>cordaid-level0.png</res>
+        <res>cordaid-level1.png</res>
+        <res>cordaid-level2.png</res>
     </system-resources>
     
     <!-- Map to exe-files/idevices/ideviceid -->

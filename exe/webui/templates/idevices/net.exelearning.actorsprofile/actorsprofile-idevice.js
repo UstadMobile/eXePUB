@@ -55,6 +55,18 @@ ActorsProfileIdevice.prototype = Object.create(Idevice.prototype, {
 		}
 	},
 	
+	_getColIds: {
+		value: function() {
+			var colIds = [];
+			var cols = $(this._getEl()).find("td.actors-profile-levelcol");
+			for(var i = 0; i < cols.length; i++) {
+				colIds.push(cols.get(i).getAttribute("data-block-id"));
+			}
+			
+			return colIds;
+		}
+	},
+	
 	_addCol: {
 		value: function(){
 			var blockId = this.getNextBlockId();
@@ -261,8 +273,25 @@ ActorsProfileIdevice.prototype = Object.create(Idevice.prototype, {
 							
 							actorRoleTd.append(actorRoleInput);
 							newTr.append(actorRoleTd);
-							
 							$(lastRow).after(newTr);
+							
+							var colIds = this._getColIds();
+							var levelTd, levelId;
+							for(var k = 0; k < colIds.length; k++) {
+								levelTd = $("<td/>", {
+									'class' : 'exe-actorsprofile-actor-role-leveltd'
+								});
+								levelId = dataRowId + "_" + k
+								newTr.append(levelTd);
+								LevelBoxWidget.initLevelBox(levelId, {
+									container : levelTd.get(0)
+								});
+								if(state["id" + levelId]) {
+									LevelBoxWidget.getBoxById(levelId).setLevel(
+											state["id" + levelId]);
+								}
+							}
+							
 							lastRow = newTr;
 						}
 					}
@@ -277,11 +306,18 @@ ActorsProfileIdevice.prototype = Object.create(Idevice.prototype, {
 		value: function() {
 			var rows = $("#id" + this.ideviceId).find("tr.exe-actorsprofile-data-row");
 			var stateVal = {};
+			var colIds = this._getColIds();
+			var levelBoxId;
 			for(var i = 0; i < rows.length; i++) {
 				var dataRowId = $(rows.get(i)).attr('data-row-id');
 				stateVal["id" + dataRowId] = {
 					'response' : $('#apdri_' + dataRowId).val()
 				};
+				
+				for(var k = 0; k < colIds.length; k++) {
+					levelBoxId = dataRowId + "_" + k;
+					stateVal["id" + levelBoxId] = LevelBoxWidget.getBoxById(levelBoxId).getLevel();
+				}
 			}
 			
 			return stateVal;
