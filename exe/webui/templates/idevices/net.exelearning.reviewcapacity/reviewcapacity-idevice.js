@@ -127,8 +127,15 @@ ReviewCapacityIdevice.prototype = Object.create(Idevice.prototype, {
 	},
 	
 	enhance: {
-		value: function() {
-			var srcRows = $(this._getEl()).find("tr.review-capacity-srcrow");
+		value: function(container, selector, handleEvents, state, checkedItemId) {
+			container = typeof container !== "undefined" ? container : this._getEl();
+			selector = typeof selector !== "undefined" ? selector : "tr.review-capacity-srcrow";
+			checkedItemId = checkedItemId ? checkedItemId : "";
+			
+			var srcRows = $(container);
+			if(selector) {
+				srcRows = srcRows.find("tr.review-capacity-srcrow");
+			}
 			if(srcRows.length === 0) {
 				return;//idevice is not actually ready yet
 			}
@@ -156,32 +163,90 @@ ReviewCapacityIdevice.prototype = Object.create(Idevice.prototype, {
 					tr.append($("<td/>", {
 						'class' : "review-capacity-side-td-label"
 					}).text(textboxes[j]));
+					rightTable.append(tr);
 					
 					for(var k = 0; k < 2; k++) {
 						var td = $("<td/>", {
 							'class' : 'review-capacity-td-checkbox'
 						});
 						
-						var inId = "rci_" + this.ideviceId + "_" + i + 
-							"_cb" + j + "_" + k;
+						var inId = "id" + this.ideviceId + "_" + checkedItemId + 
+							"_" + i + "_cb" + j + "_" + k;
 						td.append($("<label/>", {
 							'for' : inId
 						}).text(" "));
-						td.append($("<input/>", {
+						
+						var inputEl = $("<input/>", {
 							'type' : 'checkbox',
+							'value' : 'k',
+							'class' : 'review-capacity-checkbox',
 							'id' : inId,
 							'name' : inId
-						}));
+						}); 
+						
+						if(state && state[inId]) {
+							inputEl.prop("checked", state[inId]);
+							var textAreaId = inId + "_text";
+							var text = state[textAreaId] ? state[textAreaId] : "";
+							this.addTextInputRow(tr, text, textAreaId);
+						}
+						
+						td.append(inputEl);
+						
+						if(k === 0 && handleEvents) {
+							inputEl.on("click", this.handleCheckboxClick.bind(this));
+						}
 						
 						tr.append(td);
 					}
-					rightTable.append(tr);
+					
 				}
 				
 				$(srcRows.get(i)).find(".review-capacity-td-1").empty().append(rightTable);
 			}
 		}
 	},
+	
+	handleCheckboxClick: {
+		value: function(evt) {
+			var checkboxId = $(evt.delegateTarget).attr("id");
+			var textAreaId = checkboxId + "_text";
+			var textArea = $("#" + textAreaId);
+			
+			if($(evt.delegateTarget).is(":checked")) {
+				if(textArea.length === 0) {
+					this.addTextInputRow($(evt.delegateTarget).closest("tr"), "", textAreaId);
+				}
+			}else {
+				$("#"+textAreaId + "_tr").remove();
+				//remove it if it exists
+			}
+			
+		}
+	},
+	
+	addTextInputRow: {
+		value: function(precedingRow, textVal, id) {
+			var textTr = $("<tr/>", {
+				'class' : 'review-capacity-side-textarea-tr',
+				'id' : id + "_tr"
+			});
+			precedingRow.after(textTr);
+			var textAreaTd = $("<td/>", {
+				'class' : "review-capacity-side-textarea-td",
+				'colspan' : 3
+			});
+			textTr.append(textAreaTd);
+			
+			var textArea = $("<textarea/>", {
+				'class' : 'review-capacity-side-textarea',
+				'id' : id
+			});
+			textArea.val(textVal);
+			textAreaTd.append(textArea);
+		}
+	},
+	
 	
 	unEnhance: {
 		value: function() {
@@ -199,6 +264,96 @@ ReviewCapacityIdevice.prototype = Object.create(Idevice.prototype, {
 		value: function() {
 			this.addRow();
 			this.editOn2();
+		}
+	},
+	
+
+	isStateSupported: {
+		value: function() {
+			return !eXeEpubCommon.isAuthoringMode();
+		}
+	},
+	
+
+	setState: {
+		value: function(state) {
+			//find out what we are looking for
+			this.unEnhance();
+			state = state['id' + this.ideviceId] ? state['id' + this.ideviceId] : {}; 
+			var rows = $("#id" + this.ideviceId).find(".review-capacity-srcrow");
+			for(var i = 0; i < rows.length; i++) {
+				this.setRowState(rows.get(i), state, i);
+			}
+		}
+	},
+	
+	setRowState: {
+		value: function(row, state, index) {
+			var srcId = $(row).attr("data-checkbox-src");
+			CheckboxUtils.getCheckedItemsByCheckedIndex(srcId, 0, (function(checkedItems) {
+				var srcIdeviceId = CheckboxUtils.getIdeviceIdFromActivityId(srcId);
+				
+				var headerTr = $("<tr/>", {
+					"class" : "review-capacity-datarow-header-tr"
+				});
+				$(row).after(headerTr);
+				var headerTd = $("<td/>", {
+					'class' : 'review-capacity-datarow-header-td'
+				}).text($(row).text()).css("font-weight", "bold");
+				headerTr.append(headerTd);
+				
+				var dataRow, dataTd, rightTd, levelWidgetId;
+				var lastRow = headerTr;
+				var baseId = this.ideviceId + "_" + srcIdeviceId;
+				
+				for(var i = 0; i < checkedItems.length; i++) {
+					dataRow = $("<tr/>", {
+						'class' : "review-capacity-datarow-tr"
+					});
+					lastRow.after(dataRow);
+					dataTd = $("<td/>", {
+						'class' : 'review-capacity-datarow-labeltd',
+						'valign' : 'top'
+					});
+					dataTd.text(checkedItems[i].desc);
+					dataRow.append(dataTd);
+					rightTd = $("<td/>", {
+						'class' : 'review-capacity-td-1'
+					});
+					dataRow.append(rightTd);
+					this.enhance(dataRow[0], null, true, state, checkedItems[i].id);
+					
+					lastRow = dataRow;
+				}
+				$(row).css("display", "none");
+				
+			}).bind(this));
+			
+		}
+	},
+	
+	getState: {
+		value: function() {
+			var stateVal = {};
+			var ideviceVal = {};
+			stateVal['id' + this.ideviceId] = ideviceVal;
+			var checkboxes = $(this._getEl()).find(".review-capacity-checkbox");
+			var checkboxId;
+			for(var i = 0; i < checkboxes.length; i++) {
+				checkboxId = $(checkboxes.get(i)).attr("id");
+				ideviceVal[checkboxId] = $(checkboxes.get(i)).is(":checked");
+				
+				if(checkboxId.charAt(checkboxId.length-1) === '0') {
+					//look for the text
+					var textAreaId = checkboxId + "_text";
+					var textArea = $("#" + textAreaId);
+					if(textArea.length) {
+						ideviceVal[textAreaId] = textArea.val();
+					}
+				}
+			}
+			
+			return stateVal;
 		}
 	}
 });
