@@ -298,6 +298,15 @@ class EPUBNavItem(object):
                     
         return result
     
+    def get_all_children(self, list):
+        if not isinstance(self, EPUBNavDocument):
+            list.append(self)
+        for child in self.children:
+            child.get_all_children(list)
+            
+        return list
+    
+    
     def createChild(self, template_path = None, title = "New Page", auto_save = True):
         new_html_filename = self.opf.find_free_filename(EPUBNavItem.DEFAULT_PAGENAME, ".xhtml")
         new_html_path = os.path.join(os.path.dirname(self.opf.href), new_html_filename)

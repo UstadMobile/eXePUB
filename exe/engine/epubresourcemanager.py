@@ -261,6 +261,13 @@ class EPUBResourceManager(object):
         page_path = os.path.join(os.path.dirname(self.opf.href), opf_item.href)
         return page_path
     
+    def update_all_pages(self):
+        all_page_list = []
+        self.opf.get_navigation().get_all_children(all_page_list)
+        for page in all_page_list:
+            self.update_page(page.id)
+        print "Updated all pages"
+    
     def update_page(self, page_id, new_idevice_id = None, new_idevice_cssclass = None, new_idevice_type = None):
         """Regenerate script and link elements as they are required for the idevices on the page"""
         page_path = self._get_page_path(page_id)

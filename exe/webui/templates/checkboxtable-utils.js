@@ -52,6 +52,7 @@ CheckboxUtils.getCheckedItemsByCheckedId = function(activityId, checkedId, idevi
 	
 	eXeTinCan.getPkgStateValue("id"+ideviceId, function(state){
 		var checkedItems = [];
+		var checkedItemObj;
 		for(prop in state) {
 			if(state.hasOwnProperty(prop)) {
 				if(state[prop].checkedItem === checkedId) {
@@ -60,7 +61,16 @@ CheckboxUtils.getCheckedItemsByCheckedId = function(activityId, checkedId, idevi
 						activityId.substring(0, activityId.lastIndexOf(".")+1) + questionId;
 					var checkedActivity = eXeTinCan.getActivityByIdFromArr(ideviceActivities, checkedActivityId);
 					var checkedDesc = checkedActivity.querySelector("description").textContent;
-					checkedItems.push({ id: prop, desc : checkedDesc });
+					checkedItemObj = { 
+						id: prop, 
+						desc : checkedDesc 
+					};
+					
+					if(state[prop].response) {
+						checkedItemObj.response = state[prop].response;
+					}
+					
+					checkedItems.push(checkedItemObj);
 				}
 			}
 		}

@@ -76,6 +76,19 @@ CheckboxLevelReviewIdevice.prototype = Object.create(Idevice.prototype, {
 		}
 	},
 	
+	getColIds: {
+		value: function() {
+			var cols = $(this._getEl()).find(".checkboxlevel-col-header-td");
+			var colIds = [];
+			var blockId;
+			for(var i = 0; i < cols.length; i++) {
+				blockId = $(cols.get(i)).attr("data-block-id");
+				colIds.push(blockId);
+			}
+			
+			return colIds;
+		}
+	},
 	
 	editOn: {
 		value: function(){
@@ -248,6 +261,145 @@ CheckboxLevelReviewIdevice.prototype = Object.create(Idevice.prototype, {
 		value : function() {
 			this.addCol();
 			this.editOn2();
+		}
+	},
+	
+	isStateSupported: {
+		value: function() {
+			return !eXeEpubCommon.isAuthoringMode();
+		}
+	},
+	
+	setState: {
+		value: function(state) {
+			var rows = $("#id" + this.ideviceId).find(".checkboxlevel-srcrow");
+			state = state && state["id" + this.ideviceId] ?state["id" + this.ideviceId] : {}; 
+			for(var i = 0; i < rows.length; i++) {
+				this.setRowState(rows.get(i), state);
+			}
+		}
+	},
+	
+	setRowState: {
+		value: function(row, state) {
+			var srcId = $(row).attr("data-checkbox-src");
+			CheckboxUtils.getCheckedItemsByCheckedIndex(srcId, 0, (function(checkedItems) {
+				var srcIdeviceId = CheckboxUtils.getIdeviceIdFromActivityId(srcId);
+				var widgetType = $(this._getTable()).attr("data-box-type");
+				var headerTr = $("<tr/>", {
+					"class" : "checkbox-levelreview-datarow-header-tr"
+				});
+				$(row).after(headerTr);
+				var headerTd = $("<td/>", {
+					'class' : 'checkbox-levelreview-datarow-header-td'
+				});
+				var headerDiv = $("<div/>", {
+					'class' : 'checkbox-levelreview-datarow-header-div'
+				}).text($(row).text()).css("font-weight", "bold");
+				headerTd.append(headerDiv);
+				
+				headerTr.append(headerTd);
+				
+				
+				var dataRow, dataTd, boxTd, boxWidgetId, rowId;
+				var lastRow = headerTr;
+				var baseId = this.ideviceId + "_" + srcIdeviceId;
+				var colIds = this.getColIds();
+				for(var i = 0; i < checkedItems.length; i++) {
+					rowId = baseId + "_" + checkedItems[i].id + "_";
+					dataRow = $("<tr/>", {
+						"class" : "checkbox-levelreview-datarow-tr"
+					});
+					lastRow.after(dataRow);
+					dataTd = $("<td/>", {
+						"class" : "checkbox-levelreview-datarow-td",
+						'valign' : 'top'
+					}).text(checkedItems[i].desc);
+					
+					if($(this._getTable()).attr("data-show-text") === "true" && checkedItems[i].response) {
+						var textResponseDiv = $("<div/>", {
+							'class' : 'checkbox-levelreview-datarow-text-div',
+							'style' : 'margin-left: 10px'
+						}).text(checkedItems[i].response);
+						dataTd.append(textResponseDiv);
+					}
+					
+					if($(this._getTable()).attr("data-add-text") === "true"){
+						var textAreaEl = $("<textarea/>", {
+							'class' : 'checkbox-levelreview-datarow-textarea',
+							'id' : rowId + "text"
+						});
+						if(state[rowId+"text"]) {
+							textAreaEl.val(state[rowId+"text"]);
+						}
+						dataTd.append(textAreaEl);
+					}
+					
+					dataRow.append(dataTd);
+					for(var j = 0; j < colIds.length; j++) {
+						boxWidgetId = rowId +j;
+						boxTd = $("<td/>", {
+							'class' : 'checkbox-levelreview-datarow-boxtd',
+							'valign' : 'top'
+						});
+						dataRow.append(boxTd);
+						if(widgetType === "Level") {
+							LevelBoxWidget.initLevelBox(boxWidgetId, {
+								container : boxTd.get(0)
+							});
+							
+							if(state["id"+boxWidgetId]) {
+								LevelBoxWidget.getBoxById(boxWidgetId).setLevel(state["id"+boxWidgetId]);
+							}
+						}else {
+							var inputEl = $("<input/>",{
+								'type' : 'checkbox',
+								'class' : 'checkbox-levelreview-datarow-checkbox',
+								'id' : 'id' + boxWidgetId
+							});
+							boxTd.append(inputEl);
+							if(state["id"+boxWidgetId]) {
+								inputEl.prop("checked", true);
+							}
+							boxTd.append($("<label/>", {
+								'for' : 'id' + boxWidgetId
+							}));
+						}
+					}
+					
+					
+				}
+				
+				$(row).css("display", "none");
+				
+			}).bind(this));
+		}
+	},
+	
+	getState: {
+		value: function() {
+			var stateVal = {};
+			var ideviceObj = {};
+			stateVal["id" + this.ideviceId] = ideviceObj;
+			var widgetType = $(this._getTable()).attr("data-box-type");
+			var boxItems = $(this._getEl()).find(".cordaid-level-box-widget, .checkbox-levelreview-datarow-checkbox");
+			var value, itemId;
+			for(var i = 0; i < boxItems.length; i++) {
+				itemId = boxItems.get(i).id;
+				if(widgetType === "Level") {
+					value = LevelBoxWidget.getBoxById(itemId.substring(2)).getLevel();
+				}else {
+					value = $(boxItems.get(i)).is(":checked") ? 1 : 0;
+				}
+				ideviceObj[itemId] = value;
+			}
+			
+			var textAreas = $(this._getEl()).find("textarea.checkbox-levelreview-datarow-textarea");
+			for(var i = 0; i < textAreas.length; i++) {
+				ideviceObj[textAreas.get(i).id] = $(textAreas.get(i)).val();
+			}
+			
+			return stateVal;
 		}
 	}
 		

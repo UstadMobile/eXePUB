@@ -24,6 +24,8 @@ class EPUBPackage(object):
                                  ".//{%s}*[@role='main']", 
                                  ".//{%s}*[@id='main']" ] 
 
+    UPDATE_ALL_ON_OPEN = False
+
     @classmethod
     def load(cls, filename):
         epub_handle = EPUBPackage(filename = filename)
@@ -97,6 +99,10 @@ class EPUBPackage(object):
         self.main_opf = self.opfs[0]
         self.main_manifest = self.main_opf.manifest
         self.root = self.main_opf.get_navigation()
+        
+        if EPUBPackage.UPDATE_ALL_ON_OPEN:
+            self.main_opf.resource_manager.update_all_pages()
+        
         self.currentNode = self.root
         self.tincan_manager = TinCanXMLManager(self)
         self.isChanged = False
