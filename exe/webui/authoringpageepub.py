@@ -39,6 +39,7 @@ class AuthoringPageEPUB(RenderableResource):
                 self.package.tincan_manager.set_activities_by_idevice(
                         request.args['page_id'][0], request.args['idevice_id'][0], 
                         request.args['tincan_xml'][0])
+            
                                                                       
      
     def render_GET(self, request=None):
@@ -48,7 +49,11 @@ class AuthoringPageEPUB(RenderableResource):
                 idevice_id = request.args['idevice_id'][0]
                 self.package.main_opf.delete_idevice_from_page(page_id, idevice_id)
                 self.package.main_opf.resource_manager.handle_idevice_deleted(page_id, idevice_id)
-        
+            elif request.args['action'][0] == "moveidevice":
+                self.package.main_opf.resource_manager.move_idevice_in_page(
+                        request.args['page_id'][0], request.args['idevice_id'][0],
+                        int(request.args['increment'][0]))
+                
         html =  "<html><body></body></html>".encode('utf8')
         return html
     

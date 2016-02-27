@@ -117,6 +117,23 @@ class EPUBResourceManager(object):
         
         return pg_idevice_id
     
+    def move_idevice_in_page(self, page_id, idevice_id, increment):
+        page_path = self._get_page_path(page_id)
+        
+        #According to the epub spec: contents MUST be XHTML not just HTML
+        page_html_el = etree.parse(page_path).getroot()
+        ns_xhtml = page_html_el.nsmap.get(None)
+        
+        idevice_el = page_html_el.find(".//{%s}div[@id='id%s']" % (ns_xhtml, idevice_id))
+        parent_el = idevice_el.getparent()
+        current_pos = parent_el.index(idevice_el)
+        parent_el.remove(idevice_el)
+        parent_el.insert(current_pos+increment, idevice_el)
+        
+        self.save_page(page_html_el, page_path)
+        
+        
+    
     def handle_idevice_deleted(self, page_id, idevice_id):
         #TODO: Handle user added resources that are linked to this idevice
         self.update_page(page_id)
@@ -319,12 +336,23 @@ class EPUBResourceManager(object):
             script_el.set("data-exeres", "true")
             script_el.text = "\n"
             
-        
+        """
         EPUBResourceManager.clean_html_el(page_html_el)    
         updated_src = etree.tostring(page_html_el, encoding="UTF-8", pretty_print = True)
         
         page_fd = open(page_path, "w")
         page_fd.write(updated_src)
+        page_fd.flush()
+        page_fd.close()
+        """
+        self.save_page(page_html_el, page_path)
+    
+    def save_page(self, page_html_el, page_path):
+        EPUBResourceManager.clean_html_el(page_html_el)
+        src = etree.tostring(page_html_el, encoding="UTF-8", pretty_print = True)
+        
+        page_fd = open(page_path, "w")
+        page_fd.write(src)
         page_fd.flush()
         page_fd.close()
                 

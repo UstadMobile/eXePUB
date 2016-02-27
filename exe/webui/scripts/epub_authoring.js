@@ -183,6 +183,8 @@ eXeEpubIdevice.prototype = {
 	initToolbar: function() {
 		var ideviceEl = this._getIdeviceEl();
 		var toolbarEl = document.createElement("div");
+		ideviceEl.parentNode.insertBefore(toolbarEl, ideviceEl.nextSibling);
+		toolbarEl.setAttribute("id", "exe_epub_toolbar_" + this.ideviceId);
 		toolbarEl.setAttribute("class", "epub-idevice-toolbar");
 		
 		var editButton = document.createElement("img");
@@ -198,12 +200,44 @@ eXeEpubIdevice.prototype = {
 				false);
 		
 		toolbarEl.appendChild(deleteButton);
-		toolbarEl.setAttribute("id", "exe_epub_toolbar_" + this.ideviceId);
 		
-		ideviceEl.parentNode.insertBefore(toolbarEl, ideviceEl.nextSibling);
 		ideviceEl.setAttribute('data-idevice-editing', 'off');
 	},
 	
+	/**
+	 * Updates the up and down move idevice buttons in the editing toolbar
+	 * at the bottom.  Will add/remove based on whether this idevice can
+	 * or cannot move up and down.
+	 */
+	updateMoveButtons: function() {
+		var toolbarEl = this._getToolbarEl();
+		var prevIdevice = this.previousIdevice();
+		var upButton = toolbarEl.querySelector("img.exe-epub-button-up");
+		var nextIdevice = this.nextIdevice();
+		var downButton = toolbarEl.querySelector("img.exe-epub-button-down");
+			
+		if(prevIdevice && !upButton) {
+			upButton = document.createElement("img");
+			upButton.setAttribute("src", "/images/stock-go-up.png");
+			upButton.setAttribute("class", "exe-epub-button-up")
+			toolbarEl.appendChild(upButton);
+			upButton.addEventListener("click", this.handleClickUp.bind(this),
+				false);
+		}else if(!prevIdevice && upButton) {
+			toolbarEl.removeChild(upButton);
+		}
+		
+		if(nextIdevice && !downButton) {
+			downButton = document.createElement("img");
+			downButton.setAttribute("src", "/images/stock-go-down.png");
+			downButton.setAttribute("class", "exe-epub-button-down")
+			toolbarEl.appendChild(downButton);
+			downButton.addEventListener("click", this.handleClickDown.bind(this),
+				false);
+		}else if(!nextIdevice && downButton) {
+			toolbarEl.removeChild(downButton);
+		}
+	},
 	
 	_getIdeviceEl: function() {
 		return document.getElementById("id" + this.ideviceId);
@@ -275,6 +309,85 @@ eXeEpubIdevice.prototype = {
 		ideviceEl.parentNode.removeChild(ideviceEl);
 		var toolbarEl = this._getToolbarEl();
 		toolbarEl.parentNode.removeChild(toolbarEl);
+	},
+	
+	/**
+	 * Gets the next idevice down the page
+	 */
+	nextIdevice: function() {
+		var currentEl = this._getIdeviceEl();
+		var nextSibling;
+		while((nextSibling = currentEl.nextSibling)) {
+			if(nextSibling.classList && nextSibling.classList.contains("Idevice")) {
+				return eXeEpubAuthoring.getEditableIdeviceById(nextSibling.id.substring(2));
+			}
+			currentEl = nextSibling;
+		}
+		
+		return null;
+	},
+	
+	/**
+	 * Gets the previous idevice up the page
+	 */
+	previousIdevice: function() {
+		var currentEl = this._getIdeviceEl();
+		var previousSibling;
+		while((previousSibling = currentEl.previousSibling)) {
+			if(previousSibling.classList && previousSibling.classList.contains("Idevice")) {
+				return eXeEpubAuthoring.getEditableIdeviceById(previousSibling.id.substring(2));
+			}
+			currentEl = previousSibling;
+		}
+		
+		return null;
+	},
+	
+	handleClickUp: function() {
+		this.move(-1);
+	},
+	
+	handleClickDown: function() {
+		this.move(1);
+	},
+	
+	/**
+	 * Move the idevice up or down in the list of idevices on the page
+	 */
+	move: function(increment) {
+		var ourIdeviceEl = this._getIdeviceEl();
+		
+		var beforeEl, moveEls;
+		if(increment < 0) {
+			beforeEl = this.previousIdevice()._getIdeviceEl();
+			moveEls = [this._getIdeviceEl(), this._getToolbarEl()];
+		}else {
+			beforeEl = this._getIdeviceEl();
+			moveEls = [this.nextIdevice()._getIdeviceEl(), 
+			           this.nextIdevice()._getToolbarEl()];
+		}
+		
+		for(var i = 0; i < moveEls.length; i++) {
+			moveEls[i].parentNode.removeChild(moveEls[i]);
+			beforeEl.parentNode.insertBefore(moveEls[i], beforeEl);
+		}
+		eXeEpubAuthoring.updateAllMoveButtons();
+		
+		var queryVars = eXeEpubAuthoring.getQueryVars();
+		var moveURL = queryVars["exe-authoring-save-to"] + 
+			"?page_id=" + encodeURIComponent(queryVars['exe-page-id']) +
+			"&idevice_id=" + this.ideviceId + "&increment=" + increment + 
+			"&action=moveidevice";
+		
+		var xmlHTTP = new XMLHttpRequest();
+		xmlHTTP.onreadystatechange = function() {
+			//for now - do nothing but log a message
+			if(xmlHTTP.readystate === 4 && xmlHTTP.status === 200) {
+				console.log("Moved idevice " + this.ideviceId + " by " + increment);
+			}
+		};
+		xmlHTTP.open("get", moveURL, true);
+		xmlHTTP.send();
 	}
 	
 };
@@ -350,7 +463,7 @@ var eXeEpubAuthoring = (function() {
         	                       '/templates/tinymce/plugins/visualblocks/css/visualblocks.css'
         	                       ];
         	
-        	eXeEpubAuthoring.loadResources(resourcesToLoad, function() {
+        	eXeEpubAuthoring.loadResources(resourcesToLoad, (function() {
         		var pageIdevices = document.querySelectorAll(".Idevice");
             	for(var i = 0; i < pageIdevices.length; i++) {
             		//all id attrs are idX where X is the actual id
@@ -358,9 +471,12 @@ var eXeEpubAuthoring = (function() {
             		_editableIdevices[ideviceId] = new eXeEpubIdevice(ideviceId);
             		_editableIdevices[ideviceId].initToolbar();
             	}
-        	});
+            	
+            	this.updateAllMoveButtons();
+        	}).bind(this));
         },
-		                              
+        
+                                      
 		addIdevice: function(ideviceType, ideviceId) {
 			//load required scripts if not already loaded
 			this.addIdeviceXHTTP = new XMLHttpRequest();
@@ -391,7 +507,7 @@ var eXeEpubAuthoring = (function() {
 							
 							_editableIdevices[ideviceId] = new eXeEpubIdevice(ideviceId);
 							_editableIdevices[ideviceId].initToolbar();
-							
+							eXeEpubAuthoring.updateAllMoveButtons();
 							var creationEvent = new CustomEvent("idevicecreate", {
 								detail: {
 									ideviceType: ideviceType,
@@ -407,6 +523,10 @@ var eXeEpubAuthoring = (function() {
 			this.addIdeviceXHTTP.open("get", "/templates/idevices/" + ideviceType + 
 					"/idevice.xml");
 			this.addIdeviceXHTTP.send();
+		},
+		
+		getEditableIdeviceById: function(id) {
+			return _editableIdevices[id];
 		},
 		
 		/**
@@ -600,6 +720,19 @@ var eXeEpubAuthoring = (function() {
 			}
 			
 			return selectEl;
+		},
+		
+		/**
+		 * Update the up/down buttons for idevices on the page - should
+		 * run when the page is first loaded and anytime that an idevice
+		 * is addeds/removed etc.
+		 */
+		updateAllMoveButtons: function() {
+			for(ideviceId in _editableIdevices) {
+				if(_editableIdevices.hasOwnProperty(ideviceId)) {
+					_editableIdevices[ideviceId].updateMoveButtons();
+				}
+			}
 		}
 		
 	};
