@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<idevice xmlns="http://www.ustadmobile.com/ns/exelearning-idevice">
+    <id>com.ustadmobile.fileattachments</id>
+    <label>File Attachments</label>
+    <category>Non Interactive</category>
+    <visible>true</visible>
+    <cssclass>FileAttachmentsIdevice</cssclass>
+    
+    <!--Map to exe-files/common -->
+    <system-resources>
+        <script>exe_jquery.js</script>
+        <script>exe-epub-common.js</script>
+    </system-resources>
+    
+    <!-- Map to exe-files/idevices/ideviceid -->
+    <idevice-resources>
+        <script>fileattachments-idevice.js</script>
+    </idevice-resources>
+    
+</idevice>

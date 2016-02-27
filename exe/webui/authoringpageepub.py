@@ -53,6 +53,17 @@ class AuthoringPageEPUB(RenderableResource):
                 self.package.main_opf.resource_manager.move_idevice_in_page(
                         request.args['page_id'][0], request.args['idevice_id'][0],
                         int(request.args['increment'][0]))
+            elif request.args['action'][0] == "requestfile":
+                client_handle_id = request.args['clientHandleId'][0]
+                request_opts = request.args['opts'][0]
+                active_client = None
+                for client in self.parent.clientHandleFactory.clientHandles.values():
+                    if client_handle_id == client.handleId:
+                        active_client = client
+                        break
+                
+                active_client.call('eXe.app.getController("MainTab").showRequestUserFile',
+                   request_opts)
                 
         html =  "<html><body></body></html>".encode('utf8')
         return html

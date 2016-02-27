@@ -262,7 +262,8 @@ Ext.define('eXe.controller.Outline', {
     			var authoringHREF = epubPageHREF + "?exe-authoring-mode=true&exe-page-id=" + 
     				encodeURIComponent(node.id) + "&exe-authoring-save-to=" +
     				encodeURIComponent(authoringHREF) + "&exe-authoring-page-nav-title=" +
-    				encodeURIComponent(node.data.text);
+    				encodeURIComponent(node.data.text) + "&clientHandleId=" +
+    				encodeURIComponent(nevow_clientHandleId);
     				
     			Ext.ComponentQuery.query('#authoring')[0].getDoc().location.href = authoringHREF;
     			var authoringPreviewDoc = Ext.ComponentQuery.query("#authoring_preview")[0].getDoc();

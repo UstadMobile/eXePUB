@@ -396,6 +396,44 @@ Ext.define('eXe.controller.MainTab', {
     sourcesDownload: function() {
         nevow_clientToServerEvent('sourcesDownload', this, '');
     },
+    
+    /** 
+     * Triggered by an eXeEpubAuthoring: shows the user a file browse dialog 
+     */
+    showRequestUserFile: function(opts) {
+    	var fp = Ext.create("eXe.view.filepicker.FilePicker", {
+            type: eXe.view.filepicker.FilePicker.modeOpen,
+            title: _("Select a file"),
+            modal: true,
+            scope: this,
+            callback: function(fp) {
+                if (fp.status == eXe.view.filepicker.FilePicker.returnOk) {
+                    var formpanel = this.getPackagePropertiesPanel(),
+                        form, field;
+                    form = formpanel.getForm();
+                    field = form.findField('pp_backgroundImg');
+                    field.setValue(fp.file.path);
+                    form.submit({
+                        success: function(f, action) {
+                            var img = this.getHeaderBackgroundImg(), json,
+                                showbutton = this.getHeaderBackgroundShowButton();
+                            json = Ext.JSON.decode(action.response.responseText);
+		                    img.setSrc(location.pathname + '/resources/' + json.data.pp_backgroundImg);
+		                    img.show();
+                            showbutton.setText(_('Hide Image'));
+                            showbutton.show();
+                        },
+                        scope: this
+                    });
+                }
+            }
+        });
+        fp.appendFilters([
+            { "typename": _("Image Files"), "extension": "*.png", "regex": /.*\.(jpg|jpeg|png|gif)$/i },
+            { "typename": _("All Files"), "extension": "*.*", "regex": /.*$/ }
+        ]);
+        fp.show();     
+    },
 
     onTabChange: function(tabPanel, newCard, oldCard, eOpts) {
         var newformpanel = null;

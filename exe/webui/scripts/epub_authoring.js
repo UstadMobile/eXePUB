@@ -309,6 +309,7 @@ eXeEpubIdevice.prototype = {
 		ideviceEl.parentNode.removeChild(ideviceEl);
 		var toolbarEl = this._getToolbarEl();
 		toolbarEl.parentNode.removeChild(toolbarEl);
+		eXeEpubAuthoring.handleIdeviceRemoved(this.ideviceId);
 	},
 	
 	/**
@@ -627,6 +628,27 @@ var eXeEpubAuthoring = (function() {
 		},
 		
 		/**
+		 * 
+		 */
+		requestUserFiles: function(opts, callback) {
+			var queryVars = eXeEpubCommon.getQueryVars();
+			var xmlHttp= new XMLHttpRequest();
+			xmlHttp.onreadystatechange = (function() {
+				if(xmlHttp.readystate === 4 && xmlHttp.status === 200) {
+					console.log("epub authoring received file request");
+				}
+			}).bind(this);
+			var requestFileURL = queryVars['exe-authoring-save-to'] 
+				+ "?action=requestfile&clientHandleId=" + encodeURIComponent(queryVars['clientHandleId'])
+				+ "&requestfile&opts=" + encodeURIComponent(JSON.stringify(opts));
+			xmlHttp.open("get", requestFileURL, true);
+			xmlHttp.send();
+			
+			
+		},
+		
+		
+		/**
 		 * Turn TinyMCE editing on or off on a given element.
 		 * 
 		 * TODO: Fix this to use selectors instead...
@@ -733,6 +755,13 @@ var eXeEpubAuthoring = (function() {
 					_editableIdevices[ideviceId].updateMoveButtons();
 				}
 			}
+		},
+		
+		/**
+		 * Remove the deleted idevice from the list of those known on the page
+		 */
+		handleIdeviceRemoved: function(ideviceId) {
+			delete _editableIdevices[ideviceId];
 		}
 		
 	};

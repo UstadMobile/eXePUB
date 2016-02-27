@@ -172,7 +172,17 @@ Idevice.prototype = {
 				this.setState(keyVals);
 			}).bind(this), {prefix : true});
 		}
+	},
+	
+	
+	getUserFiles: function(callback) {
+		
+	},
+	
+	removeUserFile: function() {
+		
 	}
+	
 	
 	
 };
