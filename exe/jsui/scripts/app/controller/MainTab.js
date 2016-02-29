@@ -398,9 +398,20 @@ Ext.define('eXe.controller.MainTab', {
     },
     
     /** 
-     * Triggered by an eXeEpubAuthoring: shows the user a file browse dialog 
+     * Triggered by an eXeEpubAuthoring: shows the user a file browse dialog.
+     * 
+     * When done will trigger a "userfileadded" event on the authoring 
+     * document frame
+     *  
+     *  @param {string|Object} opts Arguments as an object: can be a JSON encoded string
+     *  @param {string|number} opts.ideviceId The idevice id the selected file should be linked to
      */
     showRequestUserFile: function(opts) {
+    	if(typeof opts === "string") {
+    		opts = JSON.parse(opts);
+    	}
+    	
+    	var ideviceId = opts.ideviceId;
     	var fp = Ext.create("eXe.view.filepicker.FilePicker", {
             type: eXe.view.filepicker.FilePicker.modeOpen,
             title: _("Select a file"),
@@ -408,26 +419,28 @@ Ext.define('eXe.controller.MainTab', {
             scope: this,
             callback: function(fp) {
                 if (fp.status == eXe.view.filepicker.FilePicker.returnOk) {
-                    var formpanel = this.getPackagePropertiesPanel(),
-                        form, field;
-                    form = formpanel.getForm();
-                    field = form.findField('pp_backgroundImg');
-                    field.setValue(fp.file.path);
-                    form.submit({
-                        success: function(f, action) {
-                            var img = this.getHeaderBackgroundImg(), json,
-                                showbutton = this.getHeaderBackgroundShowButton();
-                            json = Ext.JSON.decode(action.response.responseText);
-		                    img.setSrc(location.pathname + '/resources/' + json.data.pp_backgroundImg);
-		                    img.show();
-                            showbutton.setText(_('Hide Image'));
-                            showbutton.show();
-                        },
-                        scope: this
-                    });
+                	var addFileURL = location.pathname + '/authoring?action=addfile&idevice_id=' +
+                		opts.ideviceId + "&path=" + encodeURIComponent(fp.file.path);
+                	Ext.Ajax.request({
+                		url: addFileURL,
+                		scope: this,
+                		success: function(response) {
+            				//trigger an event on the authoring frame 
+                			var responseJSON = Ext.JSON.decode(response.responseText);
+                			var fileEvt = new CustomEvent("userfileadded", {
+								detail: {
+									'opts' : opts,
+									'entry' : responseJSON.entry
+								},
+								bubbles: true
+							});
+                			Ext.ComponentQuery.query('#authoring')[0].getDoc().dispatchEvent(fileEvt);
+                		}
+                	});
                 }
             }
         });
+    	
         fp.appendFilters([
             { "typename": _("Image Files"), "extension": "*.png", "regex": /.*\.(jpg|jpeg|png|gif)$/i },
             { "typename": _("All Files"), "extension": "*.*", "regex": /.*$/ }

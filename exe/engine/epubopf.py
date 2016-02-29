@@ -129,6 +129,10 @@ class EPUBOPF(object):
         
         Returns a tuple containing the manifest item id and the path in package 
         """
+        
+        if media_type is None:
+            media_type = mimetypes.guess_type(path_in_package)[0]
+        
         dst_dir = os.path.join(os.path.dirname(self.href), os.path.dirname(path_in_package))
         if not os.path.isdir(dst_dir):
             os.makedirs(dst_dir)
@@ -142,8 +146,7 @@ class EPUBOPF(object):
         manifest_id = None
         if new_file:
             manifest_id = self.get_id_for_href(path_in_package)
-            self.add_item_to_manifest(manifest_id, 
-                      mimetypes.guess_type(path_in_package)[0], path_in_package)
+            self.add_item_to_manifest(manifest_id, media_type, path_in_package)
         else:
             manifest_id = self.get_item_by_href(path_in_package)
         
@@ -168,23 +171,30 @@ class EPUBOPF(object):
     def delete_item_by_href(self, href, auto_save = True):
         """Delete an item from the manifest and removes the file from resourceDir"""
         item_el = self.package_el.find(".//{%s}item[@href='%s']" % (EPUBOPF.NAMESPACE_OPF, href))
-        if item_el is not None:
-            item_id = item_el.get("id")
-            item_el.getparent().remove(item_el)
-            
-            item_path = os.path.join(os.path.dirname(self.href), href)
-            if os.path.isfile(item_path):
-                os.remove(item_path)
-            
-            spine_itemref = self.package_el.findall(".//{%s}itemref[@idref='%s']")
-            for itemref in spine_itemref:
-                spine_itemref.getparent().remove(itemref)
-            
-            if auto_save:
-                self.save()
+        self.delete_item(item_el, auto_save = auto_save)
+        
+                
+    def delete_item_by_id(self, item_id, auto_save = True):
+        item_el = self.package_el.find(".//{%s}item[@id='%s']" % (EPUBOPF.NAMESPACE_OPF, item_id))
+        self.delete_item(item_el, auto_save = auto_save)
+    
+    def delete_item(self, item_el, auto_save = True):
+        item_id = item_el.get("id")
+        item_el.getparent().remove(item_el)
+        
+        item_path = os.path.join(os.path.dirname(self.href), item_el.get("href"))
+        if os.path.isfile(item_path):
+            os.remove(item_path)
+        
+        spine_itemref = self.package_el.findall(".//{%s}itemref[@idref='%s']")
+        for itemref in spine_itemref:
+            spine_itemref.getparent().remove(itemref)
+        
+        if auto_save:
+            self.save()
         
     def get_id_for_href(self, href):
-        
+        #TODO: tidy this into a valid id
         return href
         
     def find_free_filename(self, basename, extension):

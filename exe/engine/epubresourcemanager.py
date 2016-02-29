@@ -7,6 +7,7 @@ from lxml import etree
 import os.path
 import os
 import shutil
+import sys
 
 from exe                         import globals as G
 from exe.engine.htmlToText import HtmlToText
@@ -136,8 +137,31 @@ class EPUBResourceManager(object):
     
     def handle_idevice_deleted(self, page_id, idevice_id):
         #TODO: Handle user added resources that are linked to this idevice
-        self.update_page(page_id)
+        ns = EPUBResourceManager.NS_EXERES
+        refs_to_delete = self.root_el.findall(".//{%s}ideviceref[@idref='%s']" % (ns, idevice_id))
+        for ideviceref in refs_to_delete:
+            ideviceref.getparent().remove(ideviceref)
         
+        self.save()
+        self.update_page(page_id)
+        self.delete_abandoned_user_files()
+        
+    def delete_abandoned_user_files(self, auto_save = True):
+        ns = EPUBResourceManager.NS_EXERES
+        all_refs = self.root_el.findall("./{%s}user-resources/{%s}itemref" % (ns, ns))
+        
+        for itemref in all_refs:
+            if len(itemref) == 0:
+                # we need to delete the reference and the file itself
+                try:
+                    self.opf.delete_item_by_id(itemref.get("idref"))
+                    itemref.getparent().remove(itemref)
+                except:
+                    "Unexpected error:", sys.exc_info()[0]
+        
+        self.save()
+    
+    
                                       
     def update_idevice_files(self):
         """
@@ -184,6 +208,8 @@ class EPUBResourceManager(object):
         uploaded image etc.  We keep it linked with the idevice
         so we know if the idevice gets deleted what files might need
         deleted.
+        
+        Returns the same tuple as add_item - (manifest_id, path_in_package)
         """
         if new_basename is None:
             new_basename = os.path.basename(user_file_path) 
@@ -205,7 +231,7 @@ class EPUBResourceManager(object):
         user_resources_el = self.root_el.find("./{%s}user-resources" % ns)
         itemref_el = user_resources_el.find("./{%s}itemref[@idref=\"%s\"]" % (ns, file_manifest_id))
         if itemref_el is None:
-            itemref_el = etree.SubElement(user_resources_el, "{%s}itemref" % ns, idref = idevice_id)
+            itemref_el = etree.SubElement(user_resources_el, "{%s}itemref" % ns, idref = file_manifest_id)
         
         idevice_ref_el = itemref_el.find("./{%s}ideviceref[@idref=\"%s\"]" % (ns, idevice_id))
         if idevice_ref_el is None:

@@ -420,6 +420,10 @@ var eXeEpubAuthoring = (function() {
 	
 	var _editableIdevices = {};
 	
+	var _fileRequestHandlers = {};
+	
+	var _fileRequestIDCounter = 0;
+	
 	return {
 		
 		/** 
@@ -475,6 +479,9 @@ var eXeEpubAuthoring = (function() {
             	
             	this.updateAllMoveButtons();
         	}).bind(this));
+        	
+        	document.addEventListener("userfileadded", 
+        			this.handleUserFileAdded.bind(this), false);
         },
         
                                       
@@ -628,9 +635,25 @@ var eXeEpubAuthoring = (function() {
 		},
 		
 		/**
+		 * Generate a serial ID for the file request so we can watch 
+		 * events for it's completion
+		 */
+		_getUserRequestFileID: function() {
+			var retVal = _fileRequestIDCounter;
+			_fileRequestIDCounter++;
+			return ""+retVal;
+		},
+		
+		/**
+		 * Show a file browsing dialog to the user and then link the selected file
+		 * with the given idevice.
 		 * 
+		 * @param {Object} opts Main arguments
+		 * @param {string|number} opts.ideviceId Idevice that the file is to be linked with 
 		 */
 		requestUserFiles: function(opts, callback) {
+			opts.fileRequestId = this._getUserRequestFileID();
+			_fileRequestHandlers[opts.fileRequestId] = callback;
 			var queryVars = eXeEpubCommon.getQueryVars();
 			var xmlHttp= new XMLHttpRequest();
 			xmlHttp.onreadystatechange = (function() {
@@ -643,8 +666,18 @@ var eXeEpubAuthoring = (function() {
 				+ "&requestfile&opts=" + encodeURIComponent(JSON.stringify(opts));
 			xmlHttp.open("get", requestFileURL, true);
 			xmlHttp.send();
-			
-			
+		},
+		
+		/**
+		 * 
+		 */
+		handleUserFileAdded: function(evt) {
+			var requestId = evt.detail.opts.fileRequestId;
+			var fn = _fileRequestHandlers[requestId];
+			if(fn) {
+				delete _fileRequestHandlers[requestId];
+				fn.call(this, evt.detail);
+			}
 		},
 		
 		

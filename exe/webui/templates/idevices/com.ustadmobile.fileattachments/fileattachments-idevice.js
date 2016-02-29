@@ -26,8 +26,8 @@ FileAttachmentsIdevice.prototype = Object.create(Idevice.prototype, {
 	
 	handleClickAddFile: {
 		value: function() {
-			eXeEpubAuthoring.requestUserFiles({}, function(answer) {
-				
+			eXeEpubAuthoring.requestUserFiles({ideviceId : this.ideviceId}, function(entry) {
+				var newHref = entry.href;
 			});
 		}
 	}
