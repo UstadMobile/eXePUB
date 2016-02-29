@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+
+<!-- 
+// ===========================================================================
+// eXe
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//===========================================================================
+ -->
+
+<!-- 
+Used by PreviewIframe to put content inside a 'mobile' to demonstrate
+responsive design
+
+Pass the following query parameters:
+
+src: The actual url of the content (e.g. /pkgName/preview/)
+width: width of the content iframe (in pixels); excluding decoration
+pad-top: Fill extra space in the top (e.g. top of phone)
+pad-top: Fill extra space in the bottom (e.g. bottom of phone)
+
+ -->
+
+
+<html>
+    <head>
+        <script src="../exe_jquery.js" type="text/javascript"></script>
+        <script src="exepreview.js" type="text/javascript"></script>
+        
+		<style type='text/css'>
+		
+		.mobside, #mobviewcell {
+		    background-color: #000000;
+		}
+		
+		#contentframe {
+		    border-width: 0px;
+		    margin: 0px;
+		    padding: 0px;
+		}
+		
+		.cornercell {
+		    width: 16px;
+		    height: 16px;
+		    margin: 0px;
+		    padding: 0px;
+		    font-size: 1pt;
+		    background-color: #000000;
+		    background-repeat: no-repeat;
+		}
+		
+		#mobtopleft {
+		    background-image: url('topleft.png');
+		    background-position: top left;
+		    
+		}
+		
+		#mobtopright {
+		    background-image: url('topright.png');
+		    background-position: top right;
+		}
+		
+		#mobbottomleft {
+		    background-image: url('bottomleft.png');
+		    background-position: bottom left;
+		}
+		
+		#mobbottomright {
+		    background-image: url('bottomright.png');
+		    background-position: bottom right;
+		}
+		
+		#frametable {
+		   margin-left: auto;
+		   margin-right: auto;
+		}
+		
+		html {
+		  min-height: 100%;
+		}
+		
+		body {
+		  background-color: white;
+		}
+		
+		</style>
+</head>
+<body onload="$eXePreview.init()">
+<table cellpadding="0" border="0" cellspacing="0" id="frametable">
+  <tr>
+    <td id="mobtopleft" class="cornercell"></td>
+    <td class='mobside'>&nbsp;</td>
+    <td id="mobtopright" class="cornercell"></td>
+</tr>
+
+<tr>
+    <td class="mobside">&nbsp;</td>
+    <td id="mobviewcell">
+        <iframe id="mobviewiframe"></iframe>
+    </td>
+    <td class="mobside">&nbsp;</td>
+</tr>
+
+<tr>
+    <td id="mobbottomleft" class="cornercell"></td>
+    <td class='mobside'>&nbsp;</td>
+    <td id="mobbottomright" class="cornercell"></td>
+</tr>
+
+</table>
+</body>
+</html>

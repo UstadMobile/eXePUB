@@ -35,7 +35,15 @@ Ext.define('eXe.controller.MainTab', {
         {
             selector: '#outline_treepanel',
             ref: 'outlineTreePanel'
-        }
+        },
+        {
+ 	       selector: "#authoringPreviewIFrame1",
+ 	       ref: "previewFrame"
+ 	    },
+ 	    {
+ 	    	selector: "#preview_type_toolbar",
+ 	    	ref: "previewTypeToolbar"
+ 	    }
     ],
 
     init: function() {
@@ -101,9 +109,28 @@ Ext.define('eXe.controller.MainTab', {
             },
             '#sources_download': {
                 click: this.sourcesDownload
-            }
+            },
+    		"#preview_show_desktop" : {
+    			click: this.previewShowDesktop
+    		},
+    		"#preview_show_mobile" : {
+    			click: this.previewShowMobile
+    		},
+    		"#preview_new_tab" : {
+    			click: this.previewNewTab
+    		}
         });
     },
+    
+    previewFrameURL: "",
+    
+    /**
+     * Preview Mode can be "normal" or "mobile"
+     */
+    previewOpts: {
+    	mode: "normal"
+    },
+    
 //    msg: false,
 //    onAfterRender: function(a, b){
 //      	console.log('afterRender');
@@ -460,14 +487,77 @@ Ext.define('eXe.controller.MainTab', {
             this.loadForm(newformpanel);
         }
         
-        if(newCard.itemId === "authoring_preview") {
+        if(newCard.itemId === "preview_panel") {
+        	var authoringCmp = Ext.ComponentQuery.query('#authoring')[0];
+        	if(authoringCmp.getDoc() && authoringCmp.getDoc().location.href) {
+        		var authoringHref = authoringCmp.getDoc().location.href;
+        		this.setFramePreviewURL(
+    				authoringHref.substring(0, authoringHref.indexOf('?')));
+        	}
+        	
+        	/*
         	var authoringCmp = Ext.ComponentQuery.query('#authoring')[0];
         	if(authoringCmp.getDoc() && authoringCmp.getDoc().location.href) {
         		var authoringHref = authoringCmp.getDoc().location.href;
             	var previewHref = authoringHref.substring(0, authoringHref.indexOf('?'));
             	Ext.ComponentQuery.query('#authoring_preview')[0].getDoc().location.href = previewHref;
         	}
+        	*/
         }
+    },
+    
+    previewShowDesktop: function() {
+    	this.setPreviewOpts({mode : "normal"});
+    	this.setPressedPreviewButton("desktop");
+    },
+    
+    previewShowMobile: function() {
+    	this.setPressedPreviewButton("mobile");
+    	this.setPreviewOpts({mode : "mobile"});
+    },
+    
+    
+    /**
+     * @param {Object} previewOpts Options to use when previewing
+     * @param {String} previewOpts.mode "normal" or "mobile" - mobile means make an iframe that looks like a mobile
+     */
+    setPreviewOpts: function(previewOpts) {
+    	this.previewOpts = previewOpts;
+    	this.updatePreviewFrame();
+    },
+    
+    setFramePreviewURL: function(previewURL) {
+    	this.previewFrameURL = previewURL;
+    	this.updatePreviewFrame();
+    },
+    
+    updatePreviewFrame: function() {
+    	var updatePreviewURL;
+    	if(this.previewOpts.mode === "mobile") {
+    		updatePreviewURL = "/scripts/preview/previewpage.html?width=380&src=" + 
+    			encodeURIComponent(this.previewFrameURL) + "&pad-top=25&pad-bottom=10"; 
+    	}else {
+    		updatePreviewURL = this.previewFrameURL;
+    	}
+    	
+    	var previewCmp = Ext.ComponentQuery.query('#authoring_preview')[0];
+    	if(previewCmp.getDoc() && previewCmp.getDoc().location.href) {
+    		if(updatePreviewURL !== previewCmp.getDoc().location.href) {
+    			previewCmp.getDoc().location.href = updatePreviewURL;
+    		}
+    	}
+    },
+    
+    setPressedPreviewButton: function(suffix) {
+    	this.getPreviewTypeToolbar().items.each(function(item, index, len) {
+    		if(item.itemId.indexOf(suffix, item.itemId.length - suffix.length) !== -1) {
+    			item.toggle(true, true);
+    		}else {
+    			if(item.toggle) {
+    				item.toggle(false, true);
+    			}
+    		}
+    	});
     },
 
     lomImportSuccess: function(prefix) {

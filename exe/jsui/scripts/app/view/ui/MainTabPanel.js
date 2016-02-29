@@ -45,13 +45,47 @@ Ext.define('eXe.view.ui.MainTabPanel', {
                     padding: "0 2"
                 },
                 {
-                	xtype: 'uxiframe',
-                    itemId: 'authoring_preview',
-                    src: eXe.app.config.authoringIFrameSrc,
-                    id: 'authoringPreviewIFrame1',
-                    title: _('Preview'),
-                    margin: "0 4",
-                    padding: "0 2"
+                	xtype: 'panel',
+                	itemId: 'preview_panel',
+                	title: _('Preview'),
+                	layout: 'vbox',
+                	items: [
+                	        {
+								xtype: "toolbar",
+								itemId: "preview_type_toolbar",
+								width: "100%",
+								//vertical: true,
+								defaults: {
+									xtype: "button",
+									scale: "large",
+									enableToggle: true
+								},
+								items: [{
+									icon: "/images/fa-desktop.png",
+									itemId: "preview_show_desktop",
+									pressed: true
+								},
+								{
+									icon: "/images/fa-mobile.png",
+									itemId: "preview_show_mobile"				
+								},
+								{
+									xtype:"tbfill",
+									itemId: "preview_tab_fill"
+								}
+								]
+							},
+            	        	{
+                            	xtype: 'uxiframe',
+                                itemId: 'authoring_preview',
+                                src: eXe.app.config.authoringIFrameSrc,
+                                id: 'authoringPreviewIFrame1',
+                                margin: "0 4",
+                                padding: "0 2",
+                                flex: 1,
+                                width: "100%"
+                            }
+                   ]
                 },
                 {
                     xtype: 'tabpanel',
