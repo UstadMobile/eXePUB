@@ -9,6 +9,8 @@ etc). Once authoring mode is finished the resulting HTML is saved by eXeLearning
 * __Authoring Mode On__ : The idevice Javascript shows editing options (dropdowns, fields, etc)
 * __Authoring Mode Off__ : The idevice saves any choices made to the DOM, removes authoring controls.  eXeLearning saves the resulting HTML. 
 
+Idevices can also support generating Experience API (TinCan) statements and using the state api to save/retrieve states.
+
 ## 1. Create idevice.xml file
 
 Idevices should have a folder under exe/webui/templates/idevices with a file
@@ -149,7 +151,10 @@ Idevice.registerType("com.ustadmobile.helloidevice", HelloIdevice);
 
 ## 3 Try using the new Idevice in eXeLearning
 
-Start or refresh the eXeLearning instance already running.
+Start or refresh the eXeLearning instance already running.  You should see your idevice listed in the panel on the left like this.
+
+
+![alt text](https://raw.githubusercontent.com/UstadMobile/eXePUB/master/doc/hello-idevice-new.png "Screenshot")
 
 
 ##3 What's different between the old (Python) model and this one?
