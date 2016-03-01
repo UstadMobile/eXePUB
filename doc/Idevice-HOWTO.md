@@ -13,8 +13,7 @@ Idevices can also support generating Experience API (TinCan) statements and usin
 
 ## 1. Create idevice.xml file
 
-Idevices should have a folder under exe/webui/templates/idevices with a file
-called idevice.xml that looks like this listing it's required files:
+Idevices should have a folder named the same as the idevice's id (e.g. com.ustadmobile.helloidevice) under exe/webui/templates/idevices or in the user's own generated preferences folder ~/.exe/idevices .
 
 __exe/webui/templates/idevices/com.ustadmobile.helloidevice/idevice.xml:__ 
 ```xml
@@ -160,17 +159,44 @@ When the author clicks the edit button the editOn method is called allowing the 
 
 ## Advanced Topics
 
-### Add a user file
+### Using Files
 
 Sometimes you want the user to be able to customize the idevice by uploading their own files (images, sound files etc)... There's an API for that
 
-### Remove a file
+#### Adding a file
+Use this function with a callback to prompt the user to add a file.
+```javascript
+eXeEpubAuthoring.requestUserFiles({ideviceId : this.ideviceId}, function(entry) {
+    //entry has the properties id, mediaType and href (as per it's entry in the EPUB OPF
+    var newHref = entry.href;
+    var mimeType = entry.mediaType;
+});
+```
+
+### Get a list of user files
+```javascript
+this.getUserFiles({}, function(err, userFilesArr) {
+    for(var i = 0; i < userFilesArr.length; i++) {
+        console.log("User File : " + userFilesArr[i].href + " media type = " +
+            userFilesArr[i].mediaType + " opf entry id = " + userFilesArr[i].id);
+            
+    }
+});
+```
+
 
 ### File structure
+__Common Files:__
+Are kept in exe/webui/templates including exe-epub-common.js and exe_jquery.js .  When they are required in the EPUB they are automatically added to exe-files/common
 
-
+__Idevice Files:__
+Should be kept in the idevice's directory.  When they are required in the EPUB they are automatically added to exe-files/idevices/ideviceid
 
 
 
 ##3 What's different between the old (Python) model and this one?
+
+A lot... the previous model [Roughly documented here](https://forja.cenatic.es/plugins/mediawiki/wiki/iteexe/index.php/CreatingAnIdevice) required you to use Python in eXeLearning to add a new idevice.
+
+ 
 
