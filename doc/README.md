@@ -26,6 +26,10 @@ You might need some python libraries... take a look __debian/control__ to see th
 
 See the [Idevice-HOWTO.md](Idevice-HOWTO.md) for a guide.
 
+## Make a new style
+
+We're working on that.  Watch this space....
+
 ## Setup Eclipse for eXeLearning development
 
 This is a rough guide to using Eclipse for developing with eXe.  Tested with Eclipse 4.2.2 on Ubuntu 13.10 .  _You don't need to do this if you just want to develop idevice templates._
