@@ -156,6 +156,21 @@ Start or refresh the eXeLearning instance already running.  You should see your 
 
 ![alt text](https://raw.githubusercontent.com/UstadMobile/eXePUB/master/doc/hello-idevice-new.png "Screenshot")
 
+When the author clicks the edit button the editOn method is called allowing the author to enter authoring mode and customize the template.  They then click the checkbox to finish authoring mode and save the idevice.  Et voila! You have your first iDevice!
+
+## Advanced Topics
+
+### Add a user file
+
+Sometimes you want the user to be able to customize the idevice by uploading their own files (images, sound files etc)... There's an API for that
+
+### Remove a file
+
+### File structure
+
+
+
+
 
 ##3 What's different between the old (Python) model and this one?
 
