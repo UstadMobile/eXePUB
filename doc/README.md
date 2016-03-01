@@ -1,8 +1,10 @@
 # Developer Documentation
 
-eXeLearning EPUB edition is designed to make it easy for users to put together education content (including interactivity and support for the Experience API) AND make it easy for developers to make new template types (sometimes you want a little more than a Multi Choice Question).  You can add new question types with just a small XML file and HTML/javascript.  
+eXeLearning EPUB edition is designed to make it easy for users to put together education content (including interactivity and support for the Experience API) AND make it easy for developers to make new template types which are called Idevices (sometimes you want a little more than a Multi Choice Question).  You can add new question types with just a small XML file and HTML/javascript.
 
-eXeLearning EPUB edition runs a nevow internal web server to run a local server and opens up in a browser.
+eXeLearning EPUB edition runs a nevow internal web server to run a local server and opens up in a browser. eXeLearning EPUB edition is based on 
+* The [original eXeLearning.org](http://www.exelearning.org) 
+* [eXeLearning.net improvements](http://www.exelearning.net)
 
 
 ## Checkout from source
