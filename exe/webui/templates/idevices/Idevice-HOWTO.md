@@ -6,9 +6,9 @@ puzzles etc.  An Idevice javascript is responsible to:
 
 1. Manage it's own creation: When eXeLearning adds it to the page it will be generated as a blank div like this and the __idevicecreate__ event will be fired.  
 
-`
+<code>
 <div id="id1" data-idevice-type="com.ustadmobile.helloworldidevice"> </div>
-`
+</code>
 
 2. Respond to the __ideviceeditmodeon__ and __ideviceeditmodeoff__ event.  
 * __Edit On__ : Manipulate the DOM to give the user a way to edit the idevice (e.g. add/remove questions, edit text, etc).  The idevice can use form items, dropdown items etc. as appropriate.  Fired when the user clicks the pencil edit icon underneath the idevice.
@@ -22,4 +22,4 @@ of the page that contains the idevice.
 
 
 
-## What's different between 
+## What's different between the old (Python) model and this one
