@@ -5,7 +5,7 @@ built with Javascript and HTML that have an authoring mode.  Authoring should en
 user to edit what they want (e.g. using TinyMCE, dropdown menus, input fields,
 etc). Once authoring mode is finished the resulting HTML is saved by eXeLearning inside it's XHTML page in an EPUB file.  What happens in a nutshell is:
 
-* __Creation__: eXeLearning adds a blank div with a generated id ; the idevice javascript puts in initial content
+* __Creation__: eXeLearning adds a blank div with a generated id ; loads specified Javascript and CSS, then the idevice javascript puts in initial content
 * __Authoring Mode On__ : The idevice Javascript shows editing options (dropdowns, fields, etc)
 * __Authoring Mode Off__ : The idevice saves any choices made to the DOM, removes authoring controls.  eXeLearning saves the resulting HTML. 
 
@@ -149,27 +149,8 @@ Idevice.registerType("com.ustadmobile.helloidevice", HelloIdevice);
 
 ## 3 Try using the new Idevice in eXeLearning
 
-Start or refresh eXeLearning running in 
-
-An Idevice javascript is responsible to:  
-
-1. Manage it's creation: When eXeLearning adds it to the page it will be generated as a blank div as below and the __idevicecreate__ event will be fired on the document element.  
+Start or refresh the eXeLearning instance already running.
 
 
+##3 What's different between the old (Python) model and this one?
 
-2. Respond to the __ideviceeditmodeon__ and __ideviceeditmodeoff__ event.  
-⋅⋅* __Edit On__ : Idevice should enter authoring mode: Manipulate the DOM to give the user a way to edit the idevice (e.g. add/remove questions, edit text, etc).  The idevice can use form items, dropdown items etc. as appropriate.  Fired when the user clicks the pencil edit icon underneath the idevice.
-⋅⋅* __Edit Off__ :  Idevice should leave authoring mode: Remove editing controls and save anything that is needed from edit mode into the dom.  Eg. if you had a dropdown menu that controls how the idevice works you should get it's value and put this into the DOM (e.g. in a hidden form, data- attribute, etc).  At this point you should serialize the HTML and eXeLearning will save it into the XHTML of the page that contains the idevice.
-
-3. Optionally: If you want the idevice to support the Experience API you should make XML __&lt;activity&gt;__ entries that will be saved into tincan.xml .
-
-Most of the time it makes most sense to use the base parent class Idevice: the code looks like this:
-
-
-
-
-# The Hello Button Idevice Example
-
-
-
-## What's different between the old (Python) model and this one
