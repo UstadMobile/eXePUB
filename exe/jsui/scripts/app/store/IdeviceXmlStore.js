@@ -40,7 +40,7 @@ Ext.define('eXe.store.IdeviceXmlStore', {
                 	encode: true
                 }
             },
-            remoteSort: true,
+            //remoteSort: true,
             groupField: 'category',
             sorters: 'label',
             fields: [

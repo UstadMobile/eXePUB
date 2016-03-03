@@ -13,6 +13,7 @@ from exe                         import globals as G
 from exe.engine.htmlToText import HtmlToText
 from exe.engine.path import Path, toUnicode
 
+
 import logging
 log = logging.getLogger(__name__)
 
@@ -198,7 +199,9 @@ class EPUBResourceManager(object):
                 sep_index = idevice_trimmed.index('/')
                 idevice_type = idevice_trimmed[:sep_index]
                 rel_path = idevice_trimmed[sep_index+1:]
-                src_path = os.path.join(self.find_idevice_dir(idevice_type), rel_path)
+                
+                from exe.engine.epubpackage import EPUBPackage
+                src_path = os.path.join(EPUBPackage.find_idevice_dir(idevice_type), rel_path)
                 
             self.opf.add_file(src_path, file, auto_update = True)
 
@@ -270,29 +273,13 @@ class EPUBResourceManager(object):
         return required_files
         
     
-    def find_idevice_dir(self, idevice_type, user_idevice_dir = None, common_idevice_dir = None):
-        """Return where the given idevice is located if it's in the user_idevice_dir or common_idevice_dir, or none if not found"""
-        idevice_dir = None
-        
-        if user_idevice_dir is None:
-            user_idevice_dir = G.application.config.configDir/"idevices"
-            
-        if common_idevice_dir is None:
-            common_idevice_dir= G.application.config.webDir/"templates"/"idevices"
-        
-        if os.path.exists(user_idevice_dir) and os.path.isfile(user_idevice_dir/idevice_type/"idevice.xml"):
-            idevice_dir = user_idevice_dir/idevice_type
-        elif os.path.exists(common_idevice_dir) and os.path.isfile(common_idevice_dir/idevice_type/"idevice.xml"):
-            idevice_dir = common_idevice_dir/idevice_type
-        
-        return idevice_dir
         
         
     
     def get_idevice_el(self, idevice_type):
         """Returns a tuple with the directory which contains the idevice and it's etree element parsed"""
-        
-        idevice_dir = self.find_idevice_dir(idevice_type)
+        from exe.engine.epubpackage import EPUBPackage
+        idevice_dir = EPUBPackage.find_idevice_dir(idevice_type)
             
         root_el = etree.parse(idevice_dir/"idevice.xml").getroot()
         return (idevice_dir, root_el)

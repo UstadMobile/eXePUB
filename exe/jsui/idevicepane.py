@@ -30,6 +30,7 @@ from exe.webui.livepage import allSessionClients
 from exe.engine.package import Package
 from exe.engine.epubpackage import EPUBPackage
 from exe                         import globals as G
+from lxml import etree
 import locale
 import json
 import os
@@ -213,29 +214,92 @@ class IdevicePane(Renderable, Resource):
             
             
         
-        list_idevice_dir(common_idevice_dir, root_el)
+        #list_idevice_dir(common_idevice_dir, root_el)
         list_idevice_dir(user_idevice_dir, root_el)
         
         return etree.tostring(root_el,  encoding="UTF-8")
         
+#     
+#     def render_POST(self, request=None):
+#         idevices = json.loads(request.args['idevices'][0])
+#         if isinstance(idevices, dict):
+#             idevices = [idevices]
+#             
+#         if isinstance(self.package, Package):
+#             
+#             for idevice in idevices:
+#                 prototype = self.prototypes[idevice['id']]
+#                 visible = idevice['visible']
+#                 lower_title = prototype._title.lower()
+#                 try:
+#                     self.config.hiddeniDevices.remove(lower_title)
+#                     self.config.configParser.delete('idevices', lower_title)
+#                 except:
+#                     pass
+#                 if not visible:
+#                     self.config.hiddeniDevices.append(lower_title)
+#                     self.config.configParser.set('idevices', lower_title, '0')
+#             return json.dumps({'success': True})
+#         elif isinstance(self.package, EPUBPackage):
+#             for idevice in idevices:
+#                 idevice_dir = EPUBPackage.find_idevice_dir(idevice['id'])
+#                 idevice_xml_path = os.path.join(idevice_dir, "idevice.xml")
+#                 idevice_xml = etree.parse(idevice_xml_path)
+#                 ns = idevice_xml.getroot().nsmap.get(None)
+#                 visible_el = idevice_xml.getroot().find(".//{%s}visible" % ns)
+#                 if visible_el.text == "true" and not idevice['visible']:
+#                     visible_el.text = "false"
+#                     
+#                     idevice_fd = open(idevice_xml_path, "w")
+#                     idevice_fd.write(etree.tostring(idevice_xml.getroot(), encoding = "UTF-8", pretty_print = True))
+#                     idevice_fd.flush()
+#                     idevice_fd.close()
+#                 
+#             return json.dumps({'success': True})
+                
 
     def render_POST(self, request=None):
         idevices = json.loads(request.args['idevices'][0])
         if isinstance(idevices, dict):
             idevices = [idevices]
-        for idevice in idevices:
-            prototype = self.prototypes[idevice['id']]
-            visible = idevice['visible']
-            lower_title = prototype._title.lower()
-            try:
-                self.config.hiddeniDevices.remove(lower_title)
-                self.config.configParser.delete('idevices', lower_title)
-            except:
-                pass
-            if not visible:
-                self.config.hiddeniDevices.append(lower_title)
-                self.config.configParser.set('idevices', lower_title, '0')
+            
+        if isinstance(self.package, EPUBPackage):
+            for idevice in idevices:
+                idevice_dir = EPUBPackage.find_idevice_dir(idevice['id'])
+                idevice_xml_path = os.path.join(idevice_dir, "idevice.xml")
+                idevice_xml = etree.parse(idevice_xml_path)
+                ns = idevice_xml.getroot().nsmap.get(None)
+                visible_str = ""
+                if idevice['visible']:
+                    visible_str = "true"
+                else:
+                    visible_str = "false"
+                
+                visible_el = idevice_xml.getroot().find(".//{%s}visible" % ns)
+                visible_el.text = visible_str
+                 
+                idevice_fd = open(idevice_xml_path, "w")
+                idevice_fd.write(etree.tostring(idevice_xml.getroot(), encoding = "UTF-8", pretty_print = True))
+                idevice_fd.flush()
+                idevice_fd.close()
+                
+        else:
+            for idevice in idevices:
+                prototype = self.prototypes[idevice['id']]
+                visible = idevice['visible']
+                lower_title = prototype._title.lower()
+                try:
+                    self.config.hiddeniDevices.remove(lower_title)
+                    self.config.configParser.delete('idevices', lower_title)
+                except:
+                    pass
+                if not visible:
+                    self.config.hiddeniDevices.append(lower_title)
+                    self.config.configParser.set('idevices', lower_title, '0')
+                    
         return json.dumps({'success': True})
+    
+    #def _render_POST_
 
     def __renderPrototype(self, prototype, category, visible):
         """

@@ -12,6 +12,8 @@ from exe.engine.path           import Path, TempDirPath, toUnicode
 import zipfile
 import time
 from lxml import etree
+from exe                         import globals as G
+
 
 class EPUBPackage(object):
     '''
@@ -44,6 +46,23 @@ class EPUBPackage(object):
         
         return result
 
+    @classmethod
+    def find_idevice_dir(self, idevice_type, idevices_src_dir = None):
+        """
+        Return where the given idevice is located if it's in the user_idevice_dir or common_idevice_dir, or none if not found
+        Parameters
+        idevice_type - str
+            the id of the idevice itself e.g. com.ustadmobile.helloidevice
+        """
+        idevice_dir = None
+        
+        if idevices_src_dir is None:
+            idevices_src_dir = G.application.config.configDir/"idevices"
+        
+        if os.path.exists(idevices_src_dir) and os.path.isfile(Path(idevices_src_dir)/idevice_type/"idevice.xml"):
+            idevice_dir = Path(idevices_src_dir)/idevice_type
+        
+        return idevice_dir
 
     def __init__(self, filename = None, name = None):
         '''

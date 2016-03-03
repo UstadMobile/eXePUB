@@ -18,6 +18,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ===========================================================================
+from twisted.persisted.aot import prettify
 
 """
 Config settings loaded from exe.conf
@@ -40,6 +41,7 @@ import shutil
 from exe import globals as G
 from exe.engine.stylestore  import StyleStore
 from exe.webui import common
+from lxml import etree
 
 x_ = lambda s: s
 
@@ -391,6 +393,8 @@ class Config(object):
             else:
                 self.stylesDir = Path(self.webDir/'style').abspath()
 
+        self.updateIdevices()
+        
         # Get the list of recently opened projects
         self.recentProjects = []
         if self.configParser.has_section('recent_projects'):
@@ -541,6 +545,38 @@ class Config(object):
                     shutil.copytree(bksdirstyle, dstdirstyle)
                 else:
                     shutil.copy(bksdirstyle, dstdirstyle)
+                    
+    def updateIdevices(self):
+        """
+        Update new style HTML/Javascript idevices in user directory.
+        Copy only when the files are newer
+        """
+        idevice_src_dir=self.webDir/'templates'/'idevices'
+        idevice_dst_dir=self.configDir/"idevices"
+        for dir, subdirs, files in os.walk(idevice_src_dir):
+            reldirpath = idevice_src_dir.relpathto(dir)
+            for file in files:
+                dst_file = idevice_dst_dir/reldirpath/file
+                src_file = Path(dir/file)
+                src_mtime = src_file.mtime
+                if not dst_file.exists() or src_mtime > dst_file.mtime:
+                    #check dir
+                    if not dst_file.dirname().isdir():
+                        dst_file.dirname().makedirs()
+                    
+                    if file == "idevice.xml" and dst_file.exists:
+                        #We need to update the file whilst preserving if it's visible or not....
+                        dst_xml = etree.parse(dst_file).getroot()
+                        ns = dst_xml.nsmap.get(None)
+                        visible_val = dst_xml.find(".//{%s}visible" % ns).text
+                        src_xml = etree.parse(src_file)
+                        src_xml.find(".//{%s}visible" % ns).text = visible_val
+                        dst_fd = open(dst_file, "w")
+                        dst_fd.write(etree.tostring(src_xml, encoding = "UTF-8", pretty_print = True)) 
+                        dst_fd.flush()
+                        dst_fd.close() 
+                    else:
+                        src_file.copy(dst_file)
 
     def loadLocales(self):
         """

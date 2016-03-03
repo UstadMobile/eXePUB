@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<idevice xmlns="http://www.ustadmobile.com/ns/exelearning-idevice">
+    <!--
+    Id must match the name of the folder it's located in
+    e.g. this idevice should be in exe/webui/templates/idevice/com.mydomain.myidevice
+    -->
+    <id>com.ustadmobile.helloidevice</id>
+    
+    <!-- The Label eXe shows to the user to select this Idevice -->
+    <label>Hello Demo Idevice</label>
+    
+    <!-- Cateogry for grouping: Can be Text, Interactive, Non-Interactive -->
+    <category>Interactive</category>
+    
+    <!-- Visible / not hidden by default -->
+    <visible>false</visible>
+    
+    <!-- CSS class applied to the holder div -->
+    <cssclass>HelloIdevice</cssclass>
+    
+    <!--Required files from exe/webui/templates directory -->
+    <system-resources>
+        <script>exe-epub-common.js</script>
+    </system-resources>
+    
+    <!-- Required files from the idevice's own directory -->
+    <idevice-resources>
+        <script>hello-idevice.js</script>
+    </idevice-resources>
+</idevice>

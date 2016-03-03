@@ -174,9 +174,41 @@ Idevice.prototype = {
 		}
 	},
 	
-	
-	getUserFiles: function(callback) {
-		
+	/**
+	 * 
+	 * @param callback
+	 */
+	getUserFiles: function(opts, callback) {
+		eXeEpubCommon.getExeResourcesXML(opts, (function(err, opfDoc, resXMLDoc) {
+			var itemRefsById = {};
+			var ideviceRefs = resXMLDoc.querySelectorAll("ideviceref[idref='"
+				+ this.ideviceId + "']");
+			var itemRef, itemId, itemEl;
+			for(var i = 0; i < ideviceRefs.length; i++) {
+				itemRef = ideviceRefs[i].parentNode;
+				itemId = itemRef.getAttribute("idref");
+				itemEl = opfDoc.querySelector("item[id='" + itemId +"']");
+				
+				if(itemEl) {
+					itemRefsById[itemId] = {
+						id : itemId,
+						href : itemEl.getAttribute("href"),
+						mediaType : itemEl.getAttribute("media-type")
+					}
+				}
+			}
+			
+			//now turn it into an array
+			var userFilesArr = [];
+			for(itemId in itemRefsById) {
+				if(itemRefsById.hasOwnProperty(itemId)) {
+					userFilesArr.push(itemRefsById[itemId]);
+				}
+			}
+			
+			callback.call(opts.context ? opts.context : this, null,
+				userFilesArr);
+		}).bind(this));
 	},
 	
 	removeUserFile: function() {
@@ -278,6 +310,32 @@ var eXeEpubCommon = (function() {
                 }
             }
             return retVal;
+        },
+        
+        /**
+         * Get the exeresources.xml file as an xml document along with
+         * the opf xml document which is needed to make sense of it
+         * 
+         * @param {Object} misc options for retrieving the xml files
+         * @param {string} [opts.opfPath="package.opf"] path to the opf file    
+         * @param {function} callback the callback function to receive the 
+         * arguments error, opfDoc, resXMLDoc
+         */
+        getExeResourcesXML: function(opts, callback) {
+        	this.getOPF(opts, (function(err, opfDoc) {
+        		var exeResourcesXMLPath = "exeresources.xml";
+        		var xmlHTTP = new XMLHttpRequest();
+        		xmlHTTP.onreadystatechange = (function(evt) {
+        			if(xmlHTTP.readyState === 4 && xmlHTTP.status === 200) {
+        				var resXMLDoc = xmlHTTP.responseXML ? xmlHTTP.responseXML :
+        					new DOMParser().parseFromString(xmlHTTP.responseText, "text/xml");
+        				callback.call(opts.context ? opts.context : this, 
+            					null, opfDoc, resXMLDoc);
+        			}
+        		}).bind(this);
+        		xmlHTTP.open("get", exeResourcesXMLPath, true);
+        		xmlHTTP.send();
+        	}).bind(this));
         },
         
         
