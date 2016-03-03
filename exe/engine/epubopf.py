@@ -95,6 +95,11 @@ class EPUBOPF(object):
     def get_title(self):
         return self._get_title_el().text
     
+    def set_title(self, title):
+        self._get_title_el().text = title
+    
+    title = property(get_title, set_title)
+    
     @property
     def manifest(self):
         item_els =self.package_el.findall("./{%(ns)s}manifest/{%(ns)s}item" %  

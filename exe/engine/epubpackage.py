@@ -131,6 +131,22 @@ class EPUBPackage(object):
         """Generates a new OPF ID"""
         self.main_opf.set_opf_id(str(uuid.uuid4()))
     
+    def get_id(self):
+        return self.main_opf.get_opf_id()
+    
+    def set_id(self, id):
+        self.main_opf.set_opf_id(id)
+        
+    id = property(get_id, set_id)
+    
+    def get_title(self):
+        return self.main_opf.title
+    
+    def set_title(self, title):
+        self.main_opf.title = title
+    
+    title = property(get_title, set_title)
+    
     def save(self, filename=None, tempFile=False):
         if filename:
             filename = Path(filename)

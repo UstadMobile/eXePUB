@@ -223,6 +223,9 @@ class MainPage(RenderableLivePage):
         setUpHandler(self.handleCreateDir, 'CreateDir')
         setUpHandler(self.handleOverwriteLocalStyle, 'overwriteLocalStyle')
 
+        #For improved usability
+        setUpHandler(self.setPackageTitle,        'setPackageTitle')
+        
         self.idevicePane.client = client
         self.styleMenu.client = client
         self.webServer.stylemanager.client = client
@@ -806,6 +809,10 @@ class MainPage(RenderableLivePage):
     def handleCancelImport(self, client):
         log.info('Cancel import')
         Resources.cancelImport()
+
+    def setPackageTitle(self, client, new_title):
+        """Handle when user clicks on title bar"""
+        self.package.set_title(new_title)
 
     def handleExportGoogleDrive(self, client, auth_token, user_agent):
         """

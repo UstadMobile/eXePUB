@@ -200,7 +200,11 @@ Ext.define('eXe.controller.Toolbar', {
             },
             '#help_about': {
                 click: this.aboutPage
-            }
+            },
+            '#title_button' : {
+          	   click : this.setPackageTitle,
+          	   beforerender : this.updatePackageTitle
+          	}
         });
         
         this.keymap_config = [
@@ -1278,5 +1282,49 @@ Ext.define('eXe.controller.Toolbar', {
 	
     askDirty: function(nextStep) {
     	this.checkDirty(nextStep, 'eXe.app.getController("Toolbar").askSave("'+nextStep+'")');
-    }
+    },
+    
+    /**
+	 * Ask the user to give a title in a popup window, if htey click
+	 * OK send to the server and update the button text
+	 */
+	setPackageTitle: function(button) {
+        Ext.Msg.show({
+            prompt: true,
+            title: _('Project Title'),
+            msg: _('Enter the new name:'),
+            buttons: Ext.Msg.OKCANCEL,
+            multiline: false,
+            value: button.text,
+            scope: this,
+            fn: function(button, text) {
+                if (button == "ok") {
+                    if (text) {
+                        nevow_clientToServerEvent('setPackageTitle', this,'', text);
+                        Ext.getCmp("title_button").setText(text);
+                    }
+                }
+            }
+        });
+    },
+    
+    /**
+     * Get the package title and set the text on the button
+     */
+    updatePackageTitle: function() {
+    	
+        Ext.Ajax.request({
+            url: location.pathname + '/properties?pp_title=',
+            scope: this,
+            success: function(response) {
+                var respData = Ext.JSON.decode(response.responseText);
+                var packageTitle = respData['data']['pp_title'];
+                if(packageTitle == "") {
+                    packageTitle = _("Untitled Project");
+                }
+                
+                Ext.getCmp("title_button").setText(packageTitle);
+            }
+        });
+    },
 });
