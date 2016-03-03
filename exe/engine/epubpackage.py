@@ -11,6 +11,7 @@ from exe.engine.tincanxmlmanager import TinCanXMLManager
 from exe.engine.path           import Path, TempDirPath, toUnicode
 import zipfile
 import time
+import uuid
 from lxml import etree
 from exe                         import globals as G
 
@@ -126,7 +127,9 @@ class EPUBPackage(object):
         self.tincan_manager = TinCanXMLManager(self)
         self.isChanged = False
     
-        
+    def gegenerate_id(self):
+        """Generates a new OPF ID"""
+        self.main_opf.set_opf_id(str(uuid.uuid4()))
     
     def save(self, filename=None, tempFile=False):
         if filename:

@@ -268,13 +268,6 @@ Ext.define('eXe.controller.Outline', {
     			Ext.ComponentQuery.query('#authoring')[0].getDoc().location.href = authoringHREF;
     			
     			this.getController('MainTab').setFramePreviewURL(epubPageHREF);
-    			
-    			/*
-    			var authoringPreviewDoc = Ext.ComponentQuery.query("#authoring_preview")[0].getDoc();
-    			if(authoringPreviewDoc) {
-    				authoringPreviewDoc.location.href = epubPageHREF
-    			}
-    			*/
     		}else if(!node && store.isLoading()) {
     			//this is a node just added; wait for the store to load
     			setTimeout((function() {

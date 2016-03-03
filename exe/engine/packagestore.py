@@ -23,6 +23,9 @@ has loaded, (and loading and saving them?)
 
 import logging
 from exe.engine.package      import Package
+from exe.engine.epubpackage import EPUBPackage
+from exe                         import globals as G
+
 log = logging.getLogger(__name__)
 
 
@@ -47,7 +50,10 @@ class PackageStore:
         while name in self.loaded:
             name = u"newPackage" + unicode(i)
             i += 1                    
-        package = Package(name)
+
+        package = EPUBPackage.load(G.application.config.configDir/"normal.epub")
+        package.filename = ""
+        package.name = name
         self.loaded[package.name] = package
 
         return package

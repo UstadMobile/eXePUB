@@ -1150,7 +1150,7 @@ Ext.define('eXe.controller.Toolbar', {
 		});
 		
 		f.appendFilters([
-			{ "typename": _("eXe Package Files"), "extension": "*.elp", "regex": /.*\.(elp|epub)$/ },
+			{ "typename": _("EPUB Files"), "extension": "*.epub", "regex": /.*\.(epub)$/ },
 			{ "typename": _("All Files"), "extension": "*.*", "regex": /.*$/ }
 			]
 		);
@@ -1248,7 +1248,7 @@ Ext.define('eXe.controller.Toolbar', {
 			}
 		});
 		f.appendFilters([
-			{ "typename": _("eXe Package Files"), "extension": "*.elp", "regex": /.*\.(elp|epub)$/ },
+			{ "typename": _("EPUB File"), "extension": "*.epub", "regex": /.*\.(epub)$/ },
 			{ "typename": _("All Files"), "extension": "*.*", "regex": /.*$/ }
 			]
 		);

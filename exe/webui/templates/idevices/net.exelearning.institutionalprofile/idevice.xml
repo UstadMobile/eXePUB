@@ -1,10 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
 <idevice xmlns="http://www.ustadmobile.com/ns/exelearning-idevice">
     <id>net.exelearning.institutionalprofile</id>
     <label>Institutional Profile</label>
     <category>BFW</category>
-    <visible>true</visible>
+    <visible>false</visible>
     <cssclass>InstitutionalProfileIdevice</cssclass>
     
     <!--Map to exe-files/common -->

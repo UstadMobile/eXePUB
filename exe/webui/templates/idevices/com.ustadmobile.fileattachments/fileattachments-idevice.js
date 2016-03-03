@@ -4,6 +4,10 @@
  */
 var FileAttachmentsIdevice = function(ideviceId) {
 	this.ideviceId = ideviceId;
+	
+	this.getUserFiles({}, (function(err, userFilesArr) {
+		debugger;
+	}).bind(this));
 }
 
 

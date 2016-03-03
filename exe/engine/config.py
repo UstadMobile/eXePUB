@@ -395,6 +395,10 @@ class Config(object):
 
         self.updateIdevices()
         
+        #copy the normal.epub template
+        normal_epub_src = Path(self.webDir/'templates'/'normal.epub')
+        normal_epub_src.copy(Path(self.configDir))
+        
         # Get the list of recently opened projects
         self.recentProjects = []
         if self.configParser.has_section('recent_projects'):

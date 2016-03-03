@@ -233,7 +233,7 @@ class MainPage(RenderableLivePage):
 
     def render_config(self, ctx, data):
         authoring_src = None
-        if len(self.package.name) > 4 and self.package.name[-5:] == ".epub":
+        if isinstance(self.package, EPUBPackage):
             authoring_src = ""
         else:
             authoring_src = '%s/authoring?clientHandleId=%s' % (self.package.name, IClientHandle(ctx).handleId)
@@ -356,7 +356,7 @@ class MainPage(RenderableLivePage):
             filename = self.package.filename
             assert filename, 'Somehow save was called without a filename on a package that has no default filename.'
         # Add the extension if its not already there and give message if not saved
-        extension = ".elp"
+        extension = ".epub"
         if filename[-5:].lower() == '.epub':
             extension = ".epub"
         

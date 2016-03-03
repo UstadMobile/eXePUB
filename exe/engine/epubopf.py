@@ -70,7 +70,7 @@ class EPUBOPF(object):
         if self.package is not None:
             self.package.isChanged = changed
     
-    def get_opf_id(self):
+    def _get_identifier_el(self):
         identifier_el = None
         unique_id = self.package_el.get("unique-identifier")
         if unique_id is not None:
@@ -78,7 +78,16 @@ class EPUBOPF(object):
         else:
             identifier_el = self.package_el.find(".//{%s}identifier" % EPUBOPF.NAMESPACE_DC)
         
-        return identifier_el.text
+        return identifier_el
+    
+    def get_opf_id(self):
+        return self._get_identifier_el().text
+    
+    def set_opf_id(self, opf_id, auto_save = True):
+        identifier_el = self._get_identifier_el()
+        identifier_el.text = opf_id
+        if auto_save:
+            self.save()
     
     def _get_title_el(self):
         return self.package_el.find(".//{%s}title" % (EPUBOPF.NAMESPACE_DC))
