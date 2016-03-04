@@ -566,6 +566,12 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 					choicesEl.appendChild(compEl);
 				}
 				xmlDoc.documentElement.appendChild(activityEl);
+				
+				/*
+				var questionDiv = document.getElementById("etcqdiv" + 
+						this.ideviceId + "_" + questionIds[i]);
+				var textPrompt = questionDiv.getAttribute("data-textprompt");
+				*/
 			}
 			
 			return xmlDoc;

@@ -288,6 +288,7 @@ Idevice.registerType = function(typeId, cls) {
  * Common utility functions
  */
 var eXeEpubCommon = (function() {
+	
 	return {
 		
 		decodeURLComponent: function(comp) {

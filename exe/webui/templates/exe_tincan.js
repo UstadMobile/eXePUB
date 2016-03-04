@@ -443,7 +443,33 @@ var eXeTinCan = (function() {
 				}
 			}
 			_pendingReadyCallbacks = [];
+			
+			if(document.readyState === "interactive" || document.readyState === "complete") {
+				this._setResponseValueEls();
+			}else {
+				document.addEventListener("DOMContentLoaded", this._setResponseValueEls.bind(this), false);
+			}
 		},
+		
+		/**
+		 * When the author uses the TinyMCE plugin to create a span that should be
+		 * filled by a previously inserted value a span is created...
+		 */
+		_setResponseValueEls: function() {
+			if(!eXeEpubCommon.isAuthoringMode()) {
+				return;//dont do fill-ins in authoring mode
+			}
+			
+			var responseEls = document.querySelectorAll("span.exe-insert-response");
+			for(var i = 0; i < responseEls.length; i++) {
+				var activityId = responseEls[i].getAttribute("data-activity-id");
+				var stateKeyId = "id" + activityId.substring(activityId.lastIndexOf("/") + 1);
+				if(typeof _state[stateKeyId] !== "undefined") {
+					responseEls[i].textContent = _state[stateKeyId].response;
+				}
+			}
+		},
+		
 		
 		saveState: function(opts, callback) {
 			var processPkgIdFn = (function(err, pkgId) {

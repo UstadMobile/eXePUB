@@ -465,7 +465,13 @@ var eXeEpubAuthoring = (function() {
         	                       '/templates/tinymce/skins/lightgray/content.min.css',
         	                       '/templates/tinymce/skins/lightgray/skin.min.css',
         	                       '/templates/tinymce/skins/lightgray/content.inline.min.css',
-        	                       '/templates/tinymce/plugins/visualblocks/css/visualblocks.css'
+        	                       '/templates/tinymce/plugins/visualblocks/css/visualblocks.css',
+        	                       '/templates/exe-authoring.css',
+        	                       '/templates/tinymce-exe-plugins/exe-insert-answer.js',
+        	                       "/templates/tinymce-exe-plugins/exe-insertresponse.css",
+        	                       { url: "/templates/exe-epub-common.js", matchByFilename : true },
+        	                       { url: "/templates/tincan.js", matchByFilename : true },
+        	                       { url: "/templates/exe_tincan.js", matchByFilename : true }
         	                       ];
         	
         	eXeEpubAuthoring.loadResources(resourcesToLoad, (function() {
@@ -555,11 +561,35 @@ var eXeEpubAuthoring = (function() {
 			};
 			
 			var loadScriptFn = function() {
-				var resURL = resURLs[currentResIndex];
+				var resURL, matchByFilename = false, filename, resFilename;
+				if(typeof resURLs[currentResIndex] === "string"){
+					resURL = resURLs[currentResIndex];
+				}else {
+					resURL = resURLs[currentResIndex].url;
+					matchByFilename = resURLs[currentResIndex].matchByFilename;
+					if(matchByFilename) {
+						resFilename = resURL.substring(resURL.lastIndexOf("/")+1);
+					}
+				}
+				
 				var isCSS = resURL.substring(resURL.length-4, resURL.length) === ".css";
 				var attrName = isCSS ? "href" : "src";
-				var tagName = isCSS ? "link" : "script"
-				var resEl = document.querySelector("head " + tagName + "[" + attrName + "=\"" + resURL + "\"]");
+				var tagName = isCSS ? "link" : "script";
+				var resEl = null;
+				var tagElements = document.getElementsByTagName(tagName);
+				for(var i = 0; i < tagElements.length && !resEl; i++) {
+					var srcVal = tagElements[i].getAttribute(attrName);
+					if(!matchByFilename && srcVal === resURL) {
+						resEl = tagElements[i];
+					}else if(matchByFilename && srcVal){
+						filename = srcVal.substring(srcVal.lastIndexOf("/")+1);
+						if(filename === resFilename) {
+							resEl = tagElements[i];
+						}
+					}
+				}
+					
+				//var resEl = document.querySelector("head " + tagName + "[" + attrName + "=\"" + resURL + "\"]");
 				if(!resEl) {
 					var newEl = document.createElement(tagName);
 					if(isCSS) {
@@ -775,6 +805,21 @@ var eXeEpubAuthoring = (function() {
 			}
 			
 			return selectEl;
+		},
+		
+		/**
+		 * Turn an array of activities into a list suitable for TinyMCE listboxes
+		 */
+		activitiesArrToTinyMCEListValues: function(activitiesArr) {
+			var arr = [];
+			for(var i = 0; i < activitiesArr.length; i++) {
+				arr.push({
+					text: activitiesArr[i].querySelector("name").textContent,
+					value: activitiesArr[i].getAttribute("id")
+				});
+			}
+			
+			return arr;
 		},
 		
 		/**
