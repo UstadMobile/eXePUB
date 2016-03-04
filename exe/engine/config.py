@@ -561,14 +561,14 @@ class Config(object):
             reldirpath = idevice_src_dir.relpathto(dir)
             for file in files:
                 dst_file = idevice_dst_dir/reldirpath/file
-                src_file = Path(dir/file)
+                src_file = Path(dir)/file
                 src_mtime = src_file.mtime
                 if not dst_file.exists() or src_mtime > dst_file.mtime:
                     #check dir
                     if not dst_file.dirname().isdir():
                         dst_file.dirname().makedirs()
                     
-                    if file == "idevice.xml" and dst_file.exists:
+                    if file == "idevice.xml" and dst_file.exists():
                         #We need to update the file whilst preserving if it's visible or not....
                         dst_xml = etree.parse(dst_file).getroot()
                         ns = dst_xml.nsmap.get(None)
