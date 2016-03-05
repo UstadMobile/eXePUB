@@ -65,6 +65,7 @@ class AuthoringPageEPUB(RenderableResource):
                 idevice_id = request.args['idevice_id'][0]
                 self.package.main_opf.delete_idevice_from_page(page_id, idevice_id)
                 self.package.main_opf.resource_manager.handle_idevice_deleted(page_id, idevice_id)
+                self.package.tincan_manager.delete_activities_by_idevice(idevice_id)
                 return_value = {'status': 'ok'}
             elif request.args['action'][0] == "moveidevice":
                 self.package.main_opf.resource_manager.move_idevice_in_page(

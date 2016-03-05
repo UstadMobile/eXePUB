@@ -527,6 +527,7 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 			
 			
 			var questionIds = this._getQuestionIds();
+			var interactionTypeEl;
 			for(var i = 0; i < questionIds.length; i++) {
 				var activityEl = xmlDoc.createElementNS(ns, "activity");
 				activityEl.setAttribute("id", this.ideviceId + "." + 
@@ -542,7 +543,7 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 					activityEl.appendChild(questionTextEl);
 				}
 				
-				var interactionTypeEl = xmlDoc.createElementNS(ns, "interactionType");
+				interactionTypeEl = xmlDoc.createElementNS(ns, "interactionType");
 				interactionTypeEl.textContent = "choice";
 				activityEl.appendChild(interactionTypeEl);
 				
@@ -567,11 +568,28 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 				}
 				xmlDoc.documentElement.appendChild(activityEl);
 				
-				/*
+				//Check and see if this question has a text response
 				var questionDiv = document.getElementById("etcqdiv" + 
 						this.ideviceId + "_" + questionIds[i]);
 				var textPrompt = questionDiv.getAttribute("data-textprompt");
-				*/
+				if(textPrompt) {
+					activityEl = xmlDoc.createElementNS(ns, "activity");
+					activityEl.setAttribute("id", this.ideviceId + "." + 
+						questionIds[i] + "_text");
+					var textActivityTitle = titleStr + " / " + $('#etcqdiv' + this.ideviceId + "_" + questionIds[i]).text();
+					for(j = 0; j < questionTextEls.length; j++) {
+						var questionTextEl = xmlDoc.createElementNS(ns, questionTextEls[j]);
+						questionTextEl.setAttribute("lang", "en");
+						questionTextEl.textContent = textActivityTitle;
+						activityEl.appendChild(questionTextEl);
+					}
+					
+					interactionTypeEl = xmlDoc.createElementNS(ns, "interactionType");
+					interactionTypeEl.textContent = "fill-in";
+					activityEl.appendChild(interactionTypeEl);
+					
+					xmlDoc.documentElement.appendChild(activityEl);
+				}
 			}
 			
 			return xmlDoc;
@@ -610,7 +628,9 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 				};
 				
 				if(textAreaEl) {
-					state[questionStateId].response = textAreaEl.value;
+					state[questionStateId + "_text"] = {
+						response : textAreaEl.value
+					}
 				}
 			}
 			
@@ -627,16 +647,18 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 			var questionIds = this._getQuestionIds();
 			var idPrefix = "id" + this.ideviceId + "_";
 			var questionState, questionTextAreaEl;
+			var textStateKey;
 			for(var i = 0; i < questionIds.length; i++) {
 				questionTextAreaEl = null;
 				questionState = state[idPrefix + questionIds[i]];
 				this._setQuestionSelectedInputEl(questionIds[i],
 						questionState.checkedItem);
-				if(questionState.response) {
+				textStateKey = idPrefix + questionIds[i] + "_text";
+				if(state[textStateKey]) {
 					questionTextArea = document.getElementById("etcqti_" 
 							+this.ideviceId + "_" + questionIds[i]);
 					if(questionTextArea) {
-						questionTextArea.value = questionState.response;
+						questionTextArea.value = state[textStateKey].response;
 					}
 				}
 			}

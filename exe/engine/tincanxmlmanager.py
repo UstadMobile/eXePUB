@@ -68,14 +68,18 @@ class TinCanXMLManager(object):
             self.save()
             
     
+    def delete_activities_by_idevice(self, idevice_id):
+        """Deletes all activity elements for the given page and idevice id"""
+        current_activities = self.get_activities_by_idevice(idevice_id)
+        for activity_el in current_activities:
+            activity_el.getparent().remove(activity_el)
+    
     def set_activities_by_idevice(self, page_id, idevice_id, activities_str, auto_save = True):
         ns = TinCanXMLManager.NS_TINCAN
         ext_key = TinCanXMLManager.EXT_KEY_IDEVICE
          
         #remove those currently set for this activity
-        current_activities = self.get_activities_by_idevice(idevice_id)
-        for activity_el in current_activities:
-            activity_el.getparent().remove(activity_el)
+        self.delete_activities_by_idevice(idevice_id)
         
         activities_el = etree.fromstring(activities_str)
         doc_activities = self.xml_doc.find("./{%s}activities" % ns)
