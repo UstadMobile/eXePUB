@@ -12,6 +12,7 @@ var ScoreFeedbackIdevice = function(ideviceId) {
 	}
 	
 	this.choiceActivities = null;
+	
 }
 
 ScoreFeedbackIdevice.prototype = {

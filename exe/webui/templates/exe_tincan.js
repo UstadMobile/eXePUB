@@ -315,9 +315,11 @@ var eXeTinCan = (function() {
 				
 				for(keyId in _state) {
 					if(_state.hasOwnProperty(keyId)) {
-						for(i = 0; i < keysToMatch.length; i++) {
+						for(i = 0; i < keysToMatch.length && (typeof keyValues[keyId] === "undefined"); i++) {
 							keyToCheck = keysToMatch[i];
-							if(matchByPrefix && keyId.substring(0, keyToCheck.length) === keyToCheck) {
+							if(keyToCheck === "*") {
+								keyValues[keyId] = _state[keyId];
+							}else if(matchByPrefix && keyId.substring(0, keyToCheck.length) === keyToCheck) {
 								keyValues[keyId] = _state[keyId];
 							}else if(!matchByPrefix && keyId === keyToCheck) {
 								keyValues[keyId] = _state[keyId];
@@ -328,6 +330,22 @@ var eXeTinCan = (function() {
 				
 				return keyValues;
 			}
+		},
+		
+		/**
+		 * This function will check all those state values that have a 
+		 * score property.  This must only be called after the state is 
+		 * loaded
+		 */
+		getCurrentScore: function() {
+			var score = 0;
+			for(keyId in _state) {
+				if(_state.hasOwnProperty(keyId) && typeof _state[keyId].score === "number") {
+					score += _state[keyId].score;
+				}
+			}
+			
+			return score;
 		},
 		
 		setPkgStateValue: function(key, value) {

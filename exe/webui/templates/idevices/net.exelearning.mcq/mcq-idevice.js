@@ -86,13 +86,13 @@ eXeMCQIdevice.prototype = Object.create(Idevice.prototype, {
 			
 			//get the TinCan base id first; then send the statement
 			eXeTinCan.getTinCanAndPageIds({ 
-				context: this
-			},
-			function(err, packageTinCanId, itemId) {
-				var stmt = eXeTinCan.makeAnsweredStmt(packageTinCanId + "/" + itemId + "/" 
-					+ this.ideviceId, stmtOpts);
-				eXeTinCan.sendStatement(stmt);
-			});
+					context: this
+				},
+				function(err, packageTinCanId, itemId) {
+					var stmt = eXeTinCan.makeAnsweredStmt(packageTinCanId + "/" + itemId + "/" 
+						+ this.ideviceId, stmtOpts);
+					eXeTinCan.sendStatement(stmt);
+				});
 		}
 	},
 	
@@ -574,7 +574,78 @@ eXeMCQIdevice.prototype = Object.create(Idevice.prototype, {
 			
 			return xmlDoc;
 		}
+	},
+	
+	isStateSupported: {
+		value: function() {
+			return true;
+		}
+	},
+	
+	/**
+	 * Generates the state - results in an object as follows for each question:
+	 * 
+	 * state['idX_Y'] = { response: responseId, score: Z}
+	 * 
+	 * Where X is the idevice ID, Y is the question id.  If there is no score set
+	 * (eg blank string) the score property will not be included.  If there is no
+	 * answer selected the response property will be set to null.  
+	 * 
+	 */
+	getState: {
+		value: function() {
+			var stateVal = {}, questionInputElName, inputEl, 
+				selectedId, questionStateObj, answerEl;
+			var questionIds = this._getQuestionIds();
+			//for each question determine which answer was selected
+			for(var i = 0; i < questionIds.length; i++) {
+				questionInputElName = "option" + this.ideviceId + "_" + questionIds[i];
+				inputEl = $("input[name='" + questionInputElName+"']:checked");
+				if(inputEl.length) {
+					selectedId = inputEl.attr("id").substring(1);//chop off the 'i' prefix as per xapi statements
+				}else {
+					selectedId = null;
+				}
+				
+				questionStateObj = {
+					response: selectedId
+				};
+				
+				answerEl = $("#answer-" +selectedId);
+				if(answerEl.attr("data-score")) {
+					try {
+						questionStateObj.score = parseFloat(answerEl.attr("data-score"));
+					}catch(err){
+						console.warn("invalid score for answer " + selectedId);
+					}
+				}
+				
+				stateVal['id' + this.ideviceId + "_" + questionIds[i]] = questionStateObj;
+			}
+			
+			return stateVal;
+		}
+	},
+	
+	setState: {
+		value: function(stateVal) {
+			var questionIds = this._getQuestionIds();
+			var questionStateId, selectedId, optionEl;
+			for(var i = 0; i < questionIds.length; i++) {
+				questionStateId = this.ideviceId + "_" + questionIds[i];
+				if(typeof stateVal["id" + questionStateId] !== "undefined") {
+					optionEl = $("#i" + stateVal["id"+questionStateId].response);
+					if(optionEl.length) {
+						optionEl.prop("checked", true);
+					}
+					if(optionEl.attr('onclick')) {
+						eval(optionEl.attr('onclick'));
+					}
+				}
+			}
+		}
 	}
+	
 });
 
 eXeMCQIdevice.prototype.constructor = eXeMCQIdevice;
