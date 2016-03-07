@@ -15,90 +15,100 @@ var ScoreFeedbackIdevice = function(ideviceId) {
 	
 }
 
-ScoreFeedbackIdevice.prototype = {
-		
-	create: function() {
-		this._addScoreFeedbackItem();
+ScoreFeedbackIdevice.prototype = Object.create(Idevice.prototype, {
+	onCreate: {
+		value:function() {
+			this._addScoreFeedbackItem();
+		}
 	},
 	
-	editOn: function() {
-		if(this.choiceActivities === null) {
-			eXeTinCan.getActivitiesByInteractionType(['choice'], {context: this}, function(activitiesArr) {
-				this.choiceActivities = activitiesArr;
+	editOn: {
+		value: function() {
+			if(this.choiceActivities === null) {
+				eXeTinCan.getActivitiesByInteractionType(['choice'], {context: this}, function(activitiesArr) {
+					this.choiceActivities = activitiesArr;
+					this._editOn2();
+				});
+			}else {
 				this._editOn2();
+			}
+		}
+	},
+	
+	_editOn2: {
+		value: function() {
+			for(var i = 0; i < this.scoreFeedbackItems.length; i++) {
+				this.scoreFeedbackItems[i].editOn();
+			}
+		}
+	},
+	
+	editOff: {
+		value: function() {
+			for(var i = 0; i < this.scoreFeedbackItems.length; i++) {
+				this.scoreFeedbackItems[i].editOff();
+			}
+			
+			var htmlToSave = eXeEpubAuthoring.getSavableHTML(this._getEl());
+			eXeEpubAuthoring.saveIdeviceHTML(this.ideviceId, htmlToSave);
+		}
+	},
+	
+	getVariableOptions: {
+		value: function() {
+			var opts = [['score', 'Total Score']];
+			var actName;
+			var actId;
+			
+			for(var i = 0; i < this.choiceActivities.length; i++) {
+				var actName = "Score: " + this.choiceActivities[i].querySelector("name").textContent;
+				var actId = this.choiceActivities[i].getAttribute("id");
+				opts.push([actId, actName]);
+			}
+			
+			return opts;
+		}
+	},
+	
+	
+	_addScoreFeedbackItem: {
+		value: function() {
+			var newBlockId = this.getNextBlockId();
+			newFeedbackItem = $("<div/>", {
+				"class" : "exe-score-feedback",
+				"data-expression" : "",
+				"data-block-id" : "" + newBlockId
 			});
-		}else {
-			this._editOn2();
+			newFeedbackItem.append($("<div/>", {
+				"class" : "exe-score-feedback-content",
+				"id" : "exe_sfbc_" + this.ideviceId + "_" + newBlockId
+			}).text("feedback if matched"));
+			$(this._getEl()).append(newFeedbackItem);
+			
+			var newItem = new ScoreFeedbackItem(newFeedbackItem.get(0), this);
+			this.scoreFeedbackItems.push(newItem);
 		}
 	},
 	
-	/**
-	 * This runs once we have the choiceActivities list...
-	 */
-	_editOn2: function() {
-		for(var i = 0; i < this.scoreFeedbackItems.length; i++) {
-			this.scoreFeedbackItems[i].editOn();
+	isStateSupported: {
+		value: function() {
+			return !eXeEpubCommon.isAuthoringMode();
 		}
 	},
 	
-	editOff: function() {
-		for(var i = 0; i < this.scoreFeedbackItems.length; i++) {
-			this.scoreFeedbackItems[i].editOff();
+	setState: {
+		value: function(state){
+			//evaluate each item to see if it should or should not be on display
+			for(var i = 0; i < this.scoreFeedbackItems.length; i++) {
+				this.scoreFeedbackItems[i].checkVisibility();
+			}
 		}
-		
-		var htmlToSave = eXeEpubAuthoring.getSavableHTML(this._getEl());
-		eXeEpubAuthoring.saveIdeviceHTML(this.ideviceId, htmlToSave);
-	},
-	
-	getVariableOptions: function() {
-		var opts = [['score', 'Total Score']];
-		var actName;
-		var actId;
-		
-		for(var i = 0; i < this.choiceActivities.length; i++) {
-			var actName = "Score: " + this.choiceActivities[i].querySelector("name").textContent;
-			var actId = this.choiceActivities[i].getAttribute("id");
-			opts.push([actId, actName]);
-		}
-		
-		return opts;
-	},
-	
-	
-	_getEl: function() {
-		return document.getElementById("id" + this.ideviceId);
-	},
-	
-	_getNextBlockId: function() {
-		var allBlocks = $(this._getEl()).find(".exe-score-feedback");
-		var maxId = 0;
-		for(var i = 0; i < allBlocks.length; i++) {
-			maxId = Math.max(maxId, parseInt($(allBlocks.get(i)).attr("data-block-id")));
-		}
-		
-		return maxId;
-	},
-	
-	_addScoreFeedbackItem: function() {
-		var newBlockId = this._getNextBlockId();
-		newFeedbackItem = $("<div/>", {
-			"class" : "exe-score-feedback",
-			"data-expression" : "",
-			"data-block-id" : "" + newBlockId
-		});
-		newFeedbackItem.append($("<div/>", {
-			"class" : "exe-score-feedback-content",
-			"id" : "exe_sfbc_" + this.ideviceId + "_" + newBlockId
-		}).text("feedback if matched"));
-		$(this._getEl()).append(newFeedbackItem);
-		
-		var newItem = new ScoreFeedbackItem(newFeedbackItem.get(0), this);
-		this.scoreFeedbackItems.push(newItem);
 	}
 	
-	
-};
+});
 
+ScoreFeedbackIdevice.prototype.constructor = ScoreFeedbackIdevice;
+Idevice.registerType("net.exelearning.scorefeedback", ScoreFeedbackIdevice);
 
 var ScoreFeedbackItem = function(el, idevice) {
 	this.el = el;
@@ -108,11 +118,11 @@ var ScoreFeedbackItem = function(el, idevice) {
 
 ScoreFeedbackItem.prototype = {
 	
-	operators: ["=", ">", ">=", "<", "<="],
+	operators: ["==", ">", ">=", "<", "<="],
 	
 	joiners: [['&&', 'AND'], ['||', 'OR']],
 	
-	getVarFnName: "eXeTinCan.getPkgStateValue(",
+	getVarFnName: "eXeTinCan.getPkgStateScoreSync(",
 	
 	_makeEditLine: function(joiner, varName, operator, compareTo) {
 		var i;
@@ -210,7 +220,7 @@ ScoreFeedbackItem.prototype = {
 				expr += currentLine.find(".exe-scfb-joinerselect").val() + " ";
 			}
 			
-			expr += "eXeTinCan.getPkgStateValue(\"";
+			expr += this.getVarFnName +"\"";
 			expr += currentLine.find(".exe-scfb-varselect").val();
 			expr += "\") ";
 			expr += currentLine.find(".exe-scfb-conditionselect").val();
@@ -281,7 +291,7 @@ ScoreFeedbackItem.prototype = {
 			var quoteLength = quoteRegEx.exec(currentSection.substring(quoteStartIndex+1)).index+1;
 			var varName = currentSection.substring(quoteStartIndex+1, quoteStartIndex + quoteLength);
 			
-			var operatorRegEx = /(=|<=|>=|>|<)/;
+			var operatorRegEx = /(==|<=|>=|>|<)/;
 			var operatorMatch = operatorRegEx.exec(currentSection);
 			var operator = operatorMatch[0];
 			
@@ -297,40 +307,19 @@ ScoreFeedbackItem.prototype = {
 		
 		
 		return editorEls;
+	},
+	
+	evalExpr: function() {
+		return eval(this.el.getAttribute("data-expression"));
+	},
+	
+	checkVisibility:function() {
+		var exprVal = this.evalExpr();
+		if(exprVal){ 
+			this.el.style.display = "block";
+		}else {
+			this.el.style.display = "none";
+		}
 	}
 		
 };
-
-(function() {
-	var _idevices = {};
-	
-	document.addEventListener("idevicecreate", function(evt) {
-		if(evt.detail.ideviceType === "net.exelearning.scorefeedback") {
-			var targetEl = evt.target || evt.srcElement;
-			var ideviceId = evt.detail.ideviceId;
-			_idevices[ideviceId] = new ScoreFeedbackIdevice(ideviceId);
-			_idevices[ideviceId].create();
-		}
-	}, false);
-	
-	document.addEventListener("ideviceediton", function(evt) {
-		if(evt.detail.ideviceType === "net.exelearning.scorefeedback") {
-			var ideviceId = evt.detail.ideviceId;
-			if(!_idevices[ideviceId]) {
-				_idevices[ideviceId] = new ScoreFeedbackIdevice(ideviceId);
-			}
-			
-			_idevices[evt.detail.ideviceId].editOn();
-		}
-	}, false);
-	
-	document.addEventListener("ideviceeditoff", function(evt) {
-		if(evt.detail.ideviceType === "net.exelearning.scorefeedback") {
-			_idevices[evt.detail.ideviceId].editOff();
-		}
-	});
-})();
-
-
-
-

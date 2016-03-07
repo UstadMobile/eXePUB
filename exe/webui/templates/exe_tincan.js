@@ -156,6 +156,14 @@ var eXeTinCan = (function() {
 			}).bind(this));
 		},
 		
+		/**
+		 * Given an activity id in the form of epub:xxx-yyy-zzz/Page_id/x_y where x
+		 * is the idevice id and y is the block id (optional) return just x_y
+		 */
+		getStateKeyIdByActivityId: function(activityId) {
+			return activityId.substring(activityId.lastIndexOf("/")+1)
+		},
+		
 		getPackageTinCanXML: function(options, callback) {
 			var pathToXML = "../tincan.xml";
 			var xmlHTTP = new XMLHttpRequest();
@@ -293,6 +301,26 @@ var eXeTinCan = (function() {
 				callback.call(opts && opts.context ? opts.context : this, this._getPkgStateValue(key, opts));
 			}else {
 				_pendingReadyCallbacks.push([callback, opts, key]);
+			}
+		},
+		
+		/**
+		 * Gets the score of the given item
+		 * @param {string} key 
+		 */
+		getPkgStateScoreSync: function(key){
+			if(_xAPIstateStatus === eXeTinCan.STATE_LOADED || _xAPIstateStatus === eXeTinCan.STATE_UNAVAILABLE) {
+				if(key.substring(0, 5) === "epub:") {
+					key = this.getStateKeyIdByActivityId(key);
+				}
+				
+				if(key === "score") {
+					return eXeTinCan.getCurrentScore();
+				}else if(_state["id"+key] && typeof _state["id"+key].score !== "undefined") {
+					return _state["id"+key].score;
+				}
+			}else {
+				throw "Illegal State: cannot get state based score before state is loaded";
 			}
 		},
 		
