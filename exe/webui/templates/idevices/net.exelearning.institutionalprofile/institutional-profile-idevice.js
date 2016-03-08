@@ -5,6 +5,7 @@
 var InstitutionalProfileIdevice = function(ideviceId) {
 	this.ideviceId = ideviceId;
 	this.availableSources = null;
+	this.textAreaCommitTimeouts = {};
 };
 
 InstitutionalProfileIdevice.prototype = Object.create(Idevice.prototype, {
@@ -202,6 +203,40 @@ InstitutionalProfileIdevice.prototype = Object.create(Idevice.prototype, {
 		}
 	},
 	
+	handleBoxClicked: {
+		value: function(boxWidget, level) {
+			//chop of the prefixed idX_ which gives the idevice id
+			var internalId = boxWidget.id.substring(boxWidget.id.indexOf("_")+1);
+			var boxState = {};
+			boxState[internalId] = level;
+			this.saveStateValues(boxState);
+		}
+	},
+	
+	handleTextAreaInput: {
+		value: function(evt) {
+			var elId = evt.target.id;
+			if(this.textAreaCommitTimeouts[elId]) {
+				clearInterval(this.textAreaCommitTimeouts[elId]);
+				this.textAreaCommitTimeouts[elId] = null;
+			}
+			
+			this.textAreaCommitTimeouts = setTimeout((function() {
+				this.commitTextInput(elId);
+			}).bind(this), 500);
+		}
+	},
+	
+	commitTextInput: {
+		value: function(elId) {
+			//chop of the prefixed idX_ which gives the idevice id
+			var internalId = elId.substring(elId.indexOf("_")+1);
+			var textState = {};
+			textState[internalId] = $("#"+elId).val();
+			this.saveStateValues(textState);
+		}
+	},
+	
 	setRowState: {
 		value: function(row, state) {
 			var srcId = $(row).attr('data-checkbox-src');
@@ -249,7 +284,7 @@ InstitutionalProfileIdevice.prototype = Object.create(Idevice.prototype, {
 						labelRow.append(levelTd);
 						LevelBoxWidget.initLevelBox(levelWidgetId, {
 							container : levelTd.get(0)
-						});
+						}).setOnLevelChange(this.handleBoxClicked.bind(this));
 						
 						if(typeof state["id" + levelWidgetId] !== "undefined") {
 							LevelBoxWidget.getBoxById(levelWidgetId).setLevel(state["id" + levelWidgetId]);
@@ -284,6 +319,8 @@ InstitutionalProfileIdevice.prototype = Object.create(Idevice.prototype, {
 						if(typeof state["id" + textElId] !== "undefined") {
 							textAreaEl.val(state["id" + textElId]);
 						}
+						
+						textAreaEl.on("input", this.handleTextAreaInput.bind(this));
 						
 						textInputTd.append(textAreaEl);
 						textTr.append(textInputTd);
