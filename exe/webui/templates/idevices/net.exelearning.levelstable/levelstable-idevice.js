@@ -167,6 +167,15 @@ LevelsTableIdevice.prototype = Object.create(Idevice.prototype, {
 		}
 	},
 	
+	handleClickBox: {
+		value: function(levelWidget, level) {
+			var stateVal = {};
+			var internalId = levelWidget.id.substring(levelWidget.id.indexOf("_")+1);
+			stateVal[internalId] = level;
+			this.saveStateValues(stateVal);
+		}
+	},
+	
 	setRowState: {
 		value: function(srcRow, state) {
 			var srcId = $(srcRow).attr("data-src-checkbox-table");
@@ -203,7 +212,7 @@ LevelsTableIdevice.prototype = Object.create(Idevice.prototype, {
 						levelWidgetId = baseId + "_" + checkedItems[i].id + "_" + j;
 						LevelBoxWidget.initLevelBox(levelWidgetId, {
 							container : levelTd.get(0)
-						});
+						}).setOnLevelChange(this.handleClickBox.bind(this));
 						
 						if(typeof state["id" + levelWidgetId] !== "undefined") {
 							LevelBoxWidget.getBoxById(levelWidgetId).setLevel(state["id" + levelWidgetId]);
@@ -216,25 +225,7 @@ LevelsTableIdevice.prototype = Object.create(Idevice.prototype, {
 				
 			}).bind(this));
 		}
-	},
-	
-	getState: {
-		value: function() {
-			var stateVal = {};
-			var stateItems = $(this._getEl()).find(".cordaid-level-box-widget");
-			var itemId, elId;
-			for(var i = 0; i < stateItems.length; i++) {
-				elId = $(stateItems.get(i)).attr("id");
-				itemId = elId.substring(2);//chop off id prefix
-				stateVal[elId] = LevelBoxWidget.getBoxById(itemId).getLevel();
-			}
-			
-			return stateVal;
-		}
 	}
-	
-	
-		
 	
 });
 
