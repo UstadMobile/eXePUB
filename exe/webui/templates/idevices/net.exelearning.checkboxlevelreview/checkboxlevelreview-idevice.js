@@ -5,7 +5,14 @@
 var CheckboxLevelReviewIdevice = function(ideviceId) {
 	this.ideviceId = ideviceId;
 	this.availableSources = null;
+	this._handleClickBoxBound = this.handleClickBox.bind(this);
+	this.textCommitTimeout = null;
 };
+
+/**
+ * Time between last input event and when state will be committed
+ */
+CheckboxLevelReviewIdevice.TEXT_COMMIT_TIMEOUT = 500;
 
 CheckboxLevelReviewIdevice.prototype = Object.create(Idevice.prototype, {
 	
@@ -27,6 +34,23 @@ CheckboxLevelReviewIdevice.prototype = Object.create(Idevice.prototype, {
 			
 			this.addRow();
 			this.addCol();
+		}
+	},
+	
+	handleClickBox: {
+		value: function() {
+			this.commitState();
+		}
+	},
+	
+	handleTextInput: {
+		value: function() {
+			if(this.textCommitTimeout) {
+				clearInterval(this.textCommitTimeout);
+			}
+			
+			this.textCommitTimeout = setTimeout(this.commitState.bind(this),
+					CheckboxLevelReviewIdevice.TEXT_COMMIT_TIMEOUT);
 		}
 	},
 	
@@ -273,7 +297,7 @@ CheckboxLevelReviewIdevice.prototype = Object.create(Idevice.prototype, {
 	setState: {
 		value: function(state) {
 			var rows = $("#id" + this.ideviceId).find(".checkboxlevel-srcrow");
-			state = state && state["id" + this.ideviceId] ?state["id" + this.ideviceId] : {}; 
+			state = state && state["id" + this.ideviceId+"_cblr"] ?state["id" + this.ideviceId+"_cblr"] : {}; 
 			for(var i = 0; i < rows.length; i++) {
 				this.setRowState(rows.get(i), state);
 			}
@@ -332,6 +356,8 @@ CheckboxLevelReviewIdevice.prototype = Object.create(Idevice.prototype, {
 						if(state[rowId+"text"]) {
 							textAreaEl.val(state[rowId+"text"]);
 						}
+						
+						textAreaEl.on("input", this.handleTextInput.bind(this));
 						dataTd.append(textAreaEl);
 					}
 					
@@ -357,6 +383,7 @@ CheckboxLevelReviewIdevice.prototype = Object.create(Idevice.prototype, {
 								'class' : 'checkbox-levelreview-datarow-checkbox',
 								'id' : 'id' + boxWidgetId
 							});
+							inputEl.on("click", this._handleClickBoxBound);
 							boxTd.append(inputEl);
 							if(state["id"+boxWidgetId]) {
 								inputEl.prop("checked", true);
@@ -376,7 +403,7 @@ CheckboxLevelReviewIdevice.prototype = Object.create(Idevice.prototype, {
 		}
 	},
 	
-	getState: {
+	commitState: {
 		value: function() {
 			var stateVal = {};
 			var ideviceObj = {};
@@ -398,8 +425,7 @@ CheckboxLevelReviewIdevice.prototype = Object.create(Idevice.prototype, {
 			for(var i = 0; i < textAreas.length; i++) {
 				ideviceObj[textAreas.get(i).id] = $(textAreas.get(i)).val();
 			}
-			
-			return stateVal;
+			this.saveStateValues({"cblr": ideviceObj});
 		}
 	}
 		
