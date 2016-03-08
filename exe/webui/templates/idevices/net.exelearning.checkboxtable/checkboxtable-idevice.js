@@ -9,8 +9,17 @@ var CheckboxTableIdevice = function(ideviceId) {
 	
 	this._handleClickInputElBound = this.handleClickInputEl.bind(this);
 	
+	this._handleTextAreaInputBound = this.handleTextAreaInput.bind(this);
+	
+	this.textAreaInputTimeouts = {};
+	
 	this.bindEvents();
 };
+
+/**
+ * The time in ms from the last input event until saving state
+ */
+CheckboxTableIdevice.TEXT_COMMIT_TIMEOUT = 500;
 
 CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 	
@@ -18,7 +27,7 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 		value: function() {
 			if(this._getTable()) {
 				$(this._getTable()).find("input[type='checkbox']").off("click", this._handleClickInputElBound);
-				$(this._getTable()).find("input[type='checkbox']").on("click", this._handleClickInputElBound);
+				$(this._getTable()).find("input[type='checkbox']").on("click", this._handleClickInputElBound);				
 			}
 		}
 	},
@@ -31,6 +40,30 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 			var questionId = inputId.substring(firstSep+1, 
 					inputId.indexOf("_", firstSep+1));
 			this._updateQuestionTextInput(questionId);
+			if(!eXeEpubCommon.isAuthoringMode()) {
+				this.saveQuestionState(questionId);
+			}
+		}
+	},
+	
+	handleTextAreaInput: {
+		value: function(evt) {
+			var elId = evt.target.id;
+			if(this.textAreaInputTimeouts[elId]) {
+				clearInterval(this.textAreaInputTimeouts[elId]);
+				this.textAreaInputTimeouts[elId] = null;
+			}
+			
+			setTimeout((function() {
+				this.commitTextArea(elId);
+			}).bind(this), CheckboxTableIdevice.TEXT_COMMIT_TIMEOUT);
+		}
+	},
+	
+	commitTextArea: {
+		value: function(elId) {
+			var questionId = elId.substring(elId.lastIndexOf("_")+1);
+			this.saveQuestionState(questionId);
 		}
 	},
 	
@@ -46,12 +79,15 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 			if(textPrompt === colSelected) {
 				//we need to show a textinput area
 				if(!$("#" + questionTextInputId).length) {
-					$(questionDiv).after($("<textarea/>", {
+					var textAreaEl = $("<textarea/>", {
 						'rows' : 1,
 						'cols' : 72,
 						'class' : 'exe-checkbox-table-question-textarea',
 						'id' : questionTextInputId
-					}));
+					});
+					textAreaEl.on("input", this._handleTextAreaInputBound);
+					
+					$(questionDiv).after(textAreaEl);
 					var inputGuidance = $("<div/>", {
 						'id' : inputGuidanceId
 					}).html($("#"+promptElId).html());
@@ -78,6 +114,8 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 					return colIds[i];
 				}
 			}
+			
+			return null;
 		}
 	},
 	
@@ -602,39 +640,20 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 		}
 	},
 	
-	/**
-	 * Generate a json array in the form of:
-	 *  {
-	 *  	questionId: {
-	 *  		checkedItem: columnId | null
-	 *  		text: "Textbox contents" | null
-	 *  	}
-	 *  }
-	 * 
-	 */
-	getState: {
-		value: function() {
-			var questionIds = this._getQuestionIds();
-			var idPrefix = "id" + this.ideviceId + "_";
-			var state = {};
-			var selectedValue, questionStateId, questionTextAreaId, textAreaEl;
-			for(var i = 0; i < questionIds.length; i++) {
-				questionStateId = idPrefix + questionIds[i];
-				questionTextAreaId = "etcqti_" +this.ideviceId + "_" + questionIds[i];
-				textAreaEl = document.getElementById(questionTextAreaId);
-				
-				state[questionStateId] = {
-					'checkedItem' : this._getQuestionSelectedInputEl(questionIds[i])
-				};
-				
-				if(textAreaEl) {
-					state[questionStateId + "_text"] = {
-						response : textAreaEl.value
-					}
-				}
+	saveQuestionState: {
+		value: function(questionId) {
+			var questionStateId = "id" + this.ideviceId + "_" + questionId;
+			var textStateId = questionStateId + "_text";
+			
+			var questionTextAreaId = "etcqti_" +this.ideviceId + "_" + questionId;
+			var textAreaEl = document.getElementById(questionTextAreaId);
+			if(textAreaEl) {
+				eXeTinCan.setPkgStateValue(textStateId, {response: textAreaEl.value });
 			}
 			
-			return state;
+			eXeTinCan.setPkgStateValue(questionStateId, {
+				checkedItem: this._getQuestionSelectedInputEl(questionId)
+			});
 		}
 	},
 	
@@ -651,14 +670,16 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 			for(var i = 0; i < questionIds.length; i++) {
 				questionTextAreaEl = null;
 				questionState = state[idPrefix + questionIds[i]];
-				this._setQuestionSelectedInputEl(questionIds[i],
-						questionState.checkedItem);
-				textStateKey = idPrefix + questionIds[i] + "_text";
-				if(state[textStateKey]) {
-					questionTextArea = document.getElementById("etcqti_" 
-							+this.ideviceId + "_" + questionIds[i]);
-					if(questionTextArea) {
-						questionTextArea.value = state[textStateKey].response;
+				if(questionState) {//its possible that not all questions have been answered
+					this._setQuestionSelectedInputEl(questionIds[i],
+							questionState.checkedItem);
+					textStateKey = idPrefix + questionIds[i] + "_text";
+					if(state[textStateKey]) {
+						questionTextArea = document.getElementById("etcqti_" 
+								+this.ideviceId + "_" + questionIds[i]);
+						if(questionTextArea) {
+							questionTextArea.value = state[textStateKey].response;
+						}
 					}
 				}
 			}
