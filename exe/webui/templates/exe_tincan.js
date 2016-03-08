@@ -376,8 +376,41 @@ var eXeTinCan = (function() {
 			return score;
 		},
 		
-		setPkgStateValue: function(key, value) {
+		/**
+		 * Sets the given package state key.
+		 * 
+		 * @param {string} Key ID to save in the form of idX[_Y...] where X = ideviceId, _Y = block ID etc
+		 * @param {Object} value The value to assign to this key
+		 * @param {Object} opts General options
+		 * @param {function} [opts.callback] callback function to run if/when we call saveState 
+		 * @param {boolean} [opts.autosave=true] whether or not to immediately use saveState to save the new value
+		 * @param {boolean} [opts.async=true] set to false to force no callback synchronous mode for saveState
+		 */
+		setPkgStateValue: function(key, value, opts) {
 			_state[key] = value;
+			
+			/*
+			 * If there is no callback object this will be run as a 
+			 * synchronous HTTP request... which effects UI performance etc.
+			 */
+			var opts = opts || {};
+			var callback = null;
+			if(!(typeof opts.async === "boolean" && opts.async === false)) {
+				callback = typeof opts.callback === "function" ? opts.callback : (function(){});
+			}
+			
+			//make a copy of the opts and then add the keys to it
+			if(!(typeof opts.autosave === "boolean" && opts.autosave === false)) {
+				var saveStateOpts = {};
+				for(optKey in opts) {
+					if(opts.hasOwnProperty(optKey)) {
+						saveStateOpts[optKey] = opts[optKey];
+					}
+				}
+				saveStateOpts.keys = [key];
+				
+				this.saveState(saveStateOpts, callback);
+			}
 		},
 		
 		/**
@@ -516,20 +549,35 @@ var eXeTinCan = (function() {
 			}
 		},
 		
-		
+		/**
+		 * @param {Object} opts : General options
+		 * @param {string} [opts.keys] If given send only the listed keys to the server
+		 * @param {Object} context : context (e.g. this) to use for callback
+		 */
 		saveState: function(opts, callback) {
+			var stateToStore = _state;
+			
+			if(opts.keys) {
+				stateToStore = {};
+				for(var i = 0; i < opts.keys.length; i++) {
+					stateToStore[opts.keys[i]] = _state[opts.keys[i]];
+				}
+			}
+			
 			var processPkgIdFn = (function(err, pkgId) {
 				var callbackFn = null;
 				if(callback) {
 					callbackFn = opts.context ? callback.bind(opts.context) : callback;
 				}
 				
+				
+				
 				var params = this._makeStateParams(pkgId, callbackFn);
 				params.contentType = "application/json";
 				if(this.isLRSActive()) {
-					return _tinCan.setState(STATE_ID, _state, params);
+					return _tinCan.setState(STATE_ID, stateToStore, params);
 				}else {
-					return this.setStateToLocalStorage(STATE_ID, _state, params);
+					return this.setStateToLocalStorage(STATE_ID, stateToStore, params);
 				}
 					
 			}).bind(this);

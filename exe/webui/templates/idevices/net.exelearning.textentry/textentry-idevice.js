@@ -5,6 +5,7 @@ var TextEntryIdevice = function(ideviceId) {
 	this.ideviceId = ideviceId;
 	
 	var textArea = this.getTextArea();
+	this._handleChangeBound = this.handleChange.bind(this);
 	
 	if(textArea) {
 		textArea.value = textArea.value.trim();
@@ -14,10 +15,21 @@ var TextEntryIdevice = function(ideviceId) {
 		if(typeof authoringMode === "string" && authoringMode === "true") {
 			textArea.setAttribute("readonly", "readonly");
 		}
+		
+		this.bindEvents();
 	}
 	
+	this.timeLastChanged = -1;
 	
+	this.checkChangeTimeout = null;
 };
+
+/**
+ * The time (in ms) between the last change and when we will save the
+ * state using the state api
+ */
+TextEntryIdevice.COMMIT_TIMEOUT = 500;
+
 
 TextEntryIdevice.prototype = Object.create(Idevice.prototype, {
 	getTextArea: {
@@ -55,7 +67,36 @@ TextEntryIdevice.prototype = Object.create(Idevice.prototype, {
 			entryHolder.append(introText);
 			entryHolder.append(textEntryArea);
 			$(this._getEl()).append(entryHolder);
+			this.bindEvents();
+		}
+	},
+	
+	bindEvents: {
+		value: function() {
+			$(this.getTextArea()).off("input", this._handleChangeBound);
+			$(this.getTextArea()).on("input", this._handleChangeBound);
+		}
+	},
+	
+	handleChange: {
+		value: function(evt) {
+			if(this.checkChangeTimeout) {
+				clearTimeout(this.checkChangeTimeout);
+				this.checkChangeTimeout = null;
+			}
 			
+			this.checkChangeTimeout = setTimeout(this.commitChange.bind(this), 
+					TextEntryIdevice.COMMIT_TIMEOUT);
+		}
+	},
+	
+	commitChange: {
+		value: function() {
+			if(!eXeEpubCommon.isAuthoringMode()) {
+				eXeTinCan.setPkgStateValue("id"+this.ideviceId, {
+					response: $(this.getTextArea()).val()
+				});
+			}
 		}
 	},
 	
@@ -150,16 +191,6 @@ TextEntryIdevice.prototype = Object.create(Idevice.prototype, {
 			eXeTinCan.appendInteractionType(activityEl, "fill-in");
 			xmlDoc.documentElement.appendChild(activityEl);
 			return xmlDoc;
-		}
-	},
-	
-	getState: {
-		value: function() {
-			var state = {};
-			state['id' + this.ideviceId] = {
-					'response' : $(this.getTextArea()).val()
-			};
-			return state;
 		}
 	},
 	

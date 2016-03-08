@@ -221,6 +221,7 @@ Idevice.prototype = {
 
 Idevice._registeredDevices = {};
 
+/*
 Idevice.handleBeforeUnload = function(evt) {
 	console.log("Idevice: beforeunload");
 	for(ideviceId in Idevice._registeredDevices) {
@@ -237,7 +238,7 @@ Idevice.handleBeforeUnload = function(evt) {
 };
 
 window.addEventListener("beforeunload", Idevice.handleBeforeUnload.bind(Idevice), false);
-
+*/
 
 
 Idevice.registerType = function(typeId, cls) {

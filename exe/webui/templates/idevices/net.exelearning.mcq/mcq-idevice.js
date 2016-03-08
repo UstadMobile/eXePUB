@@ -70,15 +70,36 @@ eXeMCQIdevice.prototype = Object.create(Idevice.prototype, {
 			//when coming from the input element itself. get the id 
 			//will be in the form of ideviceId_blockId e.g. 0_4
 			var id = $(evt.delegateTarget).attr("id").substring(1);
+			var questionForm = $(evt.delegateTarget).closest("form");
+			var questionFormPrefix = "multi-choice-form-" + this.ideviceId + "_"; 
+			var questionId = questionForm.attr("name").substring(questionFormPrefix.length);
+			
+			var stateKey = "id" + this.ideviceId + "_" + questionId;
+			
+			var stateObj = {
+				response: id
+			};
+			
 			var answerEl = $("#answer-" +id);
+			var answerScore = $(answerEl).attr("data-score");
+			
+			if(answerScore) {
+				try {
+					stateObj.score = parseFloat(answerScore);
+				}catch(err){
+					console.warn("invalid score for answer " + selectedId);
+				}
+			}
+			eXeTinCan.setPkgStateValue(stateKey, stateObj);
+			
 			var stmtOpts = {
 				result: {
 					response: id
 				}
 			};
 			
-			var answerScore = $(answerEl).attr("data-score");
-			if(typeof answerScore !== "undefined" && answerScore !== "") {
+			
+			if(answerScore) {
 				stmtOpts.result.score = {
 					raw : parseFloat(answerScore)
 				};
