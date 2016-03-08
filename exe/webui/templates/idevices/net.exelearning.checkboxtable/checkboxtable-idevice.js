@@ -642,18 +642,20 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 	
 	saveQuestionState: {
 		value: function(questionId) {
+			var questionState = {
+				checkedItem: this._getQuestionSelectedInputEl(questionId)
+			};
+			
 			var questionStateId = "id" + this.ideviceId + "_" + questionId;
 			var textStateId = questionStateId + "_text";
 			
 			var questionTextAreaId = "etcqti_" +this.ideviceId + "_" + questionId;
 			var textAreaEl = document.getElementById(questionTextAreaId);
 			if(textAreaEl) {
-				eXeTinCan.setPkgStateValue(textStateId, {response: textAreaEl.value });
+				questionState.response = textAreaEl.value;
 			}
 			
-			eXeTinCan.setPkgStateValue(questionStateId, {
-				checkedItem: this._getQuestionSelectedInputEl(questionId)
-			});
+			eXeTinCan.setPkgStateValue(questionStateId, questionState);
 		}
 	},
 	
@@ -674,11 +676,11 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 					this._setQuestionSelectedInputEl(questionIds[i],
 							questionState.checkedItem);
 					textStateKey = idPrefix + questionIds[i] + "_text";
-					if(state[textStateKey]) {
+					if(questionState.response) {
 						questionTextArea = document.getElementById("etcqti_" 
 								+this.ideviceId + "_" + questionIds[i]);
 						if(questionTextArea) {
-							questionTextArea.value = state[textStateKey].response;
+							questionTextArea.value = questionState.response;
 						}
 					}
 				}
