@@ -379,15 +379,22 @@ var eXeTinCan = (function() {
 		/**
 		 * Sets the given package state key.
 		 * 
-		 * @param {string} Key ID to save in the form of idX[_Y...] where X = ideviceId, _Y = block ID etc
-		 * @param {Object} value The value to assign to this key
+		 * @param {Object} values object in form of :
+		 * 	ID to save in the form of idX[_Y...] where X = ideviceId, _Y = block ID etc - value
 		 * @param {Object} opts General options
 		 * @param {function} [opts.callback] callback function to run if/when we call saveState 
 		 * @param {boolean} [opts.autosave=true] whether or not to immediately use saveState to save the new value
 		 * @param {boolean} [opts.async=true] set to false to force no callback synchronous mode for saveState
 		 */
-		setPkgStateValue: function(key, value, opts) {
-			_state[key] = value;
+		setPkgStateValues: function(values, opts) {
+			var saveStateKeys = [];
+			for(key in values) {
+				if(values.hasOwnProperty(key)) {
+					_state[key] = values[key];
+					saveStateKeys.push(key);
+				}
+			}
+			
 			
 			/*
 			 * If there is no callback object this will be run as a 
@@ -407,10 +414,19 @@ var eXeTinCan = (function() {
 						saveStateOpts[optKey] = opts[optKey];
 					}
 				}
-				saveStateOpts.keys = [key];
+				saveStateOpts.keys = saveStateKeys;
 				
 				this.saveState(saveStateOpts, callback);
 			}
+		},
+		
+		/**
+		 * Legacy fill : better to use setPkgStateValues
+		 */
+		setPkgStateValue: function(key, value, opts) {
+			var stateValues = {};
+			stateValues[key] = value;
+			this.setPkgStateValues(stateValues, opts);
 		},
 		
 		/**

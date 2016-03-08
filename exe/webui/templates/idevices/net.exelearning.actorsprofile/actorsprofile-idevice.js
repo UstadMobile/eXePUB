@@ -5,7 +5,11 @@
 var ActorsProfileIdevice = function(ideviceId) {
 	this.ideviceId = ideviceId;
 	this.availableSources = null;
+	
+	this.textInputCommitTimeouts = {};
 };
+
+ActorsProfileIdevice.COMMIT_TIMEOUT = 500;
 
 ActorsProfileIdevice.prototype = Object.create(Idevice.prototype, {
 	onCreate: {
@@ -221,12 +225,6 @@ ActorsProfileIdevice.prototype = Object.create(Idevice.prototype, {
 		}
 	},
 	
-	loadActorsFromLines: {
-		value: function(blockId, text) {
-			
-		}
-	},
-	
 	setState: {
 		value: function(state) {
 			var rows = this._getSrcRows();
@@ -265,10 +263,14 @@ ActorsProfileIdevice.prototype = Object.create(Idevice.prototype, {
 								'id' : 'apdri_' + dataRowId,
 								'class' : 'exe-actorsprofile-actor-role-input'
 							});
+							actorRoleInput.on("input", 
+									this.handleTextInputChanged.bind(this));
 							
-							if(state['id'+dataRowId]) {
+							
+							var baseStateId = 'id' + this.ideviceId + "_"; 
+							if(state[baseStateId + dataRowId]) {
 								//responses are available
-								actorRoleInput.val(state['id'+dataRowId].response);
+								actorRoleInput.val(state[baseStateId + dataRowId].response);
 							}
 							
 							actorRoleTd.append(actorRoleInput);
@@ -285,10 +287,11 @@ ActorsProfileIdevice.prototype = Object.create(Idevice.prototype, {
 								newTr.append(levelTd);
 								LevelBoxWidget.initLevelBox(levelId, {
 									container : levelTd.get(0)
-								});
-								if(state["id" + levelId]) {
+								}).setOnLevelChange(this.handleLevelChanged.bind(this));
+								
+								if(state[baseStateId + levelId]) {
 									LevelBoxWidget.getBoxById(levelId).setLevel(
-											state["id" + levelId]);
+											state[baseStateId + levelId]);
 								}
 							}
 							
@@ -302,28 +305,45 @@ ActorsProfileIdevice.prototype = Object.create(Idevice.prototype, {
 		}
 	},
 	
-	getState: {
-		value: function() {
-			var rows = $("#id" + this.ideviceId).find("tr.exe-actorsprofile-data-row");
-			var stateVal = {};
-			var colIds = this._getColIds();
-			var levelBoxId;
-			for(var i = 0; i < rows.length; i++) {
-				var dataRowId = $(rows.get(i)).attr('data-row-id');
-				stateVal["id" + dataRowId] = {
-					'response' : $('#apdri_' + dataRowId).val()
-				};
-				
-				for(var k = 0; k < colIds.length; k++) {
-					levelBoxId = dataRowId + "_" + k;
-					stateVal["id" + levelBoxId] = LevelBoxWidget.getBoxById(levelBoxId).getLevel();
-				}
+	handleLevelChanged: {
+		value: function(levelWidget, level) {
+			var dataRowId = levelWidget.id.substring(0, levelWidget.id.lastIndexOf("_"));
+			this.saveRowState(dataRowId);
+		}
+	},
+	
+	handleTextInputChanged: {
+		value: function(evt) {
+			var dataRowId = $(evt.target).closest("tr.exe-actorsprofile-data-row").attr('data-row-id');
+			if(this.textInputCommitTimeouts[dataRowId]) {
+				clearInterval(this.textInputCommitTimeouts[dataRowId]);
+				this.textInputCommitTimeouts[dataRowId] = null;
 			}
 			
-			return stateVal;
+			this.textInputCommitTimeouts[dataRowId] = setTimeout((function() {
+				this.saveRowState(dataRowId);
+			}).bind(this), ActorsProfileIdevice.COMMIT_TIMEOUT);
+		}
+	},
+	
+	saveRowState: {
+		value: function(dataRowId) {
+			var stateVal = {};
+			var row = $(this._getEl()).find("tr[data-row-id='" + dataRowId +"']");
+			
+			stateVal[dataRowId] = {
+				response : $('#apdri_' + dataRowId).val()
+			};
+			
+			var colIds = this._getColIds();
+			for(var k = 0; k < colIds.length; k++) {
+				levelBoxId = dataRowId + "_" + k;
+				stateVal[levelBoxId] = LevelBoxWidget.getBoxById(levelBoxId).getLevel();
+			}
+			
+			this.saveStateValues(stateVal);
 		}
 	}
-	
 });
 
 ActorsProfileIdevice.prototype.constructor = ActorsProfileIdevice;

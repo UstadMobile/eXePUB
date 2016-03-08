@@ -147,6 +147,37 @@ Idevice.prototype = {
 	},
 	
 	/**
+	 * Save the given state values for this idevice to the state API
+	 */
+	saveStateValues: function(values, opts) {
+		var stateValuesObj = {};
+		for(key in values) {
+			if(values.hasOwnProperty(key)) {
+				stateValuesObj["id"+this.ideviceId + "_" + key] = values[key];
+			}
+		}
+		
+		eXeTinCan.setPkgStateValues(stateValuesObj, opts);
+	},
+	
+	/**
+	 * Transition support method
+	 */
+	addPrefixToStateValues: function(stateValues) {
+		var retVal = {};
+		var keyName;
+		for(key in stateValues) {
+			if(!key.substring(0, 2) === "id") {
+				key = "id" + this.ideviceId + "_" + key;
+			}
+			
+			retVal[key] = stateValues[key];
+		}
+		
+		return retVal;
+	},
+	
+	/**
 	 * If state support is enabled for this idevice this method will 
 	 * save the value of getState to the exe package state
 	 */
@@ -160,6 +191,8 @@ Idevice.prototype = {
 			}
 		}
 	},
+	
+	
 	
 	/**
 	 * Checks to see if the package state has a value for the current 

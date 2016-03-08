@@ -13,6 +13,7 @@ var LevelBoxWidget = function(id, opts) {
 	}
 	
 	this._getEl().addEventListener("click", this.handleClick.bind(this));
+	this.onLevelChange = null;
 };
 
 LevelBoxWidget._activeWidgets = {};
@@ -22,6 +23,8 @@ LevelBoxWidget.initLevelBox = function(id, opts) {
 		var newWidget = new LevelBoxWidget(id, opts);
 		LevelBoxWidget._activeWidgets[id] = newWidget;
 	}
+	
+	return LevelBoxWidget._activeWidgets[id];
 };
 
 LevelBoxWidget.getBoxById = function(id){
@@ -42,6 +45,11 @@ LevelBoxWidget.prototype = {
 			level = 0;
 		}
 		
+		//should not really happen... but just in case
+		if(isNaN(level)) {
+			level = 0;
+		}
+		
 		return level;
 	},
 	
@@ -51,6 +59,10 @@ LevelBoxWidget.prototype = {
 				+ level + ".png");
 	},
 	
+	setOnLevelChange: function(onLevelChangeFn) {
+		this.onLevelChange = onLevelChangeFn;
+	},
+	
 	handleClick: function() {
 		var level = this.getLevel();
 		level += 1;
@@ -58,5 +70,8 @@ LevelBoxWidget.prototype = {
 			level = 0;
 		}
 		this.setLevel(level);
+		if(typeof this.onLevelChange === "function") {
+			this.onLevelChange(this, level);
+		}
 	}
 };
