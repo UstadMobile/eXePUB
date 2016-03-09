@@ -7,6 +7,8 @@ var FormAreaIdevice = function(ideviceId) {
 	if(this._getEl()) {
 		this.initFields();
 	}
+	
+	this.textInputCommitTimeouts = {};
 };
 
 /**
@@ -40,6 +42,8 @@ FormAreaIdevice.initTinyMcePlugins = function(){
 		        	var blockId = myDevice.getNextBlockId();
 		        	var checkboxHTML = "<input type='checkbox' data-block-id='" + blockId +"'/>";
 		        	editor.insertContent(checkboxHTML);
+		        	myDevice._getEl().querySelector("[data-block-id='" + blockId 
+		        			+"']").addEventListener("click", myDevice.handleCheckboxClicked.bind(myDevice));
 		        }
 		    });
 		    
@@ -63,8 +67,12 @@ FormAreaIdevice.initTinyMcePlugins = function(){
 		        text: "Insert Text Input Line",
 		    	
 		        onclick: function() {
-		        	var checkboxHTML = "<input type='checkbox'/>";
+		        	var myDevice = getIdeviceFn();
+		        	var blockId = myDevice.getNextBlockId();
+		        	var checkboxHTML = "<input type='text' data-block-id='" + blockId +"'/>";
 		        	editor.insertContent(checkboxHTML);
+		        	myDevice._getEl().querySelector("[data-block-id='" + blockId +
+		        			"']").el.addEventListener("input", myDevice.handleTextInput.bind(myDevice));
 		        }
 		    });
 		});
@@ -92,12 +100,46 @@ FormAreaIdevice.prototype = Object.create(Idevice.prototype, {
 	
 	initFields: {
 		value: function() {
+			var i;
 			var levelBoxes = this._getEl().querySelectorAll(".cordaid-level-box-widget");
-			for(var i = 0; i < levelBoxes.length; i++) {
+			for(i = 0; i < levelBoxes.length; i++) {
 				LevelBoxWidget.initLevelBox(
 					levelBoxes[i].id.substring(2)).setOnLevelChange(
 							this.handleLevelBoxChanged.bind(this));
 			}
+			
+			var checkboxes = this._getEl().querySelectorAll("input[type='checkbox']");
+			for(i = 0; i < checkboxes.length; i++) {
+				$(checkboxes[i]).on("click", this.handleCheckboxClicked.bind(this));
+			}
+			
+			var textInputs = this._getEl().querySelectorAll("input[type='text']");
+			for(i = 0; i < textInputs.length; i++){
+				$(textInputs[i]).on("input", this.handleTextInput.bind(this));
+			}
+		}
+	},
+	
+	handleTextInput: {
+		value: function(evt) {
+			var blockId = evt.target.getAttribute("data-block-id");
+			if(this.textInputCommitTimeouts[blockId]){
+				clearInterval(this.textInputCommitTimeouts[blockId]);
+				this.textInputCommitTimeouts[blockId] = null;
+			}
+			
+			this.textInputCommitTimeouts[blockId] = setTimeout((function() {
+				this.commitTextInput(blockId);
+			}).bind(this), 500);
+		}
+	},
+	
+	commitTextInput: {
+		value: function(blockId) {
+			var stateValues = {};
+			var textEl = this._getEl().querySelector("[data-block-id='" + blockId +"']");
+			stateValues[blockId] = $(textEl).val();
+			this.saveStateValues(stateValues);
 		}
 	},
 	
@@ -106,6 +148,15 @@ FormAreaIdevice.prototype = Object.create(Idevice.prototype, {
 			var stateValues = {};
 			var internalId = levelBox.id.substring(levelBox.id.indexOf("_")+1);
 			stateValues[internalId] = level;
+			this.saveStateValues(stateValues);
+		}
+	},
+	
+	handleCheckboxClicked: {
+		value: function(evt) {
+			var stateValues = {};
+			var internalId = evt.target.getAttribute("data-block-id");
+			stateValues[internalId] = $(evt.target).is(":checked");
 			this.saveStateValues(stateValues);
 		}
 	},
@@ -121,12 +172,29 @@ FormAreaIdevice.prototype = Object.create(Idevice.prototype, {
 		value: function(state) {
 			//set level boxes
 			var levelBoxes = this._getEl().querySelectorAll(".cordaid-level-box-widget");
-			var itemId, levelBoxId;
-			for(var i = 0; i < levelBoxes.length; i++) {
+			var itemId, levelBoxId, i;
+			for(i = 0; i < levelBoxes.length; i++) {
 				itemId = levelBoxes[i].id;
 				levelBoxId = itemId.substring(2);
 				if(state[itemId]) {
 					LevelBoxWidget.getBoxById(levelBoxId).setLevel(state[itemId]);
+				}
+			}
+			
+			var blockIdPrefix = "id" + this.ideviceId + "_";
+			var checkboxes = this._getEl().querySelectorAll("input[type='checkbox']");
+			for(var i = 0; i < checkboxes.length; i++){
+				itemId = checkboxes[i].getAttribute("data-block-id");
+				if(state[blockIdPrefix + itemId]) {
+					checkboxes[i].checked = true;
+				}
+			}
+			
+			var textInputs = this._getEl().querySelectorAll("input[type='text']");
+			for(var i = 0; i < textInputs.length; i++) {
+				itemId = textInputs[i].getAttribute("data-block-id");
+				if(state[blockIdPrefix + itemId]) {
+					textInputs[i].value = state[blockIdPrefix + itemId]; 
 				}
 			}
 		}
