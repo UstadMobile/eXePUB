@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<idevice xmlns="http://www.ustadmobile.com/ns/exelearning-idevice">
+    <id>com.ustadmobile.bfwformarea</id>
+    <label>Form Area</label>
+    <category>BFW</category>
+    <visible>false</visible>
+    <cssclass>FormAreaIdevice</cssclass>
+    
+    <!--Map to exe-files/common -->
+    <system-resources>
+        <script>exe_jquery.js</script>
+        <script>exe-epub-common.js</script>
+        <script>tincan.js</script>
+        <script>exe_tincan.js</script>
+        <script>cordaid-level-box.js</script>
+    </system-resources>
+    
+    <!-- Map to exe-files/idevices/ideviceid -->
+    <idevice-resources>
+        <script>formarea-idevice.js</script>
+    </idevice-resources>
+    
+</idevice>

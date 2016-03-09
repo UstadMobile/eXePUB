@@ -319,6 +319,13 @@ Idevice.registerType = function(typeId, cls) {
 };
 
 /**
+ * Get the idevice object by id
+ */
+Idevice.getById = function(ideviceId) {
+	return Idevice._registeredDevices[ideviceId];
+};
+
+/**
  * Common utility functions
  */
 var eXeEpubCommon = (function() {
