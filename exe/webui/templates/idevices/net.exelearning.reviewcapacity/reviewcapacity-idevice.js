@@ -359,32 +359,6 @@ ReviewCapacityIdevice.prototype = Object.create(Idevice.prototype, {
 			}).bind(this));
 			
 		}
-	},
-	
-	
-	getState: {
-		value: function() {
-			var stateVal = {};
-			var ideviceVal = {};
-			stateVal['id' + this.ideviceId] = ideviceVal;
-			var checkboxes = $(this._getEl()).find(".review-capacity-checkbox");
-			var checkboxId;
-			for(var i = 0; i < checkboxes.length; i++) {
-				checkboxId = $(checkboxes.get(i)).attr("id");
-				ideviceVal[checkboxId] = $(checkboxes.get(i)).is(":checked");
-				
-				if(checkboxId.charAt(checkboxId.length-1) === '0') {
-					//look for the text
-					var textAreaId = checkboxId + "_text";
-					var textArea = $("#" + textAreaId);
-					if(textArea.length) {
-						ideviceVal[textAreaId] = textArea.val();
-					}
-				}
-			}
-			
-			return stateVal;
-		}
 	}
 });
 
