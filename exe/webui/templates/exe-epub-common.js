@@ -325,6 +325,43 @@ Idevice.getById = function(ideviceId) {
 	return Idevice._registeredDevices[ideviceId];
 };
 
+var eXeToolTipMgr = function() {};
+
+eXeToolTipMgr.initTooltips = function(container) {
+	if(!container.querySelectorAll) {
+		container = document.body;
+	}
+	var toolTipHolders = container.querySelectorAll(".tooltip_holder");
+	for(var i = 0; i < toolTipHolders.length; i++) {
+		//remove event listener if present to avoid double calls
+		toolTipHolders[i].removeEventListener("click", eXeToolTipMgr.handleClickTooltipHolder);
+		toolTipHolders[i].addEventListener("click", eXeToolTipMgr.handleClickTooltipHolder);
+	}
+};
+
+eXeToolTipMgr.handleClickTooltipHolder = function(evt) {
+	var tooltipNode = null;
+	var currentNode = evt.target;
+	for(var i = 0; i < 5 && tooltipNode === null; i++){
+		if(currentNode.classList && currentNode.classList.contains("tooltip_content")) {
+			tooltipNode = currentNode;
+		}
+		
+		currentNode = currentNode.nextSibling;
+	}
+	
+	if(tooltipNode) {
+		tooltipNode.style.position = "absolute";
+		tooltipNode.style.display = "inline-block";
+	}
+};
+
+if(document.readyState === "interactive" || document.readyState === "complete") {
+	eXeToolTipMgr.initTooltips();
+}else {
+	document.addEventListener("DOMContentLoaded", eXeToolTipMgr.initTooltips, false);
+}
+
 /**
  * Common utility functions
  */
@@ -353,6 +390,10 @@ var eXeEpubCommon = (function() {
             }
             return retVal;
         },
+        
+        
+        
+        
         
         /**
          * Get the exeresources.xml file as an xml document along with

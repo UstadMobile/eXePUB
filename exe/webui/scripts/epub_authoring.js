@@ -498,6 +498,7 @@ var eXeEpubAuthoring = (function() {
         	                       '/templates/exe-authoring.css',
         	                       '/templates/tinymce-exe-plugins/exe-insert-answer.js',
         	                       "/templates/tinymce-exe-plugins/exe-insertresponse.css",
+        	                       '/templates/tinymce-exe-plugins/exe-insert-tooltip.js',
         	                       { url: "/templates/exe-epub-common.js", matchByFilename : true },
         	                       { url: "/templates/tincan.js", matchByFilename : true },
         	                       { url: "/templates/exe_tincan.js", matchByFilename : true }
@@ -767,6 +768,11 @@ var eXeEpubAuthoring = (function() {
 				var el = document.getElementById(id);
 				el.setAttribute("contenteditable", false);
 				el.innerHTML = content;
+				
+				var tooltipContents = el.querySelectorAll(".tooltip_content");
+		    	for(var i = 0; i < tooltipContents.length; i++) {
+		    		tooltipContents[i].style.display = "none";
+		    	}
 			}
 		},
 		

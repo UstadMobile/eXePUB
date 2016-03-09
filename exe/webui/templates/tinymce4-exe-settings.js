@@ -81,9 +81,9 @@ var eXeEpubTinyMce = (function() {
 				      "advlist autolink lists link image charmap print preview anchor",
 				      "searchreplace visualblocks code fullscreen",
 				      "insertdatetime media table contextmenu paste textcolor",
-				      "insertresponse"
+				      "insertresponse inserttooltip"
 				  ],
-			    toolbar: "undo redo | styleselect | fontselect | fontsizeselect | bold italic underline | ltr rtl | alignleft aligncenter alignright alignjustify | bullist numlist | link image media | forecolor backcolor | insertresponse",
+			    toolbar: "undo redo | styleselect | fontselect | fontsizeselect | bold italic underline | ltr rtl | alignleft aligncenter alignright alignjustify | bullist numlist | link image media | forecolor backcolor | insertresponse inserttooltip",
 			    fontsize_formats: "8pt 10pt 12pt 14pt 18pt 24pt 36pt 48pt 60pt 72pt 88pt 100pt 112pt 124pt",
 			}
 		}
