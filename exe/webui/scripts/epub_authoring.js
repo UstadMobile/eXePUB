@@ -161,6 +161,35 @@ function askUserForImage(multiple, fn, filter) {
     fp.show();
 }
 
+//Asks the user for a media file, returns the path or an empty string
+function askUserForMedia(fn,win) {
+    var fp = parent.Ext.create("eXe.view.filepicker.FilePicker", {
+        type: parent.eXe.view.filepicker.FilePicker.modeOpen,
+        title: parent._("Select a file"),
+        modal: true,
+        scope: this,
+        callback: function(fp) {
+			if (fp.status == parent.eXe.view.filepicker.FilePicker.returnOk) {
+				fn(fp.file.path);
+				if (typeof(win)!="undefined") win.document.forms[0].elements['href'].onchange();
+			} else {
+				fn("");
+			}
+        }
+    });
+    fp.appendFilters([
+        { "typename": parent._("All Files"), "extension": "*.*", "regex": /.*$/ },
+        { "typename": parent._("Flash Movie (.flv)"), "extension": "*.png", "regex": /.*\.flv$/i },
+        { "typename": parent._("Flash Object (.swf)"), "extension": "*.png", "regex": /.*\.swf$/i },
+        { "typename": parent._("Quicktime Files (.mov, .qt, .mpg, .mp3, .mp4, .mpeg)"), "extension": "*.png", "regex": /.*\.(mov|qt|mpg|mp3|mp4|mpeg)$/i },
+        { "typename": parent._("Windows Media Player Files (.avi, .wmv, .wm, .asf, .asx, .wmx, .wvx)"), "extension": "*.png", "regex": /.*\.(avi|wmv|wm|asf|asx|wmx|wvx)$/i },
+        { "typename": parent._("RealMedia Audio Files (.rm, .ra, .ram, .mp3)"), "extension": "*.png", "regex": /.*\.(rm|ra|ram|mp3)$/i }
+    ]);
+    parent.window.focus();
+    fp.show();
+}
+
+
 
 //End functions copied out of authoring.js
 
@@ -733,8 +762,11 @@ var eXeEpubAuthoring = (function() {
 				tinyMceOpts.selector = "#" + id;
 				tinymce.init(tinyMceOpts);
 			}else {
+				var content = tinymce.get(id).getContent();
 				tinymce.remove("#" + id);
-				document.getElementById(id).setAttribute("contenteditable", false);
+				var el = document.getElementById(id);
+				el.setAttribute("contenteditable", false);
+				el.innerHTML = content;
 			}
 		},
 		

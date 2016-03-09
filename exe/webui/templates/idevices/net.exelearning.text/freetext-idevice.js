@@ -11,6 +11,9 @@ document.addEventListener("idevicecreate", function(evt) {
 
 document.addEventListener("ideviceediton", function(evt) {
 	if(evt.detail.ideviceType === "net.exelearning.text") {
+		eXeEpubAuthoring.setTinyMceEnabledById("id" +evt.detail.ideviceId, true);
+		
+		/*
 		var editor = tinymce.get("id" + evt.detail.ideviceId);
 		if(editor) {
 			editor.getBody().setAttribute("contenteditable", true);
@@ -22,14 +25,18 @@ document.addEventListener("ideviceediton", function(evt) {
 			tinyMceOpts.auto_focus = "id" + evt.detail.ideviceId;
 			tinymce.init(tinyMceOpts);
 		}
+		*/
 	}
 }, false);
 
 
 document.addEventListener("ideviceeditoff", function(evt) {
 	if(evt.detail.ideviceType === "net.exelearning.text") {
+		eXeEpubAuthoring.setTinyMceEnabledById("id" +evt.detail.ideviceId, false);
+		/*
 		var editor = tinymce.get("id"+evt.detail.ideviceId);
 		editor.getBody().setAttribute("contenteditable", false);
+		*/
 		
 		var htmlContent = document.getElementById("id" + evt.detail.ideviceId).innerHTML;
 		eXeEpubAuthoring.saveIdeviceHTML(evt.detail.ideviceId, htmlContent);
