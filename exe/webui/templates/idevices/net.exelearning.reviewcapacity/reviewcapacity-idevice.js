@@ -3,6 +3,7 @@ var ReviewCapacityIdevice = function(ideviceId) {
 	this.ideviceId = ideviceId;
 	this.availableSources = null;
 	this.enhance();
+	this.textAreaCommitTimeouts = {};
 }
 
 ReviewCapacityIdevice.prototype = Object.create(Idevice.prototype, {
@@ -178,7 +179,7 @@ ReviewCapacityIdevice.prototype = Object.create(Idevice.prototype, {
 						
 						var inputEl = $("<input/>", {
 							'type' : 'checkbox',
-							'value' : 'k',
+							'value' : ""+k,
 							'class' : 'review-capacity-checkbox',
 							'id' : inId,
 							'name' : inId
@@ -193,7 +194,7 @@ ReviewCapacityIdevice.prototype = Object.create(Idevice.prototype, {
 						
 						td.append(inputEl);
 						
-						if(k === 0 && handleEvents) {
+						if(handleEvents) {
 							inputEl.on("click", this.handleCheckboxClick.bind(this));
 						}
 						
@@ -213,7 +214,8 @@ ReviewCapacityIdevice.prototype = Object.create(Idevice.prototype, {
 			var textAreaId = checkboxId + "_text";
 			var textArea = $("#" + textAreaId);
 			
-			if($(evt.delegateTarget).is(":checked")) {
+			//if this is the yes checkbox - check for the text area
+			if($(evt.delegateTarget).is(":checked") && $(evt.target).val() === "0") {
 				if(textArea.length === 0) {
 					this.addTextInputRow($(evt.delegateTarget).closest("tr"), "", textAreaId);
 				}
@@ -222,6 +224,11 @@ ReviewCapacityIdevice.prototype = Object.create(Idevice.prototype, {
 				//remove it if it exists
 			}
 			
+			//now save the state of the checkbxo
+			var stateObj = {};
+			var internalId = checkboxId.substring(checkboxId.indexOf("_") +1);
+			stateObj[internalId] = $(evt.delegateTarget).is(":checked");
+			this.saveStateValues(stateObj);
 		}
 	},
 	
@@ -244,9 +251,32 @@ ReviewCapacityIdevice.prototype = Object.create(Idevice.prototype, {
 			});
 			textArea.val(textVal);
 			textAreaTd.append(textArea);
+			textArea.on("input", this.handleTextAreaInput.bind(this));
 		}
 	},
 	
+	handleTextAreaInput: {
+		value: function(evt) {
+			var id = evt.target.id;
+			if(this.textAreaCommitTimeouts[id]) {
+				clearInterval(this.textAreaCommitTimeouts[id]);
+				this.textAreaCommitTimeouts[id] = null;
+			}
+			
+			this.textAreaCommitTimeouts[id] = setTimeout((function() {
+				this.commitTextAreaInput(id);
+			}).bind(this), 500);
+		}
+	},
+	
+	commitTextAreaInput: {
+		value: function(id) {
+			var stateVal = {};
+			var internalId = id.substring(id.indexOf("_")+1);
+			stateVal[internalId] = $("#"+id).val();
+			this.saveStateValues(stateVal);
+		}
+	},
 	
 	unEnhance: {
 		value: function() {
@@ -279,7 +309,6 @@ ReviewCapacityIdevice.prototype = Object.create(Idevice.prototype, {
 		value: function(state) {
 			//find out what we are looking for
 			this.unEnhance();
-			state = state['id' + this.ideviceId] ? state['id' + this.ideviceId] : {}; 
 			var rows = $("#id" + this.ideviceId).find(".review-capacity-srcrow");
 			for(var i = 0; i < rows.length; i++) {
 				this.setRowState(rows.get(i), state, i);
@@ -331,6 +360,7 @@ ReviewCapacityIdevice.prototype = Object.create(Idevice.prototype, {
 			
 		}
 	},
+	
 	
 	getState: {
 		value: function() {
