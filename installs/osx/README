@@ -1,4 +1,4 @@
-Building from source on Ubuntu
+OSX Packaging and running from source:
 
 1. Install xcode if not already installed
 
@@ -16,6 +16,9 @@ Building from source on Ubuntu
  $ sudo easy_install chardet
  $ sudo easy_install PIL
  $ sudo easy_install lxml 
+ $ sudo easy_install beautifulsoup4 BeautifulSoup
+ $ sudo easy_install feedparser
+ $ sudo easy_install httplib2
 
 Potential Error with newer xcode easy_install if you get clang: error: unknown argument: '-mno-fused-madd' then you need to use a prefix before easy_install; use
  $ sudo ARCHFLAGS=-Wno-error=unused-command-line-argument-hard-error-in-future easy_install PKGNAME
@@ -26,5 +29,7 @@ Potential Error with newer xcode easy_install if you get clang: error: unknown a
 6. To build a .dmg image for distribution: First use disk utility to make a new blank disk image (save as exe, Name: exe, Size 500MB, Encryption None, Format MacOSX Extended (Journaled). Move the resulting exe.dmg file install exedir/install/osx/ . It is used as a template by the installer.
 
  $ cd <checkoutpath>/install/osx
- $ python make.py
+ $ sudo python make.py -p
 
+Notes: Running make as sudo seems to be needed to package the httplib 
+package correctly.
