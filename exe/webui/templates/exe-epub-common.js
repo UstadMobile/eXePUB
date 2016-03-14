@@ -328,7 +328,7 @@ Idevice.getById = function(ideviceId) {
 var eXeToolTipMgr = function() {};
 
 eXeToolTipMgr.initTooltips = function(container) {
-	if(!container.querySelectorAll) {
+	if(!container || !container.querySelectorAll) {
 		container = document.body;
 	}
 	var toolTipHolders = container.querySelectorAll(".tooltip_holder");

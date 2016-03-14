@@ -280,9 +280,12 @@ class EPUBResourceManager(object):
         """Returns a tuple with the directory which contains the idevice and it's etree element parsed"""
         from exe.engine.epubpackage import EPUBPackage
         idevice_dir = EPUBPackage.find_idevice_dir(idevice_type)
-            
-        root_el = etree.parse(idevice_dir/"idevice.xml").getroot()
-        return (idevice_dir, root_el)
+        
+        if idevice_dir:
+            root_el = etree.parse(idevice_dir/"idevice.xml").getroot()
+            return (idevice_dir, root_el)
+        else:
+            return (None, None)
     
     
     def _get_page_path(self, page_id):
