@@ -35,34 +35,53 @@ class TinCanXMLManager(object):
     def _get_base_id(self):
         return "epub:%s" % self.package.main_opf.get_opf_id()
     
-    def update_launch_el(self, auto_save = True):
-        #check to see if we have a launch item - if not - set it
+    def update_base_id(self):
+        """Updates the base id according to the OPF"""
+    
+    def _get_launch_activity(self, auto_save = True):
+        """Returns the current activity with a launch element or generates it if not present yet"""
         ns = TinCanXMLManager.NS_TINCAN
         launch_el = self.xml_doc.find(".//{%s}launch" % ns)
         launch_activity = None
-        if launch_el is None:
+        
+        if launch_el is not None:
+            launch_activity = launch_el.getparent()
+        else:
             activities_el = self.xml_doc.find(".//{%s}activities" % ns)
             launch_activity = etree.SubElement(activities_el, "{%s}activity" % ns)
-        else:
-            launch_activity = launch_el.getparent()
-        
-        
-        launch_activity.set("id", self._get_base_id())
-        launch_activity.set("type", "http://adlnet.gov/expapi/activities/course")
-        
-        name_el = launch_activity.find("./{%s}name" % ns)
-        if name_el is None:
+            launch_activity.set("id", self._get_base_id())
+            launch_activity.set("type", "http://adlnet.gov/expapi/activities/course")
             name_el = etree.SubElement(launch_activity, "{%s}name" % ns)
-        
-        name_el.text = self.package.main_opf.get_title()
-        
-        if launch_el is None:
+            name_el.text = self.package.main_opf.get_title()
             launch_el = etree.SubElement(launch_activity, "{%s}launch" % ns)
+            launch_el.set("lang", "en-us")
         
-        launch_el.set("lang", "en-us")
+            #TODO: Change this to reference the first linear item from the spine
+            launch_el.text = "index.html"
+            if auto_save: 
+                self.save()
+            
+        return launch_activity
+    
+    def set_base_id(self, new_base_id, auto_save = True):
+        """Change the base ID of this package"""
+        current_base_id= self._get_launch_activity().get('id')
+        ns = TinCanXMLManager.NS_TINCAN
+        activity_id = None
         
-        #TODO: Change this to reference the first linear item from the spine
-        launch_el.text = "index.html"
+        for activity_el in self.xml_doc.findall(".//{%s}activity" % ns):
+            activity_id = activity_el.get("id")
+            if activity_id[0:len(current_base_id)] == current_base_id:
+                activity_id = new_base_id + activity_id[len(current_base_id):]
+                activity_el.set("id", activity_id)
+        
+        if auto_save:
+            self.save()
+        
+    def update_launch_el(self, auto_save = True):
+        #check to see if we have a launch item - if not - set it
+        ns = TinCanXMLManager.NS_TINCAN
+        launch_activity = self._get_launch_activity()
         
         if auto_save:
             self.save()

@@ -25,6 +25,7 @@ import logging
 from exe.engine.package      import Package
 from exe.engine.epubpackage import EPUBPackage
 from exe                         import globals as G
+import uuid
 
 log = logging.getLogger(__name__)
 
@@ -54,6 +55,7 @@ class PackageStore:
         package = EPUBPackage.load(G.application.config.configDir/"normal.epub")
         package.filename = ""
         package.name = name
+        package.id = str(uuid.uuid4())
         self.loaded[package.name] = package
 
         return package

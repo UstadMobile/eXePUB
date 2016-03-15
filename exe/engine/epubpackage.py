@@ -136,6 +136,7 @@ class EPUBPackage(object):
     
     def set_id(self, id):
         self.main_opf.set_opf_id(id)
+        self.tincan_manager.set_base_id("epub:" + id)
         
     id = property(get_id, set_id)
     
