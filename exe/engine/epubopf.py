@@ -95,8 +95,10 @@ class EPUBOPF(object):
     def get_title(self):
         return self._get_title_el().text
     
-    def set_title(self, title):
+    def set_title(self, title, auto_save = True):
         self._get_title_el().text = title
+        if auto_save:
+            self.save()
     
     title = property(get_title, set_title)
     
