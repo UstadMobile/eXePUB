@@ -48,7 +48,7 @@ TinCanRegistrationIdevice.prototype = {
 	},
 	
 	handleClick: function(evt) {
-		eXeTinCan.getPackageTinCanID(function(err, tinCanID) {
+		eXeTinCan.getPackageTinCanID({}, function(err, tinCanID) {
 			eXeTinCan.startRegistration(tinCanID, function(err, status){
 				alert("New Registration Opened");
 			});
