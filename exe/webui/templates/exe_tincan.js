@@ -242,8 +242,7 @@ var eXeTinCan = (function() {
 		
 		getCurrentRegistrationUUID: function() {
 			if(_currentRegistrationUUID === -1) {
-				_currentRegistrationUUID = document.localStorage.getItem(
-						KEY_CURRENT_REG);
+				_currentRegistrationUUID = localStorage.getItem(KEY_CURRENT_REG);
 			}
 			
 			return _currentRegistrationUUID;
