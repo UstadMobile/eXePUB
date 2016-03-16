@@ -252,6 +252,10 @@ var eXeTinCan = (function() {
 		/**
 		 * Start a registration for tracking a particular attempt, 
 		 * data entry record etc.
+		 * 
+		 * @param {String} activityId Activity ID for the registration (e.g. the package id)
+		 * @param {function} callback callback function to run on completion.
+		 * 
 		 */
 		startRegistration: function(activityId, callback) {
 			
@@ -259,31 +263,39 @@ var eXeTinCan = (function() {
 			
 			localStorage.setItem(KEY_CURRENT_REG, _currentRegistrationUUID);
 			
-			var myVerb = new TinCan.Verb({
-				id : "http://adlnet.gov/expapi/verbs/initalized",
-	    		display : {
-	                "en-US": "initalized"
-	            }
-			});
-			
-			var myActivity = new TinCan.Activity({
-				id : activityId,
-				definition : {
-	    			type : "http://adlnet.gov/expapi/activities/assessment",
-	        		name : {
-	        			"en-US" : "Start Assessment" 
-	        		},
-	        		description : {
-	        			"en-US" : "Start Assessment"
-	        		}
-	        	}
-			});
-			
-			
-			//TODO: submit the statement itself
-			if(typeof callback === "function") {
-				callback(null, 200);
+			if(!this.getActor()) {
+				if(typeof callback === "function") {
+					callback(null, 0);
+				}
+				return;//there is no tincan actor cannot make statement
 			}
+			
+			var stmt = new TinCan.Statement({
+				actor: this.getActor(),
+				verb: new TinCan.Verb({
+					id : "http://adlnet.gov/expapi/verbs/initalized",
+		    		display : {
+		                "en-US": "initalized"
+		            }
+				}),
+				target: new TinCan.Activity({
+					id : activityId,
+					definition : {
+		    			type : "http://adlnet.gov/expapi/activities/assessment",
+		        		name : {
+		        			"en-US" : "Start Record" 
+		        		},
+		        		description : {
+		        			"en-US" : "Start Registration"
+		        		}
+		        	}
+				}),
+				context: new TinCan.Context({
+		    		"registration" : _currentRegistrationUUID
+		    	}) 
+			}, {'storeOriginal' : true});	
+			
+			this.sendStatement(stmt, opts, callback);
 		},
 		
 		/**
@@ -690,9 +702,9 @@ var eXeTinCan = (function() {
 				stmtParams.result = new TinCan.Result(resultParams);
 			}
 			
-			if(_currentRegistrationUUID) {
+			if(this.getCurrentRegistrationUUID()) {
 				stmtParams.context = new TinCan.Context({
-		    		"registration" : this.registrationUUID
+		    		"registration" : this.getCurrentRegistrationUUID()
 		    	});
 			}
 			
