@@ -111,7 +111,7 @@ eXeMCQIdevice.prototype = Object.create(Idevice.prototype, {
 				},
 				function(err, packageTinCanId, itemId) {
 					var stmt = eXeTinCan.makeAnsweredStmt(packageTinCanId + "/" + itemId + "/" 
-						+ this.ideviceId, stmtOpts);
+						+ this.ideviceId + "_" + questionId, stmtOpts);
 					eXeTinCan.sendStatement(stmt);
 				});
 		}
