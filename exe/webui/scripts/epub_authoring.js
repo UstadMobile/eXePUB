@@ -505,7 +505,7 @@ var eXeEpubAuthoring = (function() {
         	                       ];
         	
         	eXeEpubAuthoring.loadResources(resourcesToLoad, (function() {
-        		var pageIdevices = document.querySelectorAll(".Idevice");
+        		var pageIdevices = document.querySelectorAll(".Idevice[data-idevice-type]");
             	for(var i = 0; i < pageIdevices.length; i++) {
             		//all id attrs are idX where X is the actual id
             		var ideviceId = pageIdevices[i].getAttribute("id").substring(2);
