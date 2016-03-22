@@ -294,7 +294,8 @@ var eXeTinCan = (function() {
 		    	}) 
 			}, {'storeOriginal' : true});	
 			
-			this.sendStatement(stmt, opts, callback);
+			//this.sendStatement(stmt, opts, callback);
+			this.sendStatement(stmt, {}, callback);
 		},
 		
 		/**
