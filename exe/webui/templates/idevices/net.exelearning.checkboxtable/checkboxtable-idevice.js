@@ -139,6 +139,18 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 		}
 	},
 	
+	_lockQuestionAnswer: {
+		value: function(questionId) {
+			var colIds = this._getColIds();
+			var inputEl
+			for(var i = 0; i < colIds.length; i++) {
+				inputEl = document.getElementById('etcbox' + 
+						this.ideviceId + "_" + questionId + '_' + colIds[i]);
+				inputEl.setAttribute("disabled", "disabled");
+			}
+		}
+	},
+	
 	_getTable: {
 		value: function() {
 			return document.getElementById('ect' + this.ideviceId);
@@ -253,7 +265,7 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 				$qTD.before(this._makeQuestionInputTD(questionIds[i], labelBlockId));
 			}
 			
-			var selectEls = $(this._getEl()).find(".exe-checkbox-table-selectprompt");
+			var selectEls = $(this._getEl()).find(".exe-checkbox-table-selectprompt, .exe-checkbox-table-lockanswer");
 			for(var i = 0; i < selectEls.length; i++) {
 				$(selectEls.get(i)).append(this._makeSelectOptionForCol(labelBlockId));
 			}
@@ -347,6 +359,8 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 			$("#"+textDivId).before($rowDeleteDiv);
 			
 			var textPrompt = $("#" + textDivId).attr("data-textprompt");
+			var lockedAnswer = $("#" + textDivId).attr("data-locked-answer");
+			
 			var $textPromptDiv = $("<div/>", {
 				'id' : 'ecttpd_' + this.ideviceId + "_" + questionId,
 				"class": "exe-editing-only textprompt-container"
@@ -375,16 +389,38 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 			$("#" + promptElId).detach().appendTo($textPromptDiv).css("display", "block");
 			$("#"+textDivId).after($textPromptDiv);
 			
+			var $lockAnswerDiv = $("<div/>", {
+				'class' : 'exe-editing-only'
+			});
+			$lockAnswerDiv.text("Lock answer:");
+			var $lockPromptSelect = $("<select/>", {
+				"id" : "ectla_" + this.ideviceId + "_" + questionId,
+				'class' : "exe-checkbox-table-lockanswer"
+			});
+			
+			$lockPromptSelect.append(this._makeSelectOptionForCol("", lockedAnswer === ""));
+			for(var i = 0; i < colIds.length; i++) {
+				$lockPromptSelect.append(this._makeSelectOptionForCol(colIds[i], colIds[i] === lockedAnswer));
+			}
+			$lockAnswerDiv.append($lockPromptSelect);
+			
+			$textPromptDiv.after($lockAnswerDiv);
+			
 			eXeEpubAuthoring.setTinyMceEnabledById(promptElId, true);
 		},
 	},
 	
 	_questionRowEditOff: {
 		value: function(questionId) {
-			var promptFor = $('#ectsp_' + this.ideviceId + "_" + questionId).val(); 
-			$('#etcqdiv' + this.ideviceId + "_" + questionId).attr(
-				"data-textprompt", promptFor);
 			var promptElId = "etctpi_" + this.ideviceId + "_" + questionId;
+			var lockedAnswerId = "ectla_" + this.ideviceId + "_" + questionId;
+			var promptFor = $('#' + promptElId).val();
+			var lockedAnswer = $("#" + lockedAnswerId).val();
+			
+			$('#etcqdiv' + this.ideviceId + "_" + questionId).attr(
+				"data-textprompt", promptFor).attr("data-locked-answer", lockedAnswer);
+			
+			
 			var promptTextEl = $("#" + promptElId).css("display", "none");
 			eXeEpubAuthoring.setTinyMceEnabledById(promptElId, false);
 			eXeEpubAuthoring.removeAllTinyMceInstances(document.getElementById("ectsp_"+ 
@@ -675,6 +711,14 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 				if(questionState) {//its possible that not all questions have been answered
 					this._setQuestionSelectedInputEl(questionIds[i],
 							questionState.checkedItem);
+					
+					var etcQDiv = $('#etcqdiv' + this.ideviceId + "_" + questionIds[i]);
+					if(etcQDiv.attr("data-locked-answer")) {
+						this._setQuestionSelectedInputEl(questionIds[i],
+								etcQDiv.attr("data-locked-answer"));
+						this._lockQuestionAnswer(questionIds[i]);
+					}
+					
 					textStateKey = idPrefix + questionIds[i] + "_text";
 					if(questionState.response) {
 						questionTextArea = document.getElementById("etcqti_" 
