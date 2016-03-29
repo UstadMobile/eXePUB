@@ -173,7 +173,7 @@ class EPUBOPF(object):
         """Handle when an item in the manifest has been renamed
         """
         item_el = self.package_el.find(".//{%s}item[@href='%s']" % (EPUBOPF.NAMESPACE_OPF, old_href))
-        itemrefs = self.package_el.find(".//{%s}itemref[@idref='%s']" % (EPUBOPF.NAMESPACE_OPF, item_el.get("id")))
+        itemrefs = self.package_el.findall(".//{%s}itemref[@idref='%s']" % (EPUBOPF.NAMESPACE_OPF, item_el.get("id")))
         item_el.set("href", new_href)
         new_id = self.get_id_for_href(new_href)
         item_el.set("id", new_id)
