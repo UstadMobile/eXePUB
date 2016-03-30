@@ -261,6 +261,7 @@ class EPUBNavItem(object):
                 title_el.set("href", new_filename)
         
         self.opf.set_package_changed()
+        
         if auto_save:
             self.opf.get_navigation().save()
     

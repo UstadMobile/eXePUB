@@ -432,6 +432,9 @@ Ext.define('eXe.controller.MainTab', {
      *  
      *  @param {string|Object} opts Arguments as an object: can be a JSON encoded string
      *  @param {string|number} opts.ideviceId The idevice id the selected file should be linked to
+     *  @param {array} [opts.filters] option the file name filters to use as an array of objects with 
+     *  typename, extension, and the regex e.g. "typename": _("Image Files"), "extension": "*.png", "regex": /.*\.(jpg|jpeg|png|gif)$/i 
+     *  The regex can be an array with the pattern, flags e.g. ['(jpg|jpeg|png|gif)', 'i']
      */
     showRequestUserFile: function(opts) {
     	if(typeof opts === "string") {
@@ -454,7 +457,7 @@ Ext.define('eXe.controller.MainTab', {
                 		success: function(response) {
             				//trigger an event on the authoring frame 
                 			var responseJSON = Ext.JSON.decode(response.responseText);
-                			var fileEvt = new CustomEvent("userfileadded", {
+                			var fileEvt = new CustomEvent("userfileactioned", {
 								detail: {
 									'opts' : opts,
 									'entry' : responseJSON.entry
@@ -468,10 +471,21 @@ Ext.define('eXe.controller.MainTab', {
             }
         });
     	
-        fp.appendFilters([
-            { "typename": _("Image Files"), "extension": "*.png", "regex": /.*\.(jpg|jpeg|png|gif)$/i },
-            { "typename": _("All Files"), "extension": "*.*", "regex": /.*$/ }
-        ]);
+    	opts.filters =  opts.filters ? opts.filters: [
+			 { "typename": _("Image Files"), "extension": "*.png", "regex": /.*\.(jpg|jpeg|png|gif)$/i },
+			 { "typename": _("All Files"), "extension": "*.*", "regex": /.*$/ }
+        ];
+    	
+    	//Because this can be passed through stringify - we might need
+    	//to turn the regex parts into actual regex objects
+    	for(var i = 0; i < opts.filters.length; i++) {
+    		if(!(opts.filters[i].regex instanceof RegExp)) {
+    			opts.filters[i].regex = new RegExp(opts.filters[i].regex[0],
+    					opts.filters[i].regex[1]);
+    		}
+    	}
+    	
+        fp.appendFilters(opts.filters);
         fp.show();     
     },
 

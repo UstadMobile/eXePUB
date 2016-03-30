@@ -244,6 +244,41 @@ class EPUBResourceManager(object):
             self.save()
         
     
+    def unlink_user_file_from_idevice(self, idevice_id, user_file_href, auto_save = True):
+        """
+        Unlink a particular user-added file from the given idevice
+        """
+        ns = EPUBResourceManager.NS_EXERES
+        user_resources_el = self.root_el.find("./{%s}user-resources" % ns)
+        file_entry = self.opf.get_item_by_href(user_file_href)
+        itemref_el = user_resources_el.find("./{%s}itemref[@idref=\"%s\"]" % (ns, file_entry.id))
+        if itemref_el is not None:
+            idevice_ref_el = itemref_el.find("./{%s}ideviceref[@idref=\"%s\"]" % (ns, idevice_id))
+            if idevice_ref_el is not None:
+                idevice_ref_el.getparent().remove(idevice_ref_el)
+        
+        self.delete_abandoned_user_files(auto_save = False)
+        
+        if auto_save:
+            self.save()
+     
+    def delete_abandoned_user_added_files(self, auto_save = True):
+        """
+        Look for user added files that are no longer linked with any idevice
+        """
+        ns = EPUBResourceManager.NS_EXERES
+        itemref_els = self.root_el.find_all("./{%s}user-resources/{%s}itemref" % (ns,ns))
+        for itemref in itemref_els:
+            idevice_refs = itemref.find_all("{%s}ideviceref")
+            if len(idevice_refs) == 0:
+                # There are no more idevices using this resource
+                self.opf.delete_item_by_id(itemref.get("idref"))
+                itemref.getparent().remove(itemref)
+             
+             
+        
+        
+    
     def _append_required_files_from_resources_el(self, resources_el, prefix, res_types, required_files = []):
         for res_type in res_types:
             res_type_files = resources_el.findall("./{%s}%s" % (EPUBResourceManager.NS_IDEVICE, res_type))

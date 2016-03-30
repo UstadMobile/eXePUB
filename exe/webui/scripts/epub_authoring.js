@@ -468,6 +468,32 @@ var eXeEpubAuthoring = (function() {
         NS_TINCAN : "http://projecttincan.com/tincan.xsd",
         
         NS_EXETINCAN: "http://ustadmobile.com/ns/exe-tincan",
+        
+        /**
+         * Puts a callback into an array to be handled by the 
+         * handleUserFileActioned function which listens for the 
+         * userfileactioned event
+         */
+        CALLBACK_ONEVENT: 0,
+        
+        
+        /**
+         * Callback runs once request is complete
+         */
+        CALLBACK_ONREQUEST: 1,
+        
+        FILE_FILTERS_IMG : [
+                { "typename": "Image Files (.jpg, .jpeg, .png, .gif, .svg)", "extension": "*.png", "regex": [".*\.(jpg|jpeg|png|gif|svg)$", "i"] },
+                { "typename": parent._("All Files"), "extension": "*.*", "regex": /.*$/ }],
+                
+        
+        FILE_FILTERS_AUDIO: [
+                 { "typename": "Audio Files (.mp3, .ogg, .wav)", "extension": "*.mp3", "regex": [".*\.(mp3|wav|ogg)$", "i"] },
+                 { "typename": parent._("All Files"), "extension": "*.*", "regex": /.*$/ }],
+                 
+        FILE_FILTERS_ALLFILES: [{ "typename": parent._("All Files"), "extension": "*.*", "regex": /.*$/ }],
+        
+        
 		                              
         getQueryVars: function(queryStr) {
             var locationQuery = window.location.search.substring.length >= 1 ?
@@ -516,8 +542,8 @@ var eXeEpubAuthoring = (function() {
             	this.updateAllMoveButtons();
         	}).bind(this));
         	
-        	document.addEventListener("userfileadded", 
-        			this.handleUserFileAdded.bind(this), false);
+        	document.addEventListener("userfileactioned", 
+        			this.handleUserFileActioned.bind(this), false);
         },
         
                                       
@@ -708,35 +734,66 @@ var eXeEpubAuthoring = (function() {
 		 * Show a file browsing dialog to the user and then link the selected file
 		 * with the given idevice.
 		 * 
-		 * @param {Object} opts Main arguments
-		 * @param {string|number} opts.ideviceId Idevice that the file is to be linked with 
+	     *  @param {Object} opts Arguments as an object
+	     *  @param {string|number} opts.ideviceId The idevice id the selected file should be linked to
+	     *  @param {array} [opts.filters] option the file name filters to use as an array of objects with 
+	     *  typename, extension, and the regex e.g. "typename": _("Image Files"), "extension": "*.png", "regex": /.*\.(jpg|jpeg|png|gif)$/i 
+	     *  @param 
 		 */
 		requestUserFiles: function(opts, callback) {
+			opts.action = "requestfile";
+			this.sendFileRequest(opts, callback);
+		},
+		
+		/**
+		 * 
+		 * @param {Object} opts arguments as an object
+		 * @param {string} opts.action The action to specify in the request
+		 * @param {number} opts.callbackMode
+		 * 
+		 */
+		sendFileRequest: function(opts, callback) {
 			opts.fileRequestId = this._getUserRequestFileID();
-			_fileRequestHandlers[opts.fileRequestId] = callback;
+			if(opts.callbackMode !== this.CALLBACK_ONREQUEST) {
+				_fileRequestHandlers[opts.fileRequestId] = callback;
+			}
 			var queryVars = eXeEpubCommon.getQueryVars();
 			var xmlHttp= new XMLHttpRequest();
 			xmlHttp.onreadystatechange = (function() {
-				if(xmlHttp.readystate === 4 && xmlHttp.status === 200) {
-					console.log("epub authoring received file request");
+				if(xmlHttp.readyState === 4 && xmlHttp.status === 200) {
+					if(opts.callbackMode === this.CALLBACK_ONREQUEST) {
+						callback.apply(this, opts);
+					}
 				}
 			}).bind(this);
 			var requestFileURL = queryVars['exe-authoring-save-to'] 
-				+ "?action=requestfile&clientHandleId=" + encodeURIComponent(queryVars['clientHandleId'])
+				+ "?action=" + opts.action +"&clientHandleId=" + encodeURIComponent(queryVars['clientHandleId'])
 				+ "&requestfile&opts=" + encodeURIComponent(JSON.stringify(opts));
 			xmlHttp.open("get", requestFileURL, true);
 			xmlHttp.send();
 		},
 		
 		/**
+		 * Unlinks the given user file from an idevice
 		 * 
 		 */
-		handleUserFileAdded: function(evt) {
+		unlinkUserFile: function(opts, callback) {
+			opts.action = "unlinkfile";
+			this.sendFileRequest(opts, callback);
+		},
+		
+		
+		/**
+		 * Once we have been told that the server has handled the file 
+		 * event (add or remove a file) - fire the call back handler
+		 */
+		handleUserFileActioned: function(evt) {
 			var requestId = evt.detail.opts.fileRequestId;
 			var fn = _fileRequestHandlers[requestId];
 			if(fn) {
 				delete _fileRequestHandlers[requestId];
-				fn.call(this, evt.detail);
+				var entry = evt.detail && evt.detail.entry ? evt.detail.entry : null;
+				fn.call(this, entry);
 			}
 		},
 		

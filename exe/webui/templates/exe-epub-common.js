@@ -32,8 +32,118 @@ Idevice.prototype = {
 	 * Handle when the user clicks into editing mode
 	 */
 	editOn: function() {
-		
+		this.enableFilePickers();
+		this.setTinyMceEnabled(true);
 	},
+	
+	/**
+	 * File pickers are div elements with data-role='exe-fileholder'  The 
+	 * picker will have data-href set to the file the user selected and the
+	 * element itself will be empty normally.
+	 * 
+	 * @param {Element} [el] : optional : specify the element in which to enable file pickers.  By default the idevice element
+	 */
+	enableFilePickers: function(el) {
+		var filePickers = this.getAllFileHolderEls(el);
+		var buttonText;
+		for(var i = 0; i < filePickers.length; i++) {
+			var filePickButton = filePickers[i].querySelector("button");
+			if(!filePickButton) {
+				filePickButton = document.createElement("button");
+				filePickButton.classList.add("exe-editing-only");
+				buttonText = filePickers[i].hasAttribute("data-button-label") ? 
+						filePickers[i].getAttribute("data-button-label") : "Choose File";
+				filePickButton.textContent = buttonText;
+				filePickers[i].appendChild(filePickButton);
+				filePickButton.addEventListener("click", 
+						this.handleFilePickerClick.bind(this));
+				this._updateFileHolderLink(filePickers[i]);
+				filePickers[i].setAttribute("data-editing-mode", "on");
+			}
+		}
+	},
+	
+	/**
+	 * Get all file holder elements in the given element or by default in the idevice itself
+	 * @param {Element} [el] Optional: specify a specific element in which to search for file holders
+	 * @return Array of file holder elements
+	 */
+	getAllFileHolderEls: function(el) {
+		el = el ? el : this._getEl();
+		return el.querySelectorAll("[data-role='exe-fileholder']");
+	},
+	
+	handleFilePickerClick: function(evt) {
+		var fileHolderButton = evt.target;
+		var fileHolderEl = fileHolderButton.parentNode;
+		var filters = [];
+		var fileType = fileHolderEl.getAttribute("data-file-type");
+		if(fileType === "image") {
+			filters = eXeEpubAuthoring.FILE_FILTERS_IMG;
+		}else if(fileType === "audio") {
+			filters = eXeEpubAuthoring.FILE_FILTERS_AUDIO;
+		}else {
+			filters = eXeEpubAuthoring.FILE_FILTERS_ALLFILES;
+		}
+		eXeEpubAuthoring.requestUserFiles({ideviceId : this.ideviceId, filters: filters}, (function(entry) {
+			var currentFile = fileHolderEl.getAttribute("data-href");
+			var updateLinkFn = (function() {
+				fileHolderEl.setAttribute('data-href', entry.href);
+				this._updateFileHolderLink(fileHolderEl);
+			}).bind(this);
+			
+			var unlinkRequired = currentFile && 
+				!this._isHrefReferencedByOtherHolders(currentFile, fileHolderEl);
+			if(!unlinkRequired) {
+				updateLinkFn();
+			}else {
+				this.unlinkUserFile({href : currentFile}, updateLinkFn);
+			}
+			
+		}).bind(this));
+	},
+	
+	/**
+	 * Checks to see if there are any other file holders that have the 
+	 * same file.  E.g. when a file is changed/removed : check and see
+	 * if anything else in the idevice is using this file.  If not then
+	 * we know we should unlink it from this idevice
+	 * 
+	 * @param {string} href The HREF to check
+	 * @param {boolean} true if referenced false otherwise
+	 */
+	_isHrefReferencedByOtherHolders: function(href, holder) {
+		var fileHolders = this.getAllFileHolderEls();
+		var holderHref;
+		for(var i = 0; i < fileHolders.length; i++) {
+			holderHref = fileHolders[i].getAttribute("data-href");
+			if(holderHref === href && fileHolders[i] !== holder) {
+				return true;
+			}
+		}
+		
+		return false;
+	},
+	
+	_updateFileHolderLink: function(fileHolderEl) {
+		var fileHref = fileHolderEl.getAttribute("data-href");
+		var linkEl = fileHolderEl.querySelector("a.file-link");
+		if(fileHref) {
+			if(!linkEl) {
+				linkEl = document.createElement("a");
+				linkEl.classList.add("file-link", "exe-editing-only");
+				linkEl.setAttribute("target", "_blank");
+				fileHolderEl.appendChild(linkEl);
+			}
+			linkEl.textContent = fileHref;
+			linkEl.setAttribute("href", fileHref);
+		}else {
+			if(linkEl) {
+				linkEl.parentNode.removeChild(linkEl);
+			}
+		}
+	},
+	
 	
 	/**
 	 * Handle when editing mode is over
@@ -64,6 +174,15 @@ Idevice.prototype = {
 		}
 		
 		eXeEpubAuthoring.saveIdeviceTinCanXML(this.ideviceId, tinCan);
+	},
+	
+	/**
+	 * Saves the actual HTML inside this element: should only be used 
+	 * in authoring mode
+	 */
+	saveHTML: function(callback) {
+		var htmlToSave = eXeEpubAuthoring.getSavableHTML(this._getEl());
+		eXeEpubAuthoring.saveIdeviceHTML(this.ideviceId, htmlToSave);
 	},
 	
 	/**
@@ -244,8 +363,16 @@ Idevice.prototype = {
 		}).bind(this));
 	},
 	
-	removeUserFile: function() {
-		
+	/**
+	 * Unlink the given file from this idevice
+	 * 
+	 * @param {string} opts.href href of the file to be runlinkemoved e.g. "user-added/file.jpg"
+	 * @param {function} callback callback to run once the unlink is done
+	 */
+	unlinkUserFile: function(opts, callback) {
+		opts.ideviceId = this.ideviceId;
+		opts.callbackMode = eXeEpubAuthoring.CALLBACK_ONREQUEST;
+		eXeEpubAuthoring.unlinkUserFile(opts, callback);
 	}
 	
 	

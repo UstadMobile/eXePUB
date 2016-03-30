@@ -95,6 +95,12 @@ class AuthoringPageEPUB(RenderableResource):
                        'href' : added_entry[1]
                     }
                 }
+            elif request.args['action'][0] == "unlinkfile":
+                opts = json.loads(request.args['opts'][0], "UTF-8")
+                src_path = opts['href']
+                idevice_id = opts['ideviceId']
+                self.package.main_opf.resource_manager.unlink_user_file_from_idevice(idevice_id, src_path)
+                return_value = { 'success' : True}
                 
         return json.dumps(return_value)
     
