@@ -14,6 +14,9 @@ var CheckboxTableIdevice = function(ideviceId) {
 	this.textAreaInputTimeouts = {};
 	
 	this.bindEvents();
+	
+	//Array of the items ordered as they appear in the nav.xhtml table of contents
+	this.navList = null;
 };
 
 /**
@@ -360,6 +363,8 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 			
 			var textPrompt = $("#" + textDivId).attr("data-textprompt");
 			var lockedAnswer = $("#" + textDivId).attr("data-locked-answer");
+			var skipPage = $("#" + textDivId).attr('data-skip-page');
+			var skipOnAnswer = $("#" + textDivId).attr('data-skip-on');
 			
 			var $textPromptDiv = $("<div/>", {
 				'id' : 'ecttpd_' + this.ideviceId + "_" + questionId,
@@ -406,6 +411,28 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 			
 			$textPromptDiv.after($lockAnswerDiv);
 			
+			var $skipPageDiv = $("<div/>", {
+				"class" : "exe-editing-only"
+			}).text("Skip Page ");
+			var pageSkipSelectEl = eXeEpubAuthoring.navItemsToSelectEl(this.navList, skipPage);
+			$(pageSkipSelectEl).attr("id", "ectlsp_" + this.ideviceId + "_" + questionId);
+			$skipPageDiv.append(pageSkipSelectEl);
+			
+			$skipPageDiv.append(" When answer = ");
+			
+			var $pageSkipAnswerSelect = $("<select/>", {
+				"id" : "ectlsa_" + this.ideviceId + "_" + questionId,
+				'class' : "exe-checkbox-table-lockanswer"
+			});
+			for(var i = 0; i < colIds.length; i++) {
+				$pageSkipAnswerSelect.append(this._makeSelectOptionForCol(colIds[i], colIds[i] === skipOnAnswer));
+			}
+			$skipPageDiv.append($pageSkipAnswerSelect);
+			
+			//skipOnAnswer
+			
+			$lockAnswerDiv.after($skipPageDiv);
+			
 			eXeEpubAuthoring.setTinyMceEnabledById(promptElId, true);
 		},
 	},
@@ -414,11 +441,21 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 		value: function(questionId) {
 			var promptElId = "etctpi_" + this.ideviceId + "_" + questionId;
 			var lockedAnswerId = "ectla_" + this.ideviceId + "_" + questionId;
+			var skipPageId = "ectlsp_" + this.ideviceId + "_" + questionId;
+			var skipPageAnswerId = "ectlsa_" + this.ideviceId + "_" + questionId;
+			
 			var promptFor = $('#' + promptElId).val();
 			var lockedAnswer = $("#" + lockedAnswerId).val();
+			var skipPage = $("#" + skipPageId).val();
+			var skipPageAnswer = $("#" + skipPageAnswerId).val();
 			
-			$('#etcqdiv' + this.ideviceId + "_" + questionId).attr(
-				"data-textprompt", promptFor).attr("data-locked-answer", lockedAnswer);
+			var questionEl = $('#etcqdiv' + this.ideviceId + "_" + questionId);
+			questionEl.attr("data-textprompt", promptFor).attr("data-locked-answer", lockedAnswer);
+			if(skipPage) {
+				questionEl.attr("data-skip-page", skipPage).attr("data-skip-on", skipPageAnswerId);
+			}else {
+				questionEl.removeAttr('data-skip-page').removeAttr("data-skip-on");
+			}
 			
 			
 			var promptTextEl = $("#" + promptElId).css("display", "none");
@@ -509,6 +546,19 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 	},
 	
 	editOn: {
+		value: function() {
+			if(this.navList) {
+				this.editOn2();
+			}else {
+				eXeEpubCommon.getNavOptions({}, (function(err, navList) {
+					this.navList = navList;
+					this.editOn2();
+				}).bind(this));
+			}
+		}
+	},
+	
+	editOn2: {
 		value: function() {
 			//add title if it's not already there
 			if(!$("#ecth_" + this.ideviceId).length) {

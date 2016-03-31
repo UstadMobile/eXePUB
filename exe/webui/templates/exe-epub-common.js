@@ -567,6 +567,76 @@ var eXeEpubCommon = (function() {
         },
         
         /**
+         * Requires the opf document to get started
+         * 
+         * @param {Document} opts.opf the OPF document for this package
+         */
+        getNav: function(opts, callback) {
+        	//TODO: use actually referred to navigation instead of exe default
+        	var navPath = "nav.xhtml";
+        	var xmlHTTP = new XMLHttpRequest();
+        	xmlHTTP.onreadystatechange = (function(evt) {
+        		if(xmlHTTP.readyState === 4 && xmlHTTP.status === 200) {
+        			var xmlDoc = xmlHTTP.responseXML ? xmlHTTP.responseXML : 
+        				new DOMParser().parseFromString(xmlHTTP.responseText, "text/xml");
+        			callback.call(opts.context ? opts.context : this, 
+        					null, xmlDoc);
+        		}
+        	}).bind(this);
+        	xmlHTTP.open("get", navPath, true);
+        	xmlHTTP.send();
+        },
+        
+        getNavOptions: function(opts, callback) {
+        	this.getOPF(opts, (function(err, opfDoc) {
+        		opts.opf = opfDoc;
+        		this.getNav(opts, (function(err, navDoc) {
+        			var optionsArr = [];
+        			var navContainer = navDoc.querySelector("nav");
+        			optionsArr = this.populateNavOptions(navContainer, optionsArr, 0, opfDoc);
+        			callback.call(opts.context ? opts.context: this, null, optionsArr);
+        		}).bind(this));
+        	}).bind(this));
+        },
+        
+        populateNavOptions: function(containerEl, optionsArr, indentLevel, opfDoc) {
+        	var currentNode;
+        	var currentHref;
+        	var currentId;
+        	
+        	var listChildren;
+        	var liChild;
+        	for(var i = 0; i < containerEl.childNodes.length; i++) {
+        		currentNode = containerEl.childNodes[i];
+        		if(currentNode.nodeType === Node.ELEMENT_NODE && currentNode.tagName === "a") {
+        			currentHref = currentNode.getAttribute("href");
+        			var idEl = opfDoc.querySelector("item[href='" + currentHref +"']");
+        			if(idEl) {
+        				currentId = idEl.getAttribute("id");
+        			}else {
+        				currentId = null;
+        			}
+        			optionsArr.push({
+        				title: currentNode.textContent, 
+        				id : currentId,
+        				href: currentHref,
+        				indent: indentLevel
+    				});
+        		}else if(currentNode.nodeType === Node.ELEMENT_NODE && currentNode.tagName === "ol") {
+        			for(var j = 0; j < currentNode.childNodes.length; j++) {
+        				liChild = currentNode.childNodes[j];
+        				if(liChild.nodeType === Node.ELEMENT_NODE && liChild.tagName === "li") {
+        					this.populateNavOptions(liChild, optionsArr, indentLevel + 1, opfDoc);
+        				}
+        			}
+        		}
+        	}
+        	
+        	return optionsArr;
+        },
+        
+        
+        /**
          * Finds out the current page id
          * 
          * @param {Object} opts

@@ -820,11 +820,19 @@ var eXeEpubAuthoring = (function() {
 				tinyMceOpts.selector = "#" + id;
 				tinymce.init(tinyMceOpts);
 			}else {
-				var content = tinymce.get(id).getContent();
+				var ed = tinymce.get(id);
+				var content = null;
+				if(ed) {
+					content = ed.getContent();
+				}
 				tinymce.remove("#" + id);
+				
+				
 				var el = document.getElementById(id);
 				el.setAttribute("contenteditable", false);
-				el.innerHTML = content;
+				if(content) {
+					el.innerHTML = content;
+				}
 				
 				var tooltipContents = el.querySelectorAll(".tooltip_content");
 		    	for(var i = 0; i < tooltipContents.length; i++) {
@@ -903,6 +911,30 @@ var eXeEpubAuthoring = (function() {
 		},
 		
 		/**
+		 * Make a select element from an array of navigation items as 
+		 * created by eXeEpubCommon.getNavOptions
+		 */
+		navItemsToSelectEl: function(navItemsArr, currentVal) {
+			var selectEl = document.createElement("select");
+			var optEl;
+			
+			var itemsArr = [{id: "", title : "[None]"}];
+			itemsArr = itemsArr.concat(navItemsArr);
+			
+			for(var i = 0; i < itemsArr.length; i++) {
+				optEl = document.createElement("option");
+				optEl.setAttribute("value", itemsArr[i].id);
+				if(itemsArr[i].id === currentVal) {
+					optEl.setAttribute("selected", "selected");
+				}
+				optEl.textContent = itemsArr[i].title;
+				selectEl.appendChild(optEl);
+			}
+			
+			return selectEl;
+		},
+		
+		/**
 		 * Turn an array of activities into a list suitable for TinyMCE listboxes
 		 */
 		activitiesArrToTinyMCEListValues: function(activitiesArr) {
@@ -916,6 +948,8 @@ var eXeEpubAuthoring = (function() {
 			
 			return arr;
 		},
+		
+		
 		
 		/**
 		 * Update the up/down buttons for idevices on the page - should
