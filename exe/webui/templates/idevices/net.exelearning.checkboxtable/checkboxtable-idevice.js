@@ -320,7 +320,7 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 				'type': 'checkbox',
 				'id' : 'etcbox' + this.ideviceId + "_" + questionId + '_' + colId
 			}));
-			return $tdEl;_ggetEl()
+			return $tdEl;
 		}
 	},
 	
@@ -439,7 +439,7 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 	
 	_questionRowEditOff: {
 		value: function(questionId) {
-			var promptElId = "etctpi_" + this.ideviceId + "_" + questionId;
+			var promptElId = "ectsp_" + this.ideviceId + "_" + questionId;
 			var lockedAnswerId = "ectla_" + this.ideviceId + "_" + questionId;
 			var skipPageId = "ectlsp_" + this.ideviceId + "_" + questionId;
 			var skipPageAnswerId = "ectlsa_" + this.ideviceId + "_" + questionId;
@@ -452,7 +452,7 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 			var questionEl = $('#etcqdiv' + this.ideviceId + "_" + questionId);
 			questionEl.attr("data-textprompt", promptFor).attr("data-locked-answer", lockedAnswer);
 			if(skipPage) {
-				questionEl.attr("data-skip-page", skipPage).attr("data-skip-on", skipPageAnswerId);
+				questionEl.attr("data-skip-page", skipPage).attr("data-skip-on", skipPageAnswer);
 			}else {
 				questionEl.removeAttr('data-skip-page').removeAttr("data-skip-on");
 			}
