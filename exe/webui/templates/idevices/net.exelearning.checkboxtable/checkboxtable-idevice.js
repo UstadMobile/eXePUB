@@ -43,6 +43,7 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 			var questionId = inputId.substring(firstSep+1, 
 					inputId.indexOf("_", firstSep+1));
 			this._updateQuestionTextInput(questionId);
+			this._updatePageSkipInfo(questionId);
 			if(!eXeEpubCommon.isAuthoringMode()) {
 				this.saveQuestionState(questionId);
 			}
@@ -101,8 +102,21 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 				$("#" + questionTextInputId).remove();
 				$("#" + inputGuidanceId).remove();
 			}
-			
-			
+		}
+	},
+	
+	_updatePageSkipInfo: {
+		value: function(questionId) {
+			var questionDiv = document.getElementById("etcqdiv" + 
+					this.ideviceId + "_" + questionId);
+			var skipPageId = $(questionDiv).attr("data-skip-page"); 
+			if(skipPageId) {
+				//this answer controls skipping a particular question.  
+				var colSelected = this._getQuestionSelectedInputEl(questionId);
+				var skipOn = $(questionDiv).attr("data-skip-on");
+				var skipPage = colSelected === skipOn;
+				eXeTinCan.setPkgStateValue("skip_" + skipPageId, skipPage);
+			}
 		}
 	},
 	
@@ -139,6 +153,7 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 			}
 			
 			this._updateQuestionTextInput(questionId);
+			this._updatePageSkipInfo(questionId);
 		}
 	},
 	
@@ -762,13 +777,6 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 					this._setQuestionSelectedInputEl(questionIds[i],
 							questionState.checkedItem);
 					
-					var etcQDiv = $('#etcqdiv' + this.ideviceId + "_" + questionIds[i]);
-					if(etcQDiv.attr("data-locked-answer")) {
-						this._setQuestionSelectedInputEl(questionIds[i],
-								etcQDiv.attr("data-locked-answer"));
-						this._lockQuestionAnswer(questionIds[i]);
-					}
-					
 					textStateKey = idPrefix + questionIds[i] + "_text";
 					if(questionState.response) {
 						questionTextArea = document.getElementById("etcqti_" 
@@ -777,6 +785,13 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 							questionTextArea.value = questionState.response;
 						}
 					}
+				}
+				
+				var etcQDiv = $('#etcqdiv' + this.ideviceId + "_" + questionIds[i]);
+				if(etcQDiv.attr("data-locked-answer")) {
+					this._setQuestionSelectedInputEl(questionIds[i],
+							etcQDiv.attr("data-locked-answer"));
+					this._lockQuestionAnswer(questionIds[i]);
 				}
 			}
 		}
