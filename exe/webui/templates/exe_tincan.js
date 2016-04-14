@@ -102,6 +102,8 @@ var eXeTinCan = (function() {
 	    	
 	    	if(queryVars['registration']) {
 				_currentRegistrationUUID = queryVars['registration'];
+			}else {
+				this.getCurrentRegistrationUUID();
 			}
 	    	
 	    	if(queryVars['endpoint']) {
@@ -457,7 +459,7 @@ var eXeTinCan = (function() {
 			}
 			
 			if(_currentRegistrationUUID !== -1) {
-				params.registration = _currentRegistration; 
+				params.registration = _currentRegistrationUUID; 
 			}
 			
 			return params;
