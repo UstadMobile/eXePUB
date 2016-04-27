@@ -251,6 +251,17 @@ var eXeTinCan = (function() {
 		},
 		
 		/**
+		 * This function should not really be used by the outside world normally... 
+		 * ID should be set by the LMS opening the package. But just in case
+		 * a particular package wants to manage it's own settings... this fn 
+		 * can be used
+		 */
+		_setCurrentRegistrationUUID: function(uuid) {
+			_currentRegistrationUUID = uuid;
+			localStorage.setItem(KEY_CURRENT_REG, _currentRegistrationUUID);
+		},
+		
+		/**
 		 * Start a registration for tracking a particular attempt, 
 		 * data entry record etc.
 		 * 

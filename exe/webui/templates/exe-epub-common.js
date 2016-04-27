@@ -319,10 +319,14 @@ Idevice.prototype = {
 	 */
 	loadState: function() {
 		if(this.isStateSupported()) {
+			this._getEl().setAttribute("data-idevice-state", "loading");
 			eXeTinCan.getPkgStateValue("id" + this.ideviceId, (function(keyVals) {
 				keyVals = keyVals || null;
 				this.setState(keyVals);
+				this._getEl().setAttribute("data-idevice-state", "loaded");
 			}).bind(this), {prefix : true});
+		}else {
+			this._getEl().setAttribute("data-idevice-state", "na");
 		}
 	},
 	
@@ -381,26 +385,6 @@ Idevice.prototype = {
 
 Idevice._registeredDevices = {};
 
-/*
-Idevice.handleBeforeUnload = function(evt) {
-	console.log("Idevice: beforeunload");
-	for(ideviceId in Idevice._registeredDevices) {
-		if(Idevice._registeredDevices.hasOwnProperty(ideviceId)) {
-			if(Idevice._registeredDevices[ideviceId].isStateSupported()) {
-				Idevice._registeredDevices[ideviceId].saveState();
-			}
-		}
-	}
-	
-	if(eXeTinCan) {
-		eXeTinCan.saveState({});
-	}
-};
-
-window.addEventListener("beforeunload", Idevice.handleBeforeUnload.bind(Idevice), false);
-*/
-
-
 Idevice.registerType = function(typeId, cls) {
 	document.addEventListener("idevicecreate", function(evt) {
 		if(evt.detail.ideviceType === typeId) {
@@ -444,6 +428,8 @@ Idevice.registerType = function(typeId, cls) {
 		document.addEventListener("DOMContentLoaded", _initFn, false);
 	}
 };
+
+
 
 /**
  * Get the idevice object by id
