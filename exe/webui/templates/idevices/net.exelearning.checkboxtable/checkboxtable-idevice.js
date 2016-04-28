@@ -17,6 +17,16 @@ var CheckboxTableIdevice = function(ideviceId) {
 	
 	//Array of the items ordered as they appear in the nav.xhtml table of contents
 	this.navList = null;
+	
+	if(!eXeEpubCommon.isAuthoringMode()) {
+		var $header = $(this._getEl()).find("tr.exe-checkbox-table-header-tr");
+		var headerText = $header.text();
+		
+		if(typeof $header.text() === "string" && $header.text().trim() === "") {
+			//it's blank - collapse it to avoid excess space
+			$header.css("display", "none");
+		}
+	}
 };
 
 /**
