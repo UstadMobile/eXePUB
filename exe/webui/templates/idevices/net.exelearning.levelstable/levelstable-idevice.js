@@ -164,6 +164,7 @@ LevelsTableIdevice.prototype = Object.create(Idevice.prototype, {
 			for(var i = 0; i < levelRows.length; i++) {
 				this.setRowState(levelRows.get(i), state);
 			}
+			levelRows.css("display", "none");
 		}
 	},
 	

@@ -102,6 +102,8 @@ var eXeTinCan = (function() {
 	    	
 	    	if(queryVars['registration']) {
 				_currentRegistrationUUID = queryVars['registration'];
+			}else {
+				this.getCurrentRegistrationUUID();
 			}
 	    	
 	    	if(queryVars['endpoint']) {
@@ -246,6 +248,17 @@ var eXeTinCan = (function() {
 			}
 			
 			return _currentRegistrationUUID;
+		},
+		
+		/**
+		 * This function should not really be used by the outside world normally... 
+		 * ID should be set by the LMS opening the package. But just in case
+		 * a particular package wants to manage it's own settings... this fn 
+		 * can be used
+		 */
+		_setCurrentRegistrationUUID: function(uuid) {
+			_currentRegistrationUUID = uuid;
+			localStorage.setItem(KEY_CURRENT_REG, _currentRegistrationUUID);
 		},
 		
 		/**
@@ -457,7 +470,7 @@ var eXeTinCan = (function() {
 			}
 			
 			if(_currentRegistrationUUID !== -1) {
-				params.registration = _currentRegistration; 
+				params.registration = _currentRegistrationUUID; 
 			}
 			
 			return params;

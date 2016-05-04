@@ -200,6 +200,7 @@ InstitutionalProfileIdevice.prototype = Object.create(Idevice.prototype, {
 			for(var i = 0; i < srcRows.length; i++) {
 				this.setRowState(srcRows.get(i), state);
 			}
+			srcRows.css("display", "none");
 		}
 	},
 	
