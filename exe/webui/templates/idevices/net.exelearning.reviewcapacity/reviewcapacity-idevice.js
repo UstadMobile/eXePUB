@@ -313,6 +313,7 @@ ReviewCapacityIdevice.prototype = Object.create(Idevice.prototype, {
 			for(var i = 0; i < rows.length; i++) {
 				this.setRowState(rows.get(i), state, i);
 			}
+			rows.css("display", "none");
 		}
 	},
 	

@@ -301,6 +301,8 @@ CheckboxLevelReviewIdevice.prototype = Object.create(Idevice.prototype, {
 			for(var i = 0; i < rows.length; i++) {
 				this.setRowState(rows.get(i), state);
 			}
+			
+			rows.css("display", "none");
 		}
 	},
 	

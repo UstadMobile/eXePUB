@@ -302,6 +302,9 @@ ActorsProfileIdevice.prototype = Object.create(Idevice.prototype, {
 					
 				}).bind(this), {prefix : true});
 			}
+			
+			//hide anything we're not using
+			$(this._getEl()).find(".exe-actorsprofile-tr").css("display", "none");
 		}
 	},
 	
