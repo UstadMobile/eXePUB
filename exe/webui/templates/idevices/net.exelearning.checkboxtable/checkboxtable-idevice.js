@@ -474,7 +474,9 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 			var skipPage = $("#" + skipPageId).val();
 			var skipPageAnswer = $("#" + skipPageAnswerId).val();
 			
-			var questionEl = $('#etcqdiv' + this.ideviceId + "_" + questionId);
+			var questionDivId = 'etcqdiv' + this.ideviceId + "_" + questionId;
+			var questionEl = $('#' + questionDivId);
+			
 			questionEl.attr("data-textprompt", promptFor).attr("data-locked-answer", lockedAnswer);
 			if(skipPage) {
 				questionEl.attr("data-skip-page", skipPage).attr("data-skip-on", skipPageAnswer);
@@ -488,6 +490,7 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 			eXeEpubAuthoring.removeAllTinyMceInstances(document.getElementById("ectsp_"+ 
 					this.ideviceId + "_" + questionId));
 			$('#etcqdiv' + this.ideviceId + "_" + questionId).after(promptTextEl.detach());
+			eXeEpubAuthoring.setTinyMceEnabledById(questionDivId, false);
 		},
 	},
 	
