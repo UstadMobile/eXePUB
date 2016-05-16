@@ -210,9 +210,11 @@ CheckboxLevelReviewIdevice.prototype = Object.create(Idevice.prototype, {
 				
 				editBar.append(showTextInputEl);
 				var showTextLabelEl = $("<label/>", {
-					"for": "cblr_" + this.ideviceId
-				}).text("Show text entered (if any)");
+					"for": "cblr_st_" + this.ideviceId
+				});
+				var showTextDesc = $("<span/>").text("Show text entered (if any)");
 				editBar.append(showTextLabelEl);
+				showTextLabelEl.after(showTextDesc);
 				editBar.append("<br/>");
 				
 				//controls to enable/disable adding additional text
@@ -229,8 +231,10 @@ CheckboxLevelReviewIdevice.prototype = Object.create(Idevice.prototype, {
 				
 				var addTextLabelEl = $("<label/>", {
 					"for" : "cblr_at_" + this.ideviceId
-				}).text("Show additional text box to fill in");
+				});
+				var addTextSpanEl = $("<span/>").text("Show additional text box to fill in");
 				editBar.append(addTextLabelEl);
+				addTextLabelEl.after(addTextSpanEl);
 				
 				$(this._getEl()).find("table").after(editBar);
 			}
