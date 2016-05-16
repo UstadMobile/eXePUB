@@ -484,9 +484,13 @@ CheckboxTableIdevice.prototype = Object.create(Idevice.prototype, {
 				questionEl.removeAttr('data-skip-page').removeAttr("data-skip-on");
 			}
 			
+			//hide the text prompt and put it after the question itself
+			var textPromptInstructionsId = "etctpi_" + this.ideviceId + "_" + questionId;
+			var textPromptInstructionsEl = $("#"+textPromptInstructionsId);
+			questionEl.after(textPromptInstructionsEl.detach().css("display", "none"));
 			
 			var promptTextEl = $("#" + promptElId).css("display", "none");
-			eXeEpubAuthoring.setTinyMceEnabledById(promptElId, false);
+			eXeEpubAuthoring.setTinyMceEnabledById(textPromptInstructionsId, false);
 			eXeEpubAuthoring.removeAllTinyMceInstances(document.getElementById("ectsp_"+ 
 					this.ideviceId + "_" + questionId));
 			$('#etcqdiv' + this.ideviceId + "_" + questionId).after(promptTextEl.detach());
