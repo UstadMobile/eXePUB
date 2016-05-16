@@ -338,23 +338,42 @@ class EPUBOPF(object):
         self._save_page_html(page_id, page_html_el)
     
     def update_spine(self, auto_save = True):
+        """
+        Update the spine to include newly added pages
+        """
         spine_el = self.package_el.find(".//{%s}spine" % EPUBOPF.NAMESPACE_OPF)
+        itemref_attribs = {}
         for itemref in spine_el:
+            itemref_attribs[itemref.get("idref")] = itemref.attrib
             spine_el.remove(itemref)
         
-        self.add_navitem_to_spine(spine_el, self.get_navigation(), children_only=True)
+        self.add_navitem_to_spine(spine_el, self.get_navigation(), 
+                      children_only=True, itemref_attribs = itemref_attribs)
         
         if auto_save:
             self.save()
     
-    def add_navitem_to_spine(self, spine_el, nav_item, children_only = False):
+    def add_navitem_to_spine(self, spine_el, nav_item, itemref_attribs = {}, children_only = False):
+        """
+        Adds the given nav_item and it's children to the given spine_el 
+        in order - this method uses itself recursively. 
+        
+        itemref_attribs: A dictionary where keys given should be the idref
+        which should contain another dictionary of the attributes that 
+        should be applied to that spine element. 
+        """
         if not children_only:
             itemref_el = etree.SubElement(spine_el, "{%s}itemref" % EPUBOPF.NAMESPACE_OPF)
             itemref_el.set("idref", nav_item.epub_item.id)
+            if nav_item.epub_item.id in itemref_attribs.keys():
+                attribs = itemref_attribs[nav_item.epub_item.id]
+                if "linear" in attribs.keys():
+                    itemref_el.set("linear", attribs.get("linear"))
+            
         
         if nav_item.children is not None:
             for child in nav_item.children:
-                self.add_navitem_to_spine(spine_el, child)
+                self.add_navitem_to_spine(spine_el, child, itemref_attribs = itemref_attribs)
                 
     def get_spine_item_by_item_id(self, item_id):
         spine_item_el = self.package_el.find(".//{%(ns)s}spine/{%(ns)s}itemref[@idref=\"%(item_id)s\"]" % \
