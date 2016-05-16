@@ -55,7 +55,10 @@ tinymce.PluginManager.add('inserttooltip', function(editor, url) {
     };
     
     editor.on("init", function() {
-    	//show the tooltip elements
+    	/*
+    	 * Show the tooltip elements : add a tooltip_content element that can be 
+    	 * edited (inline block) for any tooltip_holder that has a title attribute.
+    	 */
     	var tooltipContents = editor.getBody().querySelectorAll(".tooltip_holder");
     	for(var i = 0; i < tooltipContents.length; i++) {
     		var titleText = tooltipContents[i].getAttribute("title");
@@ -70,12 +73,23 @@ tinymce.PluginManager.add('inserttooltip', function(editor, url) {
     			tooltipContentEl.textContent = titleText;
     			tooltipContents[i].parentNode.insertBefore(tooltipContentEl, 
     					tooltipContents[i].nextSibling);
+    		}else if(tooltipContentEl && !titleText) {
+    			//old version used; The span was there but not the title attribute...
+    			tooltipContents[i].setAttribute("title", 
+    					tooltipContentEl.textContent);
+    			tooltipContentEl.setAttribute("style", "display: inline-block; background-color: gray; border: 1px dashed black");
     		}
     		
-			var tooltipId = idPrefix + getNextTooltipId(editor);
-			tooltipContents[i].setAttribute("data-exe-tooltip",
-				tooltipId); 
-			tooltipContentEl.setAttribute("id", tooltipId);
+    		if(tooltipContentEl) {
+    			var tooltipId = idPrefix + getNextTooltipId(editor);
+    			tooltipContents[i].setAttribute("data-exe-tooltip",
+    				tooltipId); 
+    			tooltipContentEl.setAttribute("id", tooltipId);
+    		}else {
+    			//cancel - something went wrong (like double clicking the insert tooltip)
+    			// that's how we have no tooltipContentEl and no title text
+    			tooltipContents[i].classList.remove("tooltip_holder");
+    		}
     	}
     	
     	editor.serializer.addAttributeFilter('title', function(nodes, name) {
