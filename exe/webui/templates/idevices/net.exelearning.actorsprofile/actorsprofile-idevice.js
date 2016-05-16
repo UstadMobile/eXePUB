@@ -305,6 +305,13 @@ ActorsProfileIdevice.prototype = Object.create(Idevice.prototype, {
 			
 			//hide anything we're not using
 			$(this._getEl()).find(".exe-actorsprofile-tr").css("display", "none");
+			var allRows = $(this._getEl()).find("tr");
+			for(var i = 0; i < allRows.length; i++) {
+				var lineStr = $(allRows.get(i)).text();
+				if(typeof lineStr === "string" && lineStr.trim() === "") {
+					$(allRows.get(i)).css("display", "none");
+				}
+			}
 		}
 	},
 	
