@@ -307,6 +307,42 @@ class EPUBNavItem(object):
             
         return list
     
+    def _get_spine_itemref_el(self):
+        if self.epub_item is not None:
+            return self.opf.get_spine_item_by_item_id(self.epub_item.id)
+        
+    
+    def is_linear(self):
+        """
+        Looks to see if this item is marked as being linear in the 
+        spine
+        """
+        spine_item = self._get_spine_itemref_el()
+        if spine_item is not None:
+            linear_attr = spine_item.get("linear")
+            if linear_attr is not None and linear_attr == "no":
+                return False
+        return True
+    
+    def set_linear(self, is_linear, auto_save = True):
+        """
+        Sets the corresponding spine item to be linear or non linear.
+        
+        Returns true when successfully set, false otherwise (e.g. item is not in spine at all)
+        """
+        spine_item = self._get_spine_itemref_el()
+        if spine_item is not None:
+            if is_linear is False:
+                spine_item.set("linear", "no")
+            elif spine_item.get("linear") is not None:
+                del spine_item.attrib['linear']
+            
+            if auto_save:
+                self.opf.save()
+                
+            return True
+        
+        return False
     
     def createChild(self, template_path = None, title = "New Page", auto_save = True):
         new_html_filename = self.opf.find_free_filename(EPUBNavItem.DEFAULT_PAGENAME, ".xhtml")

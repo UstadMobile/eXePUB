@@ -220,6 +220,8 @@ class MainPage(RenderableLivePage):
         setUpHandler(self.outlinePane.handleDemote, 'DemoteNode')
         setUpHandler(self.outlinePane.handleUp, 'UpNode')
         setUpHandler(self.outlinePane.handleDown, 'DownNode')
+        setUpHandler(self.outlinePane.handleLinear, 'LinearNode')
+        setUpHandler(self.outlinePane.handleNonLinear, 'NonLinearNode')
         setUpHandler(self.handleCreateDir, 'CreateDir')
         setUpHandler(self.handleOverwriteLocalStyle, 'overwriteLocalStyle')
 

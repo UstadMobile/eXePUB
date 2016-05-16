@@ -26,6 +26,10 @@ Ext.define("eXe.model.EpubNavModel", {
 	{
 		name: 'epubhref',
 		type: 'string'
+	},
+	{
+		name: 'linear',
+		type: 'boolean'
 	}]
 });
 

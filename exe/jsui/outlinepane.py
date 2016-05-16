@@ -151,6 +151,16 @@ class OutlinePane(Renderable, Resource):
         node.down()
         client.sendScript('eXe.app.getController("Outline").reload()', filter_func=allSessionPackageClients)
         client.call('eXe.app.getController("Outline").loadNodeOnAuthoringPage', client.currentNodeId)
+        
+    def handleLinear(self, client, sourceNodeId):
+        self.handleNodeLinearity(True, client, sourceNodeId)
+    
+    def handleNonLinear(self, client, sourceNodeId):
+        self.handleNodeLinearity(False, client, sourceNodeId)
+    
+    def handleNodeLinearity(self, linear_val, client, sourceNodeId):
+        node = self.package.findNode(sourceNodeId)
+        node.set_linear(linear_val)
 
     def render(self, request=None):
         """
@@ -176,7 +186,7 @@ class OutlinePane(Renderable, Resource):
             if isinstance(node, EPUBNavItem):
                 epub_href = "%s/%s" % (os.path.dirname(node.opf.container_path), node.href)
                 xml += u'<epubhref>%s</epubhref>' % self.encode2nicexml(epub_href)
-                
+                xml += u'<linear>%s</linear>' % ("true" if node.is_linear() else "false")
             if node.children:
                 xml += u'<leaf>false</leaf>'
             else:

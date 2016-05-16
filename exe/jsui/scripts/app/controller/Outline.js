@@ -149,31 +149,45 @@ Ext.define('eXe.controller.Outline', {
         var contextMenu = new Ext.menu.Menu({
 		  items: [
             {
-			    text: _('Insert Package'),
-			    handler: this.getController('Toolbar').insertPackage
-		    },{
-			    text: _('Extract Package'),
-			    handler: this.getController('Toolbar').extractPackage
-            }
+            	xtype: 'menucheckitem',
+			    text: _('Linear'),
+			    checked: record.data.linear,
+			    handler:  function(item, evt) {
+			    	record.data.linear = item.checked;
+			    	this.nodeAction(item.checked ? "LinearNode" : "NonLinearNode", false);
+			    },
+			    scope: this
+		    }
           ]
 		});
         var x = e.browserEvent.clientX;
         var y = e.browserEvent.clientY;
         contextMenu.showAt([x, y]);
     },
-
+    
     processNodeEvent: function(menu, item, e, eOpts) {
         this.nodeAction(e.action)
     },
     
-    nodeAction: function(action) {
+    /**
+     * Handle action being applied to a node
+     * 
+     * @param {String} action the Action to send to the server using nevow_clientToServerEvent
+     * @param {boolean} disableButtons=true Disable the add page, delete and rename buttons whilst 
+     * event is ongoing - a server to client call is responsible to re-enable them. 
+     */
+    nodeAction: function(action, disableButtons) {
         var outlineTreePanel = this.getOutlineTreePanel(),
             selected = outlineTreePanel.getSelectionModel().getSelection(),
             nodeid = '0';
         
         if (selected != 0)
             nodeid = selected[0].data.id;
-        this.disableButtons();
+        
+        if(typeof disableButtons === "undefined" || disableButtons === true) {
+        	this.disableButtons();
+        }
+        
         nevow_clientToServerEvent(action, this, '', nodeid);
     },
     

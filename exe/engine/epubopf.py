@@ -355,7 +355,12 @@ class EPUBOPF(object):
         if nav_item.children is not None:
             for child in nav_item.children:
                 self.add_navitem_to_spine(spine_el, child)
-        
+                
+    def get_spine_item_by_item_id(self, item_id):
+        spine_item_el = self.package_el.find(".//{%(ns)s}spine/{%(ns)s}itemref[@idref=\"%(item_id)s\"]" % \
+                                             {"ns" : EPUBOPF.NAMESPACE_OPF,
+                                              "item_id" : item_id})
+        return spine_item_el
 
 class EPUBOPFItem(object):
     
