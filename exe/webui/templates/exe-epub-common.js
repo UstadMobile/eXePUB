@@ -636,8 +636,12 @@ var eXeEpubCommon = (function() {
         	//TODO: Calculate this out when it could be in another directory
         	var docPath = opts.docPath ? opts.docPath : document.location.href;
         	var queryIndex = docPath.indexOf('?');
+        	if(queryIndex !== -1) {
+        		docPath = docPath.substring(0, queryIndex);
+        	}
+        	
         	var relativePath = docPath.substring(docPath.lastIndexOf('/')+1,
-        			queryIndex !== -1 ? queryIndex : docPath.length);
+        			docPath.length);
         	this.getOPF(opts, (function(err, opfDoc){
         		var itemId = this._getItemIdByHref(opfDoc, relativePath);
             	callback.call(opts.context ? opts.context : this, 
