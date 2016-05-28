@@ -5,7 +5,7 @@
     <label>Multi Choice Question</label>
     <category>Interactive</category>
     <visible>true</visible>
-    <cssclass>MultiChoiceIdevice</cssclass>
+    <cssclass>MultichoiceIdevice</cssclass>
     
     <!--Map to exe-files/common -->
     <system-resources>
