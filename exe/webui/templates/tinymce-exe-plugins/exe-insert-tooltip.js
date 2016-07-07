@@ -26,7 +26,7 @@ tinymce.PluginManager.add('inserttooltip', function(editor, url) {
     		}
     	}
     	
-    	return maxTipId;
+    	return maxTipId + 1;
     };
     
     var findNextElWithClass = function(el, className) {
