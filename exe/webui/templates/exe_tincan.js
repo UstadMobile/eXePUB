@@ -615,6 +615,7 @@ var eXeTinCan = (function() {
 				
 				var params = this._makeStateParams(pkgId, callbackFn);
 				params.contentType = "application/json";
+				params.overwriteJSON = false;
 				if(this.isLRSActive()) {
 					return _tinCan.setState(STATE_ID, stateToStore, params);
 				}else {
