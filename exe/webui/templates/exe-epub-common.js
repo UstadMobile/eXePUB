@@ -377,6 +377,14 @@ Idevice.prototype = {
 		opts.ideviceId = this.ideviceId;
 		opts.callbackMode = eXeEpubAuthoring.CALLBACK_ONREQUEST;
 		eXeEpubAuthoring.unlinkUserFile(opts, callback);
+	},
+	
+	/**
+	 * Called before a page unloads - represents a last chance to save values etc.
+	 * By default does nothing
+	 */
+	handleBeforeUnload: function() {
+		
 	}
 	
 	
@@ -384,6 +392,7 @@ Idevice.prototype = {
 };
 
 Idevice._registeredDevices = {};
+
 
 Idevice.registerType = function(typeId, cls) {
 	document.addEventListener("idevicecreate", function(evt) {
@@ -412,6 +421,9 @@ Idevice.registerType = function(typeId, cls) {
 		}
 	});
 	
+	
+	
+	
 	var _initFn = function() {
 		var allIdevices = document.querySelectorAll("div[data-idevice-type='" + typeId + "']");
 		var deviceId;
@@ -429,6 +441,18 @@ Idevice.registerType = function(typeId, cls) {
 	}
 };
 
+/**
+ * Dispatch this event to give idevices one last chance to save their values etc.
+ */
+Idevice.handleBeforeUnload = function() {
+	for(var deviceId in Idevice._registeredDevices) {
+		if(Idevice._registeredDevices.hasOwnProperty(deviceId)) {
+			Idevice._registeredDevices[deviceId].handleBeforeUnload();
+		}
+	}
+};
+
+window.addEventListener("beforeunload", Idevice.handleBeforeUnload, false);
 
 
 /**

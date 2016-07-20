@@ -53,6 +53,16 @@ var eXeTinCan = (function() {
 		localStoragePrefix : "eXeTC-",
 		
 		/**
+		 * The current package tincan ID : normally something like epub:uuid
+		 */
+		packageId : null,
+		
+		/**
+		 * The item id of the current page: this is as per it's id in the OPF manifest
+		 */
+		currentItemId: null,
+		
+		/**
 		 * 
 		 * @method setActor
 		 */
@@ -71,6 +81,20 @@ var eXeTinCan = (function() {
 		init: function() {
 			_tinCan = new TinCan();
 			this.setLRSParamsFromLaunchURL();
+			this.getTinCanAndPageIds({ context: this },
+				function(err, packageId, itemId) {
+					this.packageId = packageId;
+					this.currentItemId = itemId;
+				}
+			);
+		},
+		
+		getPackageId: function() {
+			return this.packageId;
+		},
+		
+		getCurrentItemId: function() {
+			return this.currentItemId;
 		},
 		
 		/**
@@ -533,14 +557,14 @@ var eXeTinCan = (function() {
 			if(err === null && (result === null || result.contents === null)) {
 				//results.content is very weird
 				//State has not been saved yet, it's blank
-				_xAPIstateStatus = eXeTinCan.STATE_LOADED;
+				_xAPIstateStatus = this.STATE_LOADED;
 				_state = {};
 			}else if(result) {
-				_xAPIstateStatus = eXeTinCan.STATE_LOADED;
+				_xAPIstateStatus = this.STATE_LOADED;
 				_state = result.contents;
 			}else {
 				//not good really - XAPI was enabled but it didn't load
-				_xAPIstateStatus = eXeTinCan.STATE_UNAVAILABLE;
+				_xAPIstateStatus = this.STATE_UNAVAILABLE;
 				_state = {};
 			}
 			
@@ -662,25 +686,31 @@ var eXeTinCan = (function() {
 		 * @param {Object} opts additional arguments
 		 * @param {Object} [opts.context] Context for this object when running callback
 		 * @param {callback} callback to execute after statement transmission has been attempted 
-		 *   takes params (err, result, tinCanStmt) 
+		 *   takes params (err, result, tinCanStmt).  If given null as an argument for the callback
+		 *   the statement will be sent synchronously: this should only be used in handling beforeunload
+		 *   if a statement needs to be made before the page is unloaded.
 		 */
-		sendStatement: function(stmt, opts, callback) {
-			_tinCan.sendStatement(stmt, function(results, tinCanStmt) {
-				var sendErr = [];
-		        for(var j = 0; j < results.length; j++) {
-		            //see if it was sent OK
-		            var err = results[j]['err'];
-		            var xhr = results[j]['xhr'];
-		            if((err !== null|| err !== 0) || xhr.status >= 300){
-		                //this one sent OK
-		                sendErr.push([err, xhr.status]);
-		            }
-		        }
-		        sendErr = sendErr.length === 0 ? null : sendErr;
-		        if(typeof callback === "function") {
-		        	callback.call(opts.context ? opts.context : this, sendErr, results);
-		        }
-			});
+		sendStatement: function(stmt, opts, callback) {			
+			if(callback === null) {
+				return _tinCan.sendStatement(stmt);
+			}else {
+				_tinCan.sendStatement(stmt, function(results, tinCanStmt) {
+					var sendErr = [];
+			        for(var j = 0; j < results.length; j++) {
+			            //see if it was sent OK
+			            var err = results[j]['err'];
+			            var xhr = results[j]['xhr'];
+			            if((err !== null|| err !== 0) || xhr.status >= 300){
+			                //this one sent OK
+			                sendErr.push([err, xhr.status]);
+			            }
+			        }
+			        sendErr = sendErr.length === 0 ? null : sendErr;
+			        if(typeof callback === "function") {
+			        	callback.call(opts.context ? opts.context : this, sendErr, results);
+			        }
+				});
+			}
 		},
 		
 		
