@@ -115,7 +115,6 @@ TextEntryIdevice.prototype = Object.create(Idevice.prototype, {
 	
 	handleBeforeUnload: {
 		value: function() {
-			debugger;
 			if(this.isDirty()) {
 				this.makeAnsweredStmt({}, null);//make the answered statement synchronously
 			}
@@ -170,7 +169,7 @@ TextEntryIdevice.prototype = Object.create(Idevice.prototype, {
 			var elTypeSelect = $("<select id='tei_" + this.ideviceId +"'/>");
 			elTypeSelect.append("<option value='textarea'>Multi Line</option>");
 			elTypeSelect.append("<option value='input'>Single Line</option>");
-			elTypeSelect.val(this.getTextArea().tagName);
+			elTypeSelect.val(this.getTextArea().tagName.toLowerCase());
 					
 			editBar.append(elTypeSelect);
 			elTypeSelect.on("change", this.handleChangeEntryType.bind(this));
@@ -233,7 +232,7 @@ TextEntryIdevice.prototype = Object.create(Idevice.prototype, {
 			 * we need to change this into a text type field for the time during which
 			 * it's being edited, so save the actual type value into data-type
 			 */
-			if(this.getTextArea().tagName === "input") {
+			if(this.getTextArea().tagName.toLowerCase() === "input") {
 				textArea.attr("data-type", textArea.attr("type"));
 				textArea.attr("type", "text");
 			}
@@ -242,7 +241,7 @@ TextEntryIdevice.prototype = Object.create(Idevice.prototype, {
 				textArea.val(textArea.attr("placeholder"));
 			}
 			
-			this.updateEditEntryTypeOpts(this.getTextArea().tagName);
+			this.updateEditEntryTypeOpts(this.getTextArea().tagName.toLowerCase());
 			
 			eXeEpubAuthoring.setTinyMceEnabledById('exe_tei_int' + this.ideviceId, true);
 		}
@@ -268,12 +267,13 @@ TextEntryIdevice.prototype = Object.create(Idevice.prototype, {
 	
 	/**
 	 * Update whether users see options for a single line or multi line field
+	 * @param {String} editType - "input" or "textarea"
 	 */
 	updateEditEntryTypeOpts: {
 		value: function(editType) {
 			var textEl = this.getTextArea();
 			
-			if(textEl.tagName !== editType) {
+			if(textEl.tagName.toLowerCase() !== editType) {
 				var defValType = $(this._getEl()).find(".exe-tei-select-default-type").val();
 				var newEl = $("<" + editType +"/>").attr("id",
 						TextEntryIdevice.TEXT_EL_PREFIX  + this.ideviceId);
@@ -315,7 +315,7 @@ TextEntryIdevice.prototype = Object.create(Idevice.prototype, {
 				textArea.removeAttr("placeholder");
 			}
 			
-			if(this.getTextArea().tagName === "input") {
+			if(this.getTextArea().tagName.toLowerCase() === "input") {
 				textArea.attr("type", textArea.attr("data-type"));
 				textArea.removeAttr("data-type");
 			}
