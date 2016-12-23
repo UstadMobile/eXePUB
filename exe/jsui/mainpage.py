@@ -67,6 +67,7 @@ from exe.export.xmlexport        import XMLExport
 from exe.engine.lom import lomsubs
 from exe.engine.lom.lomclassification import Classification
 import zipfile
+import uuid
 
 log = logging.getLogger(__name__)
 
@@ -188,6 +189,7 @@ class MainPage(RenderableLivePage):
         setUpHandler(self.handlePackageFileName, 'getPackageFileName')
         setUpHandler(self.handleSavePackage, 'savePackage')
         setUpHandler(self.handleLoadPackage, 'loadPackage')
+        setUpHandler(self.handleLoadPackageAsTemplate, 'loadPackageAsTemplate')
         setUpHandler(self.recentMenu.handleLoadRecent, 'loadRecent')
         # Task 1080, jrf
         # setUpHandler(self.handleLoadTutorial, 'loadTutorial')
@@ -383,18 +385,28 @@ class MainPage(RenderableLivePage):
         else:
             client.alert(_(u'Package saved to: %s') % filename, filter_func=otherSessionPackageClients)
 
-    def handleLoadPackage(self, client, filename, filter_func=None):
+    def handleLoadPackageAsTemplate(self, client, filename, filter_func = None):
+        self.handleLoadPackage(client, filename, filter_func = filter_func, load_as_template = True)
+
+    def handleLoadPackage(self, client, filename, filter_func=None, load_as_template = False):
         """Load the package named 'filename'"""
         if filename[-5:] == ".epub":
             package = EPUBPackage.load(filename)
         else:
             package = self._loadPackage(client, filename, newLoad=True)
         
+        if load_as_template:
+            package.filename = ""
+            package.id = str(uuid.uuid4())
+            package.name = self.session.packageStore.createNewPackageName()
+        
         self.session.packageStore.addPackage(package)
         self.webServer.root.bindNewPackage(package, self.session)
             
         client.sendScript((u'eXe.app.gotoUrl("/%s")' % \
                           package.name).encode('utf8'), filter_func=filter_func)
+
+
 
     # No longer used - Task 1080, jrf
     # def handleLoadTutorial(self, client):

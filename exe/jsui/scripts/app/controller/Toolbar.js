@@ -48,6 +48,9 @@ Ext.define('eXe.controller.Toolbar', {
         	'#file_new': {
         		click: this.fileNew
         	},
+        	'#file_new_from_template' : {
+        		click: this.fileNewFromTemplate
+        	},
             '#file_new_window': {
                 click: this.fileNewWindow
             },
@@ -1135,11 +1138,18 @@ Ext.define('eXe.controller.Toolbar', {
     	this.askDirty("eXe.app.gotoUrl('/')");
 	},
 	
+	fileNewFromTemplate: function() {
+		this.askDirty("eXe.app.getController('Toolbar').fileOpen2(true)");
+	},
+	
     fileOpen: function() {
     	this.askDirty("eXe.app.getController('Toolbar').fileOpen2()");
     },
     
-    fileOpen2: function() {
+    /**
+     * 
+     */
+    fileOpen2: function(isTemplate) {
 		var f = Ext.create("eXe.view.filepicker.FilePicker", {
 			type: eXe.view.filepicker.FilePicker.modeOpen,
 			title: _("Open File"),
@@ -1148,7 +1158,8 @@ Ext.define('eXe.controller.Toolbar', {
 			callback: function(fp) {
                 if (fp.status == eXe.view.filepicker.FilePicker.returnOk) {
                     Ext.Msg.wait(new Ext.Template(_('Loading package: {filename}')).apply({filename: fp.file.path}));
-		    		nevow_clientToServerEvent('loadPackage', this, '', fp.file.path);
+		    		nevow_clientToServerEvent(isTemplate ? 'loadPackageAsTemplate' : 'loadPackage', 
+		    				this, '', fp.file.path);
                 }
 		    }
 		});

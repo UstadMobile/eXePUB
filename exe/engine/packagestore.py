@@ -45,20 +45,26 @@ class PackageStore:
         Creates a package
         """
         log.debug(u"createPackage")
-        # Make up an initial unique name
-        i = 1
-        name = u"newPackage"
-        while name in self.loaded:
-            name = u"newPackage" + unicode(i)
-            i += 1                    
-
+        
         package = EPUBPackage.load(G.application.config.configDir/"normal.epub")
         package.filename = ""
-        package.name = name
+        package.name = self.createNewPackageName()
         package.id = str(uuid.uuid4())
         self.loaded[package.name] = package
 
         return package
+    
+    def createNewPackageName(self):
+        """
+        Make up an initial unique name
+        """
+        i = 1
+        name = u"newPackage"
+        while name in self.loaded:
+            name = u"newPackage" + unicode(i)
+            i += 1
+            
+        return name
 
 
     def getPackage(self, name):

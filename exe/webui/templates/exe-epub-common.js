@@ -22,9 +22,17 @@ Idevice.prototype = {
 	},
 	
 	/**
-	 * Handle when the idevice itself is first created
+	 * Handle when the idevice itself is first created and added to the 
+	 * page (e.g. only once when the user adds the idevice to the page)
 	 */
 	onCreate: function() {
+		
+	},
+	
+	/**
+	 * Handle when the idevice is initialized  : if the device was already
+	 */
+	onInit: function() {
 		
 	},
 	
@@ -430,6 +438,7 @@ Idevice.registerType = function(typeId, cls) {
 		for(var i = 0; i < allIdevices.length; i++) {
 			deviceId = allIdevices[i].getAttribute("id").substring(2);//idevice id attributes are prefixed by the letters 'id'
 			Idevice._registeredDevices[deviceId] = new cls(deviceId);
+			Idevice._registeredDevices[deviceId].onInit();
 			Idevice._registeredDevices[deviceId].loadState();
 		}
 	};

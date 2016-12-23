@@ -128,6 +128,11 @@ Ext.define('eXe.view.ui.eXeToolbar', {
                                 tooltip: 'Ctrl+Alt+N',
                                 itemId: 'file_new'
                             },
+                            {
+                            	xtype: 'accesskey_menuitem',
+                                text: _('New From Template'),
+                                itemId: 'file_new_from_template'
+                            },
                             
                             {
                                 xtype: 'accesskey_menuitem',
